@@ -19,6 +19,11 @@ import { NotificacionesPage } from "./pages/NotificacionesPage";
 import { PerfilPage } from "./pages/PerfilPage";
 import { PermissionGate } from "./components/common/PermissionGate";
 import { AdminLivePage } from "./pages/AdminLivePage";
+import { AdminCategoriasPage } from "./pages/AdminCategoriasPage";
+import { AdminRolesPage } from "./pages/AdminRolesPage";
+import { AdminPermisosPage } from "./pages/AdminPermisosPage";
+import { AdminUsuariosPage } from "./pages/AdminUsuariosPage";
+import { AdminAuditoriaPage } from "./pages/AdminAuditoriaPage";
 import { HomePage } from "./pages/HomePage";
 import { PublicMarketplacePage } from "./pages/PublicMarketplacePage";
 import { PublicEmpresaPage } from "./pages/PublicEmpresaPage";
@@ -83,6 +88,11 @@ function App() {
           />
           <Route path="publicidades" element={<PublicidadesPage />} />
           <Route path="admin-live" element={<AdminLivePage />} />
+          <Route path="categorias" element={<AdminCategoriasPage />} />
+          <Route path="roles" element={<AdminRolesPage />} />
+          <Route path="permisos" element={<AdminPermisosPage />} />
+          <Route path="usuarios" element={<AdminUsuariosPage />} />
+          <Route path="registro-actividad" element={<AdminAuditoriaPage />} />
           <Route path="notificaciones" element={<NotificacionesPage />} />
           <Route path="chat" element={<ChatRoomsPage />} />
           <Route path="chat/:marketplaceId" element={<ChatRoomDetailPage />} />

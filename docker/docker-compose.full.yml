@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis:7
+    ports:
+      - 6379:6379
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    env_file:
+      - ./server/.env.example
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - 8000:8000
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  migrate:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    env_file:
+      - ./server/.env.example
+    depends_on:
+      - postgres
+    entrypoint: ["/bin/sh","-c","alembic upgrade head && exit 0"]
+
+  audit-worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    env_file:
+      - ./server/.env.example
+    depends_on:
+      - redis
+      - postgres
+    command: python -u server/scripts/run_redis_worker.py
+
+  frontend:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile
+    ports:
+      - 5173:5173
+
+volumes:
+  pgdata:

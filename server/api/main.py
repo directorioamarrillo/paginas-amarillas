@@ -15,6 +15,13 @@ from importlib import import_module
 from starlette.middleware.base import BaseHTTPMiddleware
 from pathlib import Path
 from api.utils.logging_setup import configure_daily_logging
+import jwt as pyjwt
+from api.api import auth as auth_module
+from api.db.conexion import async_session
+from api.services.audit_service import registrar_auditoria
+from api.services.audit_worker import attach_queued_worker
+from api.services.audit_worker_redis import attach_redis_worker
+import os
 
 configure_daily_logging()
 
@@ -82,6 +89,84 @@ app.add_middleware(
 )
 
 app.add_middleware(LogMiddleware)
+
+
+class AuditMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        # Solo auditar acciones mutativas y búsquedas por ahora
+        path = str(request.url.path)
+        method = request.method.upper()
+        should_audit = method in ("POST", "PUT", "PATCH", "DELETE") or (method == "GET" and "/api/busqueda" in path)
+
+        # Reconstruct body for potential description (preview already implemented)
+        body = await request.body()
+
+        # Ejecutar la petición y luego registrar el evento (post-action)
+        response = await call_next(request)
+
+        if should_audit:
+            # Intentar extraer usuario desde token en cookie o header
+            token = None
+            try:
+                token = request.cookies.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+            except Exception:
+                token = None
+
+            usuario_id = None
+            nombre_usuario = None
+            rol_usuario = None
+            try:
+                if token:
+                    payload = pyjwt.decode(token, auth_module.SECRET_KEY, algorithms=[auth_module.ALGORITHM])
+                    usuario_id = payload.get('id_usuario') or payload.get('sub')
+                    nombre_usuario = payload.get('sub')
+                    rol_usuario = payload.get('rol')
+            except Exception:
+                # No autenticado o token inválido - continuar sin usuario
+                usuario_id = None
+
+            ip = request.client.host if getattr(request, 'client', None) else None
+            ua = request.headers.get('user-agent')
+
+            # Encolar evento para ser procesado por worker en background
+            try:
+                queue = getattr(request.app.state, 'audit_queue', None)
+                payload = dict(
+                    usuario_id=usuario_id,
+                    nombre_usuario=nombre_usuario,
+                    rol_usuario=rol_usuario,
+                    accion=f"{method} {path}",
+                    modulo=path.split('/')[2] if len(path.split('/')) > 2 else None,
+                    entidad_afectada=None,
+                    entidad_id=None,
+                    descripcion=(body.decode('utf-8', errors='replace')[:2000] if body else None),
+                    metodo_http=method,
+                    endpoint=path,
+                    ip=ip,
+                    user_agent=ua,
+                    datos_anteriores=None,
+                    datos_nuevos=None,
+                    estado_evento=str(response.status_code),
+                )
+                if queue is not None:
+                    await queue.put(payload)
+                else:
+                    # Fallback if worker not attached: write directly
+                    async with async_session() as db_sess:
+                        await registrar_auditoria(db_sess, **payload)
+            except Exception:
+                logger.exception("Error registrando auditoría")
+
+        return response
+
+app.add_middleware(AuditMiddleware)
+
+# Attach background audit worker to app lifecycle
+# If AUDIT_REDIS_URL is set, use Redis-backed worker, otherwise use local queue worker
+if os.environ.get('AUDIT_REDIS_URL'):
+    attach_redis_worker(app)
+else:
+    attach_queued_worker(app)
 # Lista de routers que la aplicación expone en tiempo de importación.
 # Incluir routers al importar el módulo permite que los endpoints estén
 # disponibles incluso si la fase `startup` tiene problemas con la base de datos
@@ -109,6 +194,8 @@ routers = [
     ("api.api.reportes", "/api", "Reportes"),
     ("api.api.catalogos", "/api", "Catalogos"),
     ("api.api.admin", "/api", "Admin"),
+    ("api.api.auditoria", "/api", "Auditoría"),
+    ("api.api.health", "", "Health"),
 ]
 
 for module_path, prefix, tag in routers:

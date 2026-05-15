@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from typing import Optional
 from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from api.db.conexion import get_db
+from api.services.audit_service import registrar_auditoria
+from api.api.auth import get_current_user_optional
 from api.models.models import Empresa, Marketplace, Categoria, Municipio
 from api.api.auth import can_view_deleted_records
 
@@ -17,6 +19,8 @@ async def busqueda_global(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     can_view_deleted: bool = Depends(can_view_deleted_records),
+    request: Request = None,
+    current_user = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -61,6 +65,14 @@ async def busqueda_global(
     
     marketplace_result = await db.execute(marketplace_query)
     productos = marketplace_result.scalars().unique().all()
+
+    # Registrar búsqueda en auditoría
+    try:
+        ip = request.client.host if getattr(request, 'client', None) else None
+        ua = request.headers.get('user-agent')
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, accion='busqueda', modulo='busqueda', entidad_afectada='resultados_busqueda', descripcion=f'query={query}', metodo_http='GET', endpoint='/busqueda/global', ip=ip, user_agent=ua, datos_nuevos={'termino': query, 'total_empresas': len(empresas), 'total_productos': len(productos)})
+    except Exception:
+        pass
     
     return {
         "query": query,

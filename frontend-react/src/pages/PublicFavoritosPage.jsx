@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faHeart, faMessage, faStore, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { favoritosApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
@@ -23,6 +24,27 @@ function FavoriteCard({ favorito, onRemove }) {
   }).format(precio);
 
   const empresaNombre = producto.empresa?.nombre || "Vendedor desconocido";
+
+  const formatPhoneForWhatsApp = (phone) => {
+    if (!phone) return "";
+    return String(phone).replace(/\D/g, "");
+  };
+
+  const openWhatsAppApp = (phone, empresa) => {
+    const num = formatPhoneForWhatsApp(phone);
+    if (!num) return;
+    const msg = encodeURIComponent(`Hola ${empresa}, estoy interesado en este producto.`);
+    const appUrl = `whatsapp://send?phone=${num}&text=${msg}`;
+    const webUrl = `https://wa.me/${num}?text=${msg}`;
+    try {
+      window.location.href = appUrl;
+      setTimeout(() => {
+        window.location.href = webUrl;
+      }, 700);
+    } catch (e) {
+      window.location.href = webUrl;
+    }
+  };
 
   return (
     <div className="product-card group rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -67,10 +89,14 @@ function FavoriteCard({ favorito, onRemove }) {
 
         <div className="mt-4 flex gap-2">
           <button
-            onClick={() => navigate(`/producto/${producto.id}`)}
+            onClick={() => {
+              const telefono = producto.empresa?.telefono;
+              if (telefono) openWhatsAppApp(telefono, empresaNombre);
+              else navigate(`/producto/${producto.id}`);
+            }}
             className="flex-1 rounded-lg bg-primary-500 py-2 text-sm font-semibold text-slate-900 transition hover:bg-primary-400"
           >
-            <FontAwesomeIcon icon={faMessage} className="mr-2" />
+            <FontAwesomeIcon icon={faWhatsapp} className="mr-2" />
             Contactar
           </button>
           <button

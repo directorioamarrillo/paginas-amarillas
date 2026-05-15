@@ -1,19 +1,18 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db.conexion import get_db
 from api.models.models import Rol, Usuario
 from api.schemas.schemas import UsuarioCreate, UsuarioResponse, UsuarioUpdate
-from api.api.auth import can_view_deleted_records, require_permission
+from api.api.auth import can_view_deleted_records, require_permission, hash_password
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
-pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
 @router.post("/usuarios/", response_model=UsuarioResponse, status_code=201)
@@ -27,7 +26,7 @@ async def create_usuario(
     if existing_user:
         raise HTTPException(status_code=400, detail="Ya existe un usuario registrado con este correo electrónico")
 
-    hashed = pwd_context.hash(usuario.password)
+    hashed = hash_password(usuario.password)
     data = {**usuario.model_dump(exclude={"password"}), "password": hashed}
     db_usuario = Usuario(**data)
 
@@ -40,6 +39,10 @@ async def create_usuario(
     db.add(db_usuario)
     await db.commit()
     await db.refresh(db_usuario)
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(current_user, 'rol_obj', None).nombre if getattr(current_user, 'rol_obj', None) else None, accion='crear_usuario', modulo='usuarios', entidad_afectada='usuario', entidad_id=str(db_usuario.id), descripcion=f'Usuario creado: {db_usuario.correo}', metodo_http='POST', endpoint='/usuarios/')
+    except Exception:
+        pass
     return db_usuario
 
 
@@ -99,6 +102,10 @@ async def update_usuario(
 
     await db.commit()
     await db.refresh(db_usuario)
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(current_user, 'rol_obj', None).nombre if getattr(current_user, 'rol_obj', None) else None, accion='actualizar_usuario', modulo='usuarios', entidad_afectada='usuario', entidad_id=str(db_usuario.id), descripcion=f'Usuario actualizado: {db_usuario.correo}', metodo_http='PUT', endpoint=f'/usuarios/{usuario_id}')
+    except Exception:
+        pass
     return db_usuario
 
 
@@ -111,6 +118,11 @@ async def delete_usuario(usuario_id: int, db: AsyncSession = Depends(get_db)):
 
     usuario.deleted_at = datetime.utcnow()
     await db.commit()
+    try:
+        # No hay current_user dependency aquí en la firma; no obstante, registrar sin actor
+        await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='desactivar_usuario', modulo='usuarios', entidad_afectada='usuario', entidad_id=str(usuario_id), descripcion=f'Usuario desactivado: {usuario.correo}', metodo_http='DELETE', endpoint=f'/usuarios/{usuario_id}')
+    except Exception:
+        pass
     return {"message": "Usuario desactivado correctamente"}
 
 

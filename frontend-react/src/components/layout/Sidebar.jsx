@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartLine,
   faBuilding,
+  faTags,
   faStore,
   faHeart,
   faMagnifyingGlass,
@@ -15,6 +16,7 @@ import {
   faBell,
   faUser,
   faTowerBroadcast,
+  faClipboardList,
   faHouse,
   faMessage,
 } from "@fortawesome/free-solid-svg-icons";
@@ -23,6 +25,7 @@ import { usePermissions } from "../../context/PermissionsContext";
 const navItems = [
   { to: "/admin", label: "Resumen", icon: faChartLine },
   { to: "/admin/empresas", label: "Empresas", icon: faBuilding },
+  { to: "/admin/categorias", label: "Categorías", icon: faTags, anyPerms: ["crear_categorias", "modificar_categorias"] },
   { to: "/admin/marketplace", label: "Marketplace", icon: faStore },
   { to: "/admin/favoritos", label: "Favoritos", icon: faHeart },
   { to: "/admin/busqueda", label: "Búsqueda", icon: faMagnifyingGlass },
@@ -33,6 +36,10 @@ const navItems = [
   { to: "/admin/publicidades", label: "Publicidades", icon: faBullhorn },
   { to: "/admin/admin-live", label: "Admin Live", icon: faTowerBroadcast, adminOnly: true },
   { to: "/admin/notificaciones", label: "Notificaciones", icon: faBell },
+  { to: "/admin/roles", label: "Roles", icon: faUser, adminOnly: true },
+  { to: "/admin/permisos", label: "Permisos", icon: faTowerBroadcast, adminOnly: true },
+  { to: "/admin/usuarios", label: "Usuarios", icon: faUser, adminOnly: true },
+  { to: "/admin/registro-actividad", label: "Registro de Actividad", icon: faClipboardList, adminOnly: true },
   { to: "/admin/chat", label: "Chat Marketplace", icon: faMessage },
   { to: "/admin/perfil", label: "Mi perfil", icon: faUser },
 ];

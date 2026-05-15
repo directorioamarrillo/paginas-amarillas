@@ -6,6 +6,7 @@ import { Input } from "../components/common/Input";
 import { ReactSelect } from "../components/common/ReactSelect";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { categoriasApi, catalogosApi, empresasApi, marketplaceApi } from "../services/api";
+import { usePermissions } from "../context/PermissionsContext";
 import { useToast } from "../context/ToastContext";
 
 export function EmpresaMarketplacePage() {
@@ -34,13 +35,19 @@ export function EmpresaMarketplacePage() {
   const [form, setForm] = useState({ nombre: "", descripcion: "", precio: "", stock: "", id_empresa: "", id_categoria: "", id_estado: "" });
 
   // Load user's companies
+  const { isAdmin } = usePermissions();
+
   const misEmpresas = useAsyncData(async () => {
     try {
-      return (await empresasApi.misEmpresas({ limit: 200 })).data;
+      if (isAdmin) {
+        const { data } = await empresasApi.list({ limit: 500 });
+        return data || [];
+      }
+      return (await empresasApi.misEmpresas({ limit: 200 })).data || [];
     } catch {
       return [];
     }
-  });
+  }, isAdmin);
 
   // Load products from user's companies
   const marketplace = useAsyncData(async () => {
@@ -91,16 +98,25 @@ export function EmpresaMarketplacePage() {
 
   const crearProducto = async (event) => {
     event.preventDefault();
+    // Validaciones de formulario
+    if (!form.id_empresa) {
+      pushToast({ title: "Dato requerido", message: "Selecciona una empresa antes de crear", type: "error" });
+      return;
+    }
+
     try {
-      await marketplaceApi.create({
+      const payload = {
         nombre: form.nombre,
         descripcion: form.descripcion,
-        precio: Number(form.precio),
-        stock: Number(form.stock),
+        precio: form.precio === "" ? null : Number(form.precio),
+        stock: form.stock === "" ? null : Number(form.stock),
         id_empresa: Number(form.id_empresa),
-        id_categoria: Number(form.id_categoria),
+        id_categoria: form.id_categoria === "" ? null : Number(form.id_categoria),
         id_estado: form.id_estado ? Number(form.id_estado) : null,
-      });
+      };
+
+      await marketplaceApi.create(payload);
+
       pushToast({ title: "Producto creado", message: "Alta de marketplace exitosa", type: "success" });
       setForm({ nombre: "", descripcion: "", precio: "", stock: "", id_empresa: "", id_categoria: "", id_estado: "" });
       marketplace.reload();

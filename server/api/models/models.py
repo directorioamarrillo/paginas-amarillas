@@ -407,3 +407,29 @@ class Notificacion(Base):
     # Relaciones
     usuario_remitente = relationship("Usuario", back_populates="notificaciones_enviadas", foreign_keys=[id_usuario_remitente])
     usuario_destinatario = relationship("Usuario", back_populates="notificaciones_recibidas", foreign_keys=[id_usuario_destinatario])
+
+
+# Modelo centralizado de auditoría / logs de auditoría
+class AuditLog(Base):
+    __tablename__ = 'audit_logs'
+
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=True)
+    nombre_usuario = Column(String(150), nullable=True)
+    rol_usuario = Column(String(50), nullable=True)
+    accion = Column(String(100), nullable=False)
+    modulo = Column(String(100), nullable=True)
+    entidad_afectada = Column(String(100), nullable=True)
+    entidad_id = Column(String(100), nullable=True)
+    descripcion = Column(Text, nullable=True)
+    metodo_http = Column(String(10), nullable=True)
+    endpoint = Column(String(255), nullable=True)
+    ip = Column(String(45), nullable=True)
+    user_agent = Column(Text, nullable=True)
+    datos_anteriores = Column(Text, nullable=True)
+    datos_nuevos = Column(Text, nullable=True)
+    estado_evento = Column(String(50), nullable=True)
+    fecha = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    usuario = relationship('Usuario', backref='audit_logs')

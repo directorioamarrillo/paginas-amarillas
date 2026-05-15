@@ -30,8 +30,28 @@ export const geoApi = {
 export const categoriasApi = {
   list: (params) => http.get("/categorias", { params }),
   get: (categoriaId) => http.get(`/categorias/${categoriaId}`),
+  create: (payload) => http.post("/categorias/", payload),
+  update: (categoriaId, payload) => http.put(`/categorias/${categoriaId}`, payload),
+  remove: (categoriaId) => http.delete(`/categorias/${categoriaId}`),
+  restore: (categoriaId) => http.patch(`/categorias/${categoriaId}/restore`),
 };
 
+export const rolesApi = {
+  list: (params) => http.get("/roles", { params }),
+  get: (id) => http.get(`/roles/${id}`),
+  create: (payload) => http.post(`/roles`, payload),
+  update: (id, payload) => http.put(`/roles/${id}`, payload),
+  remove: (id) => http.delete(`/roles/${id}`),
+  restore: (id) => http.patch(`/roles/${id}/restore`),
+};
+export const permisosApi = {
+  list: (params) => http.get("/permisos", { params }),
+  get: (id) => http.get(`/permisos/${id}`),
+  create: (payload) => http.post(`/permisos`, payload),
+  update: (id, payload) => http.put(`/permisos/${id}`, payload),
+  remove: (id) => http.delete(`/permisos/${id}`),
+  restore: (id) => http.patch(`/permisos/${id}/restore`),
+};
 export const catalogosApi = {
   estadosMarketplace: (params) => http.get("/catalogos/estados-marketplace", { params }),
   tiposAnuncio: (params) => http.get("/catalogos/tipos-anuncio", { params }),
@@ -123,6 +143,9 @@ export const reportesApi = {
 export const usuariosApi = {
   get: (usuarioId) => http.get(`/usuarios/${usuarioId}`),
   update: (usuarioId, payload) => http.put(`/usuarios/${usuarioId}`, payload),
+  list: (params) => http.get(`/usuarios`, { params }),
+  create: (payload) => http.post(`/usuarios/`, payload),
+  remove: (usuarioId) => http.delete(`/usuarios/${usuarioId}`),
 };
 
 export const publicidadesApi = {
@@ -159,3 +182,14 @@ export const notificacionesApi = {
   marcarTodasLeidas: () => http.post("/notificaciones/marcar-todas-como-leidas/"),
   eliminar: (idNotificacion) => http.delete(`/notificaciones/${idNotificacion}`),
 };
+
+export const auditApi = {
+  list: (params) => http.get('/auditoria/', { params }),
+  get: (id) => http.get(`/auditoria/${id}`),
+  exportCsv: (params) => http.get('/auditoria/export', { params, responseType: 'blob' }),
+  exportPdf: (params) => http.get('/auditoria/export/pdf', { params, responseType: 'blob' }),
+  reportSummary: (params) => http.get('/auditoria/report/summary', { params }),
+  reportTimeseries: (params) => http.get('/auditoria/report/timeseries', { params }),
+  reportSummaryPdf: (params) => http.get('/auditoria/report/summary/pdf', { params, responseType: 'blob' }),
+};
+

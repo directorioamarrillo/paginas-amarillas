@@ -83,6 +83,12 @@ async def create_business_notification(
     await db.commit()
     await db.refresh(nueva_notificacion)
 
+    try:
+        from api.services.audit_service import registrar_auditoria
+        await registrar_auditoria(db, usuario_id=id_usuario_remitente, nombre_usuario=None, rol_usuario=None, accion='crear_notificacion', modulo='notificaciones', entidad_afectada='notificacion', entidad_id=str(nueva_notificacion.id), descripcion=f'Notificacion creada: {tipo}', metodo_http='POST', endpoint='/notificaciones/crear')
+    except Exception:
+        pass
+
     await manager.broadcast_to_user(
         id_usuario_destinatario,
         {

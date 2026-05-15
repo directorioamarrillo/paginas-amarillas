@@ -9,6 +9,7 @@ from api.models.models import Rol, Permiso
 from api.schemas.schemas import RolCreate, RolResponse
 from api.api.auth import can_view_deleted_records, require_permission
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -41,6 +42,10 @@ async def create_role(
     db.add(db_role)
     await db.commit()
     await db.refresh(db_role)
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user,'correo',None) if current_user else None, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None) if current_user else None, accion='crear_role', modulo='roles', entidad_afectada='role', entidad_id=str(db_role.id), descripcion=f'Rol creado: {db_role.nombre}', metodo_http='POST', endpoint='/roles')
+    except Exception:
+        pass
     return db_role
 
 
@@ -79,6 +84,10 @@ async def update_role(
         role.permisos = permisos
     await db.commit()
     await db.refresh(role)
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user,'correo',None) if current_user else None, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None) if current_user else None, accion='actualizar_role', modulo='roles', entidad_afectada='role', entidad_id=str(role.id), descripcion=f'Rol actualizado: {role.nombre}', metodo_http='PUT', endpoint=f'/roles/{id_rol}')
+    except Exception:
+        pass
     return role
 
 
@@ -90,6 +99,10 @@ async def delete_role(id_rol: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Role not found")
     role.deleted_at = datetime.utcnow()
     await db.commit()
+    try:
+        await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='desactivar_role', modulo='roles', entidad_afectada='role', entidad_id=str(role.id), descripcion=f'Rol desactivado: {role.nombre}', metodo_http='DELETE', endpoint=f'/roles/{id_rol}')
+    except Exception:
+        pass
     return {"detail": "Role deactivated"}
 
 

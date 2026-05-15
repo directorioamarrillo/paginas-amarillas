@@ -11,6 +11,9 @@ export function ChatRoomsPage() {
   const { user } = useAuth();
   const { pushToast } = useToast();
   const [activeChats, setActiveChats] = useState([]);
+  const [empresas, setEmpresas] = useState([]);
+  const [filterEmpresa, setFilterEmpresa] = useState("");
+  const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,6 +43,8 @@ export function ChatRoomsPage() {
             ultimoMensaje: mensajesPorMarketplace[mp.id]?.[mensajesPorMarketplace[mp.id].length - 1],
             cantidadMensajes: mensajesPorMarketplace[mp.id]?.length || 0,
           })) || [];
+
+        setEmpresas((await empresasApi.list({ limit: 200 })).data || []);
 
         setActiveChats(chatsActivos);
       } catch (error) {
@@ -84,7 +89,25 @@ export function ChatRoomsPage() {
         </div>
 
         {/* Chat Rooms Grid */}
-        {activeChats.length > 0 ? (
+        <div className="mb-6 flex items-center gap-3">
+          <select value={filterEmpresa} onChange={(e) => setFilterEmpresa(e.target.value)} className="input w-64">
+            <option value="">Todas las empresas</option>
+            {empresas.map((ep) => (
+              <option key={ep.id} value={ep.id}>{ep.nombre}</option>
+            ))}
+          </select>
+          <input placeholder="Buscar por producto o mensaje" value={q} onChange={(e) => setQ(e.target.value)} className="input flex-1" />
+        </div>
+
+        {activeChats.filter(chat => {
+          if (filterEmpresa && String(chat.id_usuario_creador) !== String(filterEmpresa) && String(chat.id_usuario_creador) !== String(chat.id_usuario_creador)) return false;
+          if (filterEmpresa && String(chat.id) !== String(filterEmpresa) && String(chat.id_empresa) !== String(filterEmpresa) && String(chat.empresa?.id) !== String(filterEmpresa)) return false;
+          if (q) {
+            const qL = q.toLowerCase();
+            return (chat.nombre || "").toLowerCase().includes(qL) || (chat.descripcion || "").toLowerCase().includes(qL) || (chat.ultimoMensaje?.mensaje || "").toLowerCase().includes(qL);
+          }
+          return true;
+        }).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeChats.map((chat) => (
               <div

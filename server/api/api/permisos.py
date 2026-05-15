@@ -8,6 +8,7 @@ from api.models.models import Permiso
 from api.schemas.schemas import PermisoResponse, PermisoBase
 from api.api.auth import can_view_deleted_records, require_permission
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -36,6 +37,10 @@ async def create_permiso(
     db.add(db_perm)
     await db.commit()
     await db.refresh(db_perm)
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user,'correo',None) if current_user else None, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None) if current_user else None, accion='crear_permiso', modulo='permisos', entidad_afectada='permiso', entidad_id=str(db_perm.id), descripcion=f'Permiso creado: {db_perm.key}', metodo_http='POST', endpoint='/permisos')
+    except Exception:
+        pass
     return db_perm
 
 
@@ -70,6 +75,10 @@ async def update_permiso(
     perm.descripcion = payload.descripcion
     await db.commit()
     await db.refresh(perm)
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user,'correo',None) if current_user else None, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None) if current_user else None, accion='actualizar_permiso', modulo='permisos', entidad_afectada='permiso', entidad_id=str(perm.id), descripcion=f'Permiso actualizado: {perm.key}', metodo_http='PUT', endpoint=f'/permisos/{id_permiso}')
+    except Exception:
+        pass
     return perm
 
 
@@ -81,6 +90,10 @@ async def delete_permiso(id_permiso: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Permiso not found")
     perm.deleted_at = datetime.utcnow()
     await db.commit()
+    try:
+        await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='desactivar_permiso', modulo='permisos', entidad_afectada='permiso', entidad_id=str(perm.id), descripcion=f'Permiso desactivado: {perm.key}', metodo_http='DELETE', endpoint=f'/permisos/{id_permiso}')
+    except Exception:
+        pass
     return {"detail": "Permiso deactivated"}
 
 

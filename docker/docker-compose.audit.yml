@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: directorio_redis
+    ports:
+      - '6379:6379'
+
+  audit-worker:
+    image: python:3.11-slim
+    container_name: directorio_audit_worker
+    working_dir: /app
+    volumes:
+      - ..:/app:cached
+    environment:
+      - AUDIT_REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    command: /bin/sh -c "pip install -r server/requirements-extras.txt && python server/scripts/run_redis_worker.py"

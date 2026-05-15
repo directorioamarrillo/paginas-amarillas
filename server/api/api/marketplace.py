@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Request
 from sqlalchemy import select, and_, or_, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -15,6 +16,7 @@ from api.utils.uploads import ensure_upload_dir, save_upload_file, build_public_
 from seeders.seed_permisos import Permisos
 from pathlib import Path
 from fastapi.responses import FileResponse
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -59,14 +61,16 @@ async def _assert_marketplace_owner_or_admin(db: AsyncSession, user, marketplace
 
 
 async def _assert_empresa_owner_or_admin(db: AsyncSession, user, id_empresa: int) -> None:
-    if _is_admin(user):
-        return
-
+    # Siempre verificar que la empresa exista
     empresa_result = await db.execute(
         select(Empresa).where(Empresa.id == id_empresa, Empresa.deleted_at.is_(None))
     )
     empresa = empresa_result.scalars().first()
-    if not empresa or empresa.id_usuario_creador != user.id:
+    if not empresa:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+    # Si no es admin, verificar propietario
+    if not _is_admin(user) and empresa.id_usuario_creador != user.id:
         raise HTTPException(status_code=403, detail="Solo el propietario de la empresa puede publicar productos")
 
 
@@ -242,8 +246,16 @@ async def create_marketplace(
 
     db_item = Marketplace(**payload)
     db.add(db_item)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Error al crear marketplace: datos inválidos")
     await db.refresh(db_item)
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='crear_producto', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(db_item.id), descripcion=f'Producto creado: {db_item.nombre}', metodo_http='POST', endpoint='/marketplace')
+    except Exception:
+        pass
     return db_item
 
 # Editar producto/servicio
@@ -309,6 +321,10 @@ async def update_marketplace(
                     )
                 except HTTPException:
                     continue
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='actualizar_producto', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(db_item.id), descripcion=f'Producto actualizado: {db_item.nombre}', metodo_http='PUT', endpoint=f'/marketplace/{id_marketplace}', datos_anteriores={'precio_anterior': precio_anterior}, datos_nuevos={'precio_nuevo': db_item.precio})
+    except Exception:
+        pass
 
     return db_item
 
@@ -328,6 +344,10 @@ async def delete_marketplace(
 
     db_item.deleted_at = datetime.utcnow()
     await db.commit()
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='desactivar_producto', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(db_item.id), descripcion=f'Producto desactivado: {db_item.nombre}', metodo_http='DELETE', endpoint=f'/marketplace/{id_marketplace}')
+    except Exception:
+        pass
     return {"detail": "Marketplace item deactivated"}
 
 
@@ -377,6 +397,11 @@ async def upload_marketplace_images(
         uploaded_urls.append(image_url)
 
     await db.commit()
+
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='cambio_imagenes', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(id_marketplace), descripcion='Imágenes actualizadas', metodo_http='POST', endpoint=f'/marketplace/{id_marketplace}/imagenes/upload', datos_nuevos=uploaded_urls)
+    except Exception:
+        pass
 
     return {
         "message": "Imágenes subidas correctamente",

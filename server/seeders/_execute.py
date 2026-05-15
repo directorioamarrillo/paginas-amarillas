@@ -54,6 +54,7 @@ if __name__ == "__main__":
     from paises import seed_paises
     from municipios import seed_municipios
     from seed_permisos import seed_permisos
+    from seed_auditoria import seed_auditoria
     from tipos_evento import seed_tipos_evento
     from tipos_anuncio import seed_tipos_anuncio
 
@@ -69,5 +70,6 @@ if __name__ == "__main__":
         await seed_roles(run_sql_statements)
         await seed_admin_user(run_sql_statements)
         await seed_permisos(run_sql_statements)
+        await seed_auditoria(run_sql_statements)
         
     asyncio.run(main())

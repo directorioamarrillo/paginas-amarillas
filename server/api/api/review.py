@@ -10,6 +10,7 @@ from api.db.conexion import get_db
 from api.api.auth import can_view_deleted_records, require_permission
 from api.api.notificaciones import create_business_notification
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -119,7 +120,10 @@ async def create_review(
         except HTTPException:
             # La reseña ya fue creada; no bloqueamos por fallo de notificación.
             pass
-
+    try:
+        await registrar_auditoria(db, usuario_id=db_review.id_usuario, nombre_usuario=None, rol_usuario=None, accion='crear_review', modulo='reviews', entidad_afectada='review', entidad_id=str(db_review.id), descripcion=f'Review creada para empresa {db_review.id_empresa}', metodo_http='POST', endpoint='/reviews/')
+    except Exception:
+        pass
     return db_review
 
 @router.get("/reviews/", response_model=list[ReviewResponse])
@@ -173,6 +177,10 @@ async def update_review(
     await db.commit()
     result = await db.execute(select(Review).options(joinedload(Review.usuario)).where(Review.id == review_id))
     updated_review = result.scalars().first()
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user,'correo',None) if current_user else None, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None) if current_user else None, accion='actualizar_review', modulo='reviews', entidad_afectada='review', entidad_id=str(updated_review.id), descripcion='Review actualizada', metodo_http='PUT', endpoint=f'/reviews/{review_id}')
+    except Exception:
+        pass
     return updated_review
 
 @router.delete("/reviews/{review_id}")
@@ -183,6 +191,10 @@ async def delete_review(review_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Review no encontrada")
     review.deleted_at = datetime.utcnow()
     await db.commit()
+    try:
+        await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='desactivar_review', modulo='reviews', entidad_afectada='review', entidad_id=str(review.id), descripcion='Review desactivada', metodo_http='DELETE', endpoint=f'/reviews/{review_id}')
+    except Exception:
+        pass
     return {"message": "Review desactivada correctamente"}
 
 

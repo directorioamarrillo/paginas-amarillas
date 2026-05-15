@@ -1,0 +1,15 @@
+[Unit]
+Description=Audit Worker (Redis)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/app
+ExecStart=/usr/bin/python3 /opt/app/server/scripts/run_redis_worker.py
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+Environment=AUDIT_REDIS_URL=redis://localhost:6379/0
+
+[Install]
+WantedBy=multi-user.target

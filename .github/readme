@@ -1,0 +1,131 @@
+# Ejecución del Backend
+
+## 1. Ir al proyecto
+
+```powershell
+cd C:\Users\santi\Documents\GitHub\DIRECTORIO2.0
+```
+
+## 2. Entrar al backend
+
+```powershell
+cd server
+```
+
+## 3. Activar entorno virtual
+
+### Windows
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+### Linux / Mac
+
+```bash
+source .venv/bin/activate
+```
+
+---
+
+## 4. Instalar dependencias
+
+```powershell
+pip install -r requirements.txt
+```
+
+---
+
+## 5. Ejecutar migraciones
+
+```powershell
+alembic upgrade head
+```
+
+---
+
+## 6. Iniciar servidor FastAPI
+
+```powershell
+uvicorn api.main:app --reload
+```
+
+---
+
+## Backend disponible en:
+
+```text
+http://127.0.0.1:8000
+```
+
+## Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# Ejecución del Frontend
+
+## 1. Ir al frontend
+
+```powershell
+cd C:\Users\santi\Documents\GitHub\DIRECTORIO2.0\frontend-react
+```
+
+---
+
+## 2. Instalar dependencias
+
+```powershell
+npm install
+```
+
+---
+
+## 3. Iniciar aplicación React
+
+```powershell
+npm run dev
+```
+
+---
+
+## Frontend disponible en:
+
+```text
+http://localhost:5173
+```
+
+> El puerto puede variar dependiendo de la configuración local.
+
+---
+
+# Comandos Útiles
+
+## Crear nueva migración
+
+```powershell
+alembic revision --autogenerate -m "descripcion_migracion"
+```
+
+## Ver migración actual
+
+```powershell
+alembic current
+```
+
+## Desactivar entorno virtual
+
+```powershell
+deactivate
+```
+
+---
+
+# Notas
+
+- Mantener abiertas las terminales del backend y frontend mientras el proyecto esté en ejecución.
+- Verificar que PostgreSQL esté iniciado antes de correr las migraciones.
+- Configurar variables de entorno en `.env` si aplica.

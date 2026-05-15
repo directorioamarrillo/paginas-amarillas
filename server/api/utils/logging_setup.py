@@ -17,6 +17,25 @@ class _StreamToLogger(io.TextIOBase):
         self.level = level
         self._buffer = ""
 
+    def write(self, message: str) -> int:
+        if not message:
+            return 0
+
+        self._buffer += message
+        while "\n" in self._buffer:
+            line, self._buffer = self._buffer.split("\n", 1)
+            line = line.strip()
+            if line:
+                self.logger.log(self.level, line)
+
+        return len(message)
+
+    def flush(self) -> None:
+        line = self._buffer.strip()
+        if line:
+            self.logger.log(self.level, line)
+        self._buffer = ""
+
 
 class _DailyDateFileHandler(logging.Handler):
     """Escribe en un archivo con nombre por fecha: backend-YYYY-MM-DD.log."""
@@ -63,21 +82,13 @@ class _DailyDateFileHandler(logging.Handler):
     def write(self, message: str) -> int:
         if not message:
             return 0
-
-        self._buffer += message
-        while "\n" in self._buffer:
-            line, self._buffer = self._buffer.split("\n", 1)
-            line = line.strip()
-            if line:
-                self.logger.log(self.level, line)
-
-        return len(message)
-
-    def flush(self) -> None:
-        line = self._buffer.strip()
-        if line:
-            self.logger.log(self.level, line)
-        self._buffer = ""
+        # Legacy: keep for compatibility but redirect to stdout logger
+        if sys.stdout is not None and hasattr(sys.stdout, 'write'):
+            try:
+                return sys.stdout.write(message)
+            except Exception:
+                pass
+        return 0
 
 
 def configure_daily_logging(logs_dir: Optional[str] = None, level: int = logging.INFO) -> None:

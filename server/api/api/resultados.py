@@ -8,6 +8,7 @@ from api.models.models import Resultado
 from api.db.conexion import get_db
 from api.api.auth import can_view_deleted_records, require_permission
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 
 router = APIRouter()
@@ -19,6 +20,10 @@ async def create_resultado(resultado: ResultadoCreate, db: AsyncSession = Depend
     db.add(db_resultado)
     await db.commit()
     await db.refresh(db_resultado)
+    try:
+        await registrar_auditoria(db, usuario_id=db_resultado.id_usuario if hasattr(db_resultado,'id_usuario') else None, nombre_usuario=None, rol_usuario=None, accion='crear_resultado', modulo='resultados', entidad_afectada='resultado', entidad_id=str(db_resultado.id), descripcion='Resultado de busqueda creado', metodo_http='POST', endpoint='/resultados/')
+    except Exception:
+        pass
     return db_resultado
 
 @router.get("/resultados/", response_model=list[ResultadoResponse])

@@ -13,6 +13,7 @@ import {
   faStar,
   faStore,
 } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { empresasApi, marketplaceApi, reviewsApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
@@ -29,6 +30,31 @@ const pickNumber = (...values) => {
     }
   }
   return 0;
+};
+
+const formatPhoneForWhatsApp = (phone) => {
+  if (!phone) return "";
+  // remove non-digit characters and plus sign
+  return String(phone).replace(/\D/g, "");
+};
+
+const openWhatsAppApp = (phone, empresa) => {
+  const num = formatPhoneForWhatsApp(phone);
+  if (!num) return;
+  const msg = encodeURIComponent(`Hola ${empresa}, estoy interesado en sus productos.`);
+  const appUrl = `whatsapp://send?phone=${num}&text=${msg}`;
+  const webUrl = `https://wa.me/${num}?text=${msg}`;
+
+  // Intentar abrir la app; si no se abre, fallback al web URL tras 700ms
+  try {
+    window.location.href = appUrl;
+    setTimeout(() => {
+      // Si no se redirigió a la app, abrir WhatsApp Web
+      window.location.href = webUrl;
+    }, 700);
+  } catch (e) {
+    window.location.href = webUrl;
+  }
 };
 
 function ProductCard({ producto }) {
@@ -249,14 +275,15 @@ export function PublicEmpresaPage() {
             </div>
 
             <div className="flex gap-3">
-              {isAuthenticated && (
-                <a
-                  href={`mailto:${data.correo}`}
-                  className="flex items-center gap-2 rounded-xl bg-primary-500 px-6 py-3 font-semibold text-slate-900 transition hover:bg-primary-400"
+              {data.telefono && (
+                <button
+                  onClick={() => openWhatsAppApp(data.telefono, data.nombre)}
+                  className="flex items-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-semibold text-white transition hover:bg-green-600"
+                  aria-label={`Contactar ${data.nombre} por WhatsApp`}
                 >
-                  <FontAwesomeIcon icon={faMessage} />
+                  <FontAwesomeIcon icon={faWhatsapp} />
                   Contactar
-                </a>
+                </button>
               )}
             </div>
           </div>

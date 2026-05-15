@@ -15,6 +15,7 @@ from api.utils.uploads import ensure_upload_dir, save_upload_file, build_public_
 from seeders.seed_permisos import Permisos
 from pathlib import Path
 from fastapi.responses import FileResponse
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -91,6 +92,10 @@ async def create_empresa(
         db.add(db_empresa)
         await db.commit()
         await db.refresh(db_empresa)
+        try:
+            await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, accion='crear_empresa', modulo='empresas', entidad_afectada='empresa', entidad_id=str(db_empresa.id), descripcion=f'Empresa creada: {db_empresa.nombre}', metodo_http='POST', endpoint='/empresas/')
+        except Exception:
+            pass
         return {"success": True, "id": db_empresa.id}
     except HTTPException as he:
         raise he
@@ -288,6 +293,11 @@ async def update_mi_empresa(
 
     await db.commit()
 
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id, nombre_usuario=current_user.correo, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='actualizar_empresa', modulo='empresas', entidad_afectada='empresa', entidad_id=str(empresa.id), descripcion=f'Empresa actualizada: {empresa.nombre}', metodo_http='PUT', endpoint='/empresas/mi-empresa')
+    except Exception:
+        pass
+
     refresh_result = await db.execute(
         select(Empresa)
         .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio))
@@ -325,6 +335,11 @@ async def upload_logo_mi_empresa(
 
     await db.commit()
     await db.refresh(empresa)
+
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id, nombre_usuario=current_user.correo, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='cambio_logo', modulo='empresas', entidad_afectada='empresa', entidad_id=str(empresa.id), descripcion='Logo actualizado', metodo_http='POST', endpoint='/empresas/mi-empresa/logo/upload')
+    except Exception:
+        pass
 
     return {
         "message": "Logo subido correctamente",
@@ -381,6 +396,10 @@ async def update_empresa(
         .where(Empresa.id == empresa_id)
     )
     empresa_actualizada = result.scalars().first()
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, accion='actualizar_empresa', modulo='empresas', entidad_afectada='empresa', entidad_id=str(empresa_actualizada.id), descripcion=f'Empresa actualizada: {empresa_actualizada.nombre}', metodo_http='PUT', endpoint=f'/empresas/{empresa_id}')
+    except Exception:
+        pass
     return empresa_actualizada
 
 # Eliminar una empresa
@@ -399,6 +418,10 @@ async def delete_empresa(
 
     empresa.deleted_at = datetime.utcnow()
     await db.commit()
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, accion='desactivar_empresa', modulo='empresas', entidad_afectada='empresa', entidad_id=str(empresa.id), descripcion=f'Empresa desactivada: {empresa.nombre}', metodo_http='DELETE', endpoint=f'/empresas/{empresa_id}')
+    except Exception:
+        pass
     return {"message": "Empresa desactivada correctamente"}
 
 
@@ -439,6 +462,11 @@ async def upload_logo_empresa(
 
     await db.commit()
     await db.refresh(empresa)
+
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, accion='cambio_logo', modulo='empresas', entidad_afectada='empresa', entidad_id=str(empresa.id), descripcion='Logo actualizado', metodo_http='POST', endpoint=f'/empresas/{empresa_id}/logo/upload')
+    except Exception:
+        pass
 
     return {
         "message": "Logo subido correctamente",

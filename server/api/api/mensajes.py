@@ -10,6 +10,7 @@ from api.schemas.schemas import MensajeCreate, MensajeResponse
 from api.api.auth import can_view_deleted_records, require_permission, get_current_user, is_admin_user
 from api.api.notificaciones import create_business_notification
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -59,7 +60,10 @@ async def create_mensaje(
         except HTTPException:
             # No afecta la creación del mensaje si falla la notificación.
             pass
-
+    try:
+        await registrar_auditoria(db, usuario_id=db_item.id_usuario_enviador_mensaje, nombre_usuario=None, rol_usuario=None, accion='crear_mensaje', modulo='mensajes', entidad_afectada='mensaje', entidad_id=str(db_item.id), descripcion=f'Mensaje creado en marketplace {db_item.id_marketplace}', metodo_http='POST', endpoint='/mensajes/')
+    except Exception:
+        pass
     return db_item
 
 
@@ -68,6 +72,9 @@ async def list_mensajes(
     skip: int = 0,
     limit: int = 50,
     id_marketplace: int | None = Query(default=None),
+    id_usuario: int | None = Query(default=None),
+    fecha_from: str | None = Query(default=None),
+    fecha_to: str | None = Query(default=None),
     can_view_deleted: bool = Depends(can_view_deleted_records),
     db: AsyncSession = Depends(get_db),
 ):
@@ -76,6 +83,22 @@ async def list_mensajes(
         query = query.where(Mensaje.deleted_at.is_(None))
     if id_marketplace is not None:
         query = query.where(Mensaje.id_marketplace == id_marketplace)
+    if id_usuario is not None:
+        query = query.where(Mensaje.id_usuario_enviador_mensaje == id_usuario)
+    # filtros por fechas (ISO)
+    from datetime import datetime
+    if fecha_from:
+        try:
+            dt_from = datetime.fromisoformat(fecha_from)
+            query = query.where(Mensaje.fecha_hora >= dt_from)
+        except Exception:
+            pass
+    if fecha_to:
+        try:
+            dt_to = datetime.fromisoformat(fecha_to)
+            query = query.where(Mensaje.fecha_hora <= dt_to)
+        except Exception:
+            pass
     query = query.order_by(Mensaje.fecha_hora.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
@@ -125,6 +148,10 @@ async def update_mensaje(
 
     await db.commit()
     await db.refresh(db_item)
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user,'correo',None) if current_user else None, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None) if current_user else None, accion='actualizar_mensaje', modulo='mensajes', entidad_afectada='mensaje', entidad_id=str(db_item.id), descripcion='Mensaje actualizado', metodo_http='PUT', endpoint=f'/mensajes/{mensaje_id}')
+    except Exception:
+        pass
     return db_item
 
 
@@ -144,6 +171,10 @@ async def delete_mensaje(
 
     db_item.deleted_at = datetime.utcnow()
     await db.commit()
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user,'correo',None) if current_user else None, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None) if current_user else None, accion='desactivar_mensaje', modulo='mensajes', entidad_afectada='mensaje', entidad_id=str(db_item.id), descripcion='Mensaje desactivado', metodo_http='DELETE', endpoint=f'/mensajes/{mensaje_id}')
+    except Exception:
+        pass
     return {"detail": "Mensaje desactivado"}
 
 

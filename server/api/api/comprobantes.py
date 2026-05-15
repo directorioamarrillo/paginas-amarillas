@@ -11,6 +11,7 @@ from api.api.auth import can_view_deleted_records, require_permission, get_curre
 from api.api.notificaciones import create_business_notification
 from api.utils.uploads import ensure_upload_dir, save_upload_file, build_public_url, get_upload_root
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -77,6 +78,10 @@ async def create_comprobante(payload: ComprobanteCreate, db: AsyncSession = Depe
     db.add(db_item)
     await db.commit()
     await db.refresh(db_item)
+    try:
+        await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='crear_comprobante', modulo='comprobantes', entidad_afectada='comprobante', entidad_id=str(db_item.id), descripcion='Comprobante registrado', metodo_http='POST', endpoint='/comprobantes/')
+    except Exception:
+        pass
     return db_item
 
 
@@ -131,6 +136,7 @@ async def update_comprobante(comprobante_id: int, payload: ComprobanteCreate, db
     await db.commit()
     await db.refresh(db_item)
     return db_item
+
 
 
 @router.delete("/comprobantes/{comprobante_id}")
@@ -198,6 +204,11 @@ async def registrar_comprobante_desde_archivo(
     await db.commit()
     await db.refresh(comprobante)
 
+    try:
+        await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='registrar_comprobante_desde_archivo', modulo='comprobantes', entidad_afectada='comprobante', entidad_id=str(comprobante.id), descripcion='Comprobante registrado desde archivo', metodo_http='POST', endpoint='/comprobantes/registrar-desde-archivo')
+    except Exception:
+        pass
+
     return {
         "message": "Comprobante registrado correctamente",
         "comprobante": {
@@ -248,6 +259,11 @@ async def aprobar_comprobante(
         actor_id=current_user.id,
     )
 
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id, nombre_usuario=current_user.correo, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None), accion='aprobar_comprobante', modulo='comprobantes', entidad_afectada='comprobante', entidad_id=str(comprobante.id), descripcion='Comprobante aprobado', metodo_http='POST', endpoint=f'/comprobantes/{comprobante_id}/aprobar')
+    except Exception:
+        pass
+
     return {"message": "Comprobante aprobado", "id": comprobante.id, "estado": comprobante.estado}
 
 
@@ -283,6 +299,11 @@ async def rechazar_comprobante(
         estado="rechazado",
         actor_id=current_user.id,
     )
+
+    try:
+        await registrar_auditoria(db, usuario_id=current_user.id, nombre_usuario=current_user.correo, rol_usuario=getattr(getattr(current_user,'rol_obj',None),'nombre',None), accion='rechazar_comprobante', modulo='comprobantes', entidad_afectada='comprobante', entidad_id=str(comprobante.id), descripcion='Comprobante rechazado', metodo_http='POST', endpoint=f'/comprobantes/{comprobante_id}/rechazar')
+    except Exception:
+        pass
 
     return {"message": "Comprobante rechazado", "id": comprobante.id, "estado": comprobante.estado}
 

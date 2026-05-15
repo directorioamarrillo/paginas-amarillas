@@ -8,6 +8,7 @@ from api.db.conexion import get_db
 from api.api.auth import can_view_deleted_records, require_permission
 from api.utils.uploads import ensure_upload_dir, save_upload_file, build_public_url, get_upload_root
 from seeders.seed_permisos import Permisos
+from api.services.audit_service import registrar_auditoria
 
 router = APIRouter()
 
@@ -22,6 +23,10 @@ async def create_publicidad(
         db.add(db_publicidad)
         await db.commit()
         await db.refresh(db_publicidad)
+        try:
+            await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, accion='crear_publicidad', modulo='publicidades', entidad_afectada='publicidad', entidad_id=str(db_publicidad.id), descripcion=f'Publicidad creada: {db_publicidad.descripcion}', metodo_http='POST', endpoint='/publicidades/')
+        except Exception:
+            pass
         return db_publicidad
     except Exception as e:
         print(f"Error al crear publicidad: {e}")
@@ -71,6 +76,10 @@ async def update_publicidad(
             setattr(db_publicidad, key, value)
         await db.commit()
         await db.refresh(db_publicidad)
+        try:
+            await registrar_auditoria(db, usuario_id=current_user.id if current_user else None, nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, accion='actualizar_publicidad', modulo='publicidades', entidad_afectada='publicidad', entidad_id=str(db_publicidad.id), descripcion='Publicidad actualizada', metodo_http='PUT', endpoint=f'/publicidades/{publicidad_id}')
+        except Exception:
+            pass
         return db_publicidad
     except Exception as e:
         print(f"Error al actualizar publicidad: {e}")
@@ -85,6 +94,10 @@ async def delete_publicidad(publicidad_id: int, db: AsyncSession = Depends(get_d
     try:
         publicidad.deleted_at = datetime.utcnow()
         await db.commit()
+        try:
+            await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='desactivar_publicidad', modulo='publicidades', entidad_afectada='publicidad', entidad_id=str(publicidad.id), descripcion='Publicidad desactivada', metodo_http='DELETE', endpoint=f'/publicidades/{publicidad_id}')
+        except Exception:
+            pass
         return {"message": "Publicidad desactivada correctamente"}
     except Exception as e:
         print(f"Error al eliminar publicidad: {e}")
@@ -135,6 +148,11 @@ async def upload_publicidad_images(
         uploaded_urls.append(image_url)
 
     await db.commit()
+
+    try:
+        await registrar_auditoria(db, usuario_id=None, nombre_usuario=None, rol_usuario=None, accion='cambio_imagenes', modulo='publicidades', entidad_afectada='publicidad', entidad_id=str(publicidad_id), descripcion='Imágenes de publicidad subidas', metodo_http='POST', endpoint=f'/publicidades/{publicidad_id}/imagenes/upload', datos_nuevos=uploaded_urls)
+    except Exception:
+        pass
 
     return {
         "message": "Imágenes subidas correctamente",

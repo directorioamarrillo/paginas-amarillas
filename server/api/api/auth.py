@@ -13,6 +13,7 @@ import os
 from api.models import models
 from api.db import conexion
 from api.schemas.schemas import UsuarioRegister, SigninResponse, UsuarioResponse, PerfilUpdate
+from api.services.audit_service import registrar_auditoria
 
 # Configuración de seguridad
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")  # usar variable de entorno en producción
@@ -46,7 +47,7 @@ async def get_user(db: AsyncSession, correo: str):
     result = await db.execute(
         select(models.Usuario)
         .options(selectinload(models.Usuario.rol_obj).selectinload(models.Rol.permisos))
-        .where(models.Usuario.correo == correo)
+        .where(models.Usuario.correo == correo, models.Usuario.deleted_at.is_(None))
     )
     return result.scalars().first()
 
@@ -91,14 +92,19 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(conexion.get_db),
 ):
-
-    user = await authenticate_user(db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Nombre de usuario o contraseña incorrectos",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    try:
+        user = await authenticate_user(db, form_data.username, form_data.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Nombre de usuario o contraseña incorrectos",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Devuelve detalle para depuración local
+        raise HTTPException(status_code=500, detail=f"Exception during login: {e}")
     
     # Crear token con el correo en el campo `sub` para facilitar la recuperación
     user_sub = user.correo
@@ -123,6 +129,13 @@ async def login(
     except Exception:
         permisos_val = '[]'
     response.set_cookie(key='permisos', value=permisos_val, httponly=False, path='/', samesite='none', secure=secure_flag)
+
+    # Registrar auditoría: inicio de sesión exitoso
+    try:
+        await registrar_auditoria(db, usuario_id=user.id, nombre_usuario=user.correo, rol_usuario=rol_nombre,
+                                  accion='login', modulo='auth', descripcion='Inicio de sesión exitoso', metodo_http='POST', endpoint='/signin')
+    except Exception:
+        pass
 
     return {"access_token": access_token, "rol": rol_nombre, "id_usuario": user.id, "id_rol": getattr(user, 'id_rol', None), "id_empresa": getattr(user, 'id_empresa', None), "permisos": permisos}
 
@@ -168,6 +181,11 @@ async def create_usuario(usuario: UsuarioRegister, db: AsyncSession = Depends(co
             "id_rol": getattr(created_user, "id_rol", None),
         }
     )
+    # Registrar auditoría: creación de cuenta
+    try:
+        await registrar_auditoria(db, usuario_id=db_usuario.id, nombre_usuario=db_usuario.correo, rol_usuario='usuario', accion='crear_usuario', modulo='auth', descripcion='Registro de nuevo usuario', metodo_http='POST', endpoint='/signup')
+    except Exception:
+        pass
     return {
         "access_token": access_token,
         "rol": rol_nombre,
