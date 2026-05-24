@@ -402,3 +402,13 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /server/alembic/versions
+# Local virtualenvs
+server/.venv*/
+.venv*/
+venv/
+# Local DBs
+*.db
+*.sqlite3
+test.db
+# Ignore common env files
+.env
