@@ -1,0 +1,93 @@
+---
+import { CrearEmpresa } from "../../../components/Formularios/CrearEmpresa";
+import GlobalLayout from "../../../layout/GlobalLayout.astro";
+import { axiosInstance } from "../../../utils/axiosInstance";
+import fs from 'fs/promises';
+import path from 'path';
+
+const rol = (Astro.cookies.get("rol") || {})?.value;
+const id = Astro.url.searchParams.get("id") || "";
+
+if (!rol || rol !== "admin") {
+  return Astro.redirect("/");
+}
+
+let dataMunicipio = [];
+let dataCategoria = [];
+let initialValue = undefined;
+// Obtener municipios y categorias con fallback a mock
+try {
+  const resp = await axiosInstance("/api/municipios", { method: "GET", params: { skip: 0, limit: 100 } });
+  dataMunicipio = resp.data;
+} catch (e) {
+  try {
+    const mockPath = path.join(process.cwd(), 'public', 'mock', 'municipios.json');
+    const content = await fs.readFile(mockPath, 'utf-8');
+    dataMunicipio = JSON.parse(content);
+    console.log('Fallback municipios ->', mockPath);
+  } catch (me) {
+    console.warn('No hay mock de municipios', me);
+    dataMunicipio = [];
+  }
+}
+
+try {
+  const resp = await axiosInstance("/api/categorias", { method: "GET", params: { skip: 0, limit: 100 } });
+  dataCategoria = resp.data;
+} catch (e) {
+  try {
+    const mockPath = path.join(process.cwd(), 'public', 'mock', 'categorias.json');
+    const content = await fs.readFile(mockPath, 'utf-8');
+    dataCategoria = JSON.parse(content);
+    console.log('Fallback categorias ->', mockPath);
+  } catch (me) {
+    console.warn('No hay mock de categorias', me);
+    dataCategoria = [];
+  }
+}
+
+if (id) {
+  try {
+    const { data } = await axiosInstance(`/api/empresas/${id}`, { method: 'GET' });
+    initialValue = data;
+  } catch (e) {
+    try {
+      const mockPath = path.join(process.cwd(), 'public', 'mock', 'empresas.json');
+      const content = await fs.readFile(mockPath, 'utf-8');
+      const all = JSON.parse(content);
+      initialValue = all.find((it: any) => String(it.id_empresa) === String(id)) || undefined;
+      console.log('Fallback empresa detail ->', mockPath);
+    } catch (me) {
+      console.warn('No hay mock para empresa detail', me);
+      initialValue = undefined;
+    }
+  }
+}
+---
+
+<GlobalLayout title="Registrar empresa">
+  <div class="min-h-[calc(100vh-110px)] flex items-start justify-center py-12">
+    <section class="w-full max-w-5xl">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900">{id ? "Editar empresa" : "Registrar empresa"}</h2>
+          <p class="text-sm text-gray-500 mt-1">Completa la información para publicar la empresa en el directorio.</p>
+        </div>
+        <nav class="flex gap-3">
+          <a href="/empresas/categorias" class="inline-flex items-center gap-2 px-4 py-2 bg-amarillo text-white rounded-md hover:bg-amarillo-oscuro transition">Categorías</a>
+          <a href="/empresas/municipios" class="inline-flex items-center gap-2 px-4 py-2 bg-fondo-crema border rounded-md hover:shadow">Municipios</a>
+        </nav>
+      </div>
+
+      <div class="bg-white/80 rounded-2xl shadow-lg p-6">
+        <CrearEmpresa
+          listaMunicipios={dataMunicipio}
+          listaCategoria={dataCategoria}
+          initialValue={initialValue}
+          id={id}
+          client:load
+        />
+      </div>
+    </section>
+  </div>
+</GlobalLayout>

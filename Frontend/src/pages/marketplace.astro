@@ -1,0 +1,28 @@
+---
+import { Marketplace as MarketplaceComponent } from "../components/Marketplace";
+import { axiosInstance } from "../utils/axiosInstance";
+
+let productos = [];
+try {
+  const res = await axiosInstance("/api/marketplace", { method: "GET" });
+  productos = res.data;
+} catch (error) {
+  console.error("Error al cargar productos del marketplace:", error);
+  // fallback a mock
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const mockPath = path.join(process.cwd(), 'public', 'mock', 'marketplace.json');
+    const content = await fs.readFile(mockPath, 'utf-8');
+    productos = JSON.parse(content);
+    console.log('Usando mock marketplace ->', mockPath);
+  } catch (me) {
+    console.warn('No hay mock de marketplace', me);
+    productos = [];
+  }
+}
+
+const rol = Astro.cookies.get("rol")?.value || "user";
+---
+
+<MarketplaceComponent productos={productos} rol={rol} client:load />

@@ -1,0 +1,54 @@
+---
+import GlobalLayout from "../../layout/GlobalLayout.astro";
+import { CrearCuenta } from "../../components/Formularios/CrearCuenta";
+// Permitimos siempre ver la página de registro.
+// Si el usuario ya está autenticado, el backend evitará conflictos
+// y el usuario puede cerrar sesión desde el header si lo desea.
+---
+
+<GlobalLayout title="Crear cuenta" auth={true}>
+  <style>
+    .content-form-inicio-sesion {
+      height: calc(100vh - 120px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .content-form-inicio-sesion h2 {
+      text-align: center;
+      margin-block: 60px;
+    }
+
+    .content-crear-cuenta {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .content-crear-cuenta span {
+      display: block;
+      text-align: center;
+    }
+
+    .content-crear-cuenta button {
+      display: block;
+      text-align: center;
+      background-color: transparent;
+      border: 1px solid black;
+    }
+  </style>
+
+  <div class="content-form-inicio-sesion">
+    <section>
+      <h2>Crear cuenta</h2>
+
+      <CrearCuenta client:load />
+
+      <div class="content-crear-cuenta">
+        <span>¿Ya tienes una cuenta?</span>
+        <a href="/iniciar-sesion">Inicia sesión aquí</a>
+      </div>
+    </section>
+  </div>
+</GlobalLayout>

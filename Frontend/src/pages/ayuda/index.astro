@@ -1,0 +1,62 @@
+---
+import GlobalLayout from "../../layout/GlobalLayout.astro";
+const token = Astro.cookies.get("token")?.value;
+const rol = Astro.cookies.get("rol")?.value;
+
+---
+
+<GlobalLayout title="Ayuda - Páginas Amarillas 360">
+  <div class="max-w-4xl mx-auto mt-10 px-6">
+    <h1 class="text-2xl font-semibold mb-4">Ayuda</h1>
+    <p class="text-gray-700 mb-4">Bienvenido al centro de ayuda. Aquí encontrarás respuestas rápidas y recursos para usar la plataforma.</p>
+
+    {rol === 'admin' ? (
+      <>
+        <section class="mb-6">
+          <h2 class="text-lg font-medium">Guía rápida para administradores</h2>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li><strong>Crear empresa:</strong> Ve a <a href="/admin/empresas/agregar" class="text-yellow-600">Admin → Empresas → Agregar</a> y completa el formulario.</li>
+            <li><strong>Editar / Eliminar:</strong> Usa los botones de acción en la lista de empresas dentro de Admin.</li>
+            <li><strong>Captura / Publicación:</strong> Si tu flujo exige realizar una captura o publicación, utiliza el botón correspondiente en la vista de edición de la empresa. Asegúrate de que el backend está activo para que las acciones se persistan.</li>
+            <li><strong>Mapas:</strong> El editor de coordenadas está disponible en el formulario; arrastra el pin o haz clic en el mapa para fijar ubicación.</li>
+          </ul>
+        </section>
+
+        <section class="mb-6">
+          <h2 class="text-lg font-medium">Soporte y buenas prácticas</h2>
+          <p class="text-gray-700">Para dudas sobre permisos o funcionalidades administrativas, contacta a <a href="mailto:soporte@paginasamarillas.local" class="text-yellow-600">soporte@paginasamarillas.local</a>. Evita modificar campos sensibles directamente en la base de datos; usa la interfaz Admin.</p>
+        </section>
+      </>
+    ) : (
+      <>
+        <section class="mb-6">
+          <h2 class="text-lg font-medium">¿No tienes cuenta o no eres administrador?</h2>
+          <p class="text-gray-700 mt-2">Las funciones de administración (como capturar, publicar o editar empresas de otros usuarios) están reservadas a usuarios con rol <strong>admin</strong>. Si no ves estas opciones, sigue estos pasos:</p>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li>¿Aún no tienes cuenta? — Crea una cuenta en <a href="/crear-cuenta" class="text-yellow-600">Crear cuenta</a>.</li>
+            <li>¿Tienes cuenta pero no has iniciado sesión? — Ingresa en <a href="/iniciar-sesion" class="text-yellow-600">Iniciar sesión</a>.</li>
+            <li>Si necesitas permisos de administrador, pide que te asignen el rol correspondiente al equipo de soporte.</li>
+          </ul>
+        </section>
+
+        <section class="mb-6">
+          <h2 class="text-lg font-medium">Consejos rápidos</h2>
+          <p class="text-gray-700">Si no ves formularios o mapas, comprueba que el backend está activo o usa el modo demo. Muchas funciones requieren estar autenticado para mostrarse.</p>
+        </section>
+      </>
+    )}
+
+    <section class="mb-6">
+      <h2 class="text-lg font-medium">Contacto</h2>
+      <p class="text-gray-700">Si necesitas soporte adicional, escríbenos a <a href="mailto:soporte@paginasamarillas.local" class="text-yellow-600">soporte@paginasamarillas.local</a> o visita la página de <a href="/contacto" class="text-yellow-600">Contacto</a>.</p>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-medium">Recursos</h2>
+      <ul class="list-disc list-inside mt-2 text-gray-700">
+        <li><a href="/terminos-condiciones" class="text-yellow-600">Términos y condiciones</a></li>
+        <li><a href="/crear-cuenta" class="text-yellow-600">Crear cuenta</a></li>
+      </ul>
+    </section>
+  </div>
+</GlobalLayout>

@@ -115,6 +115,10 @@ class Usuario(Base):
     notificaciones_recibidas = relationship("Notificacion", back_populates="usuario_destinatario", foreign_keys="Notificacion.id_usuario_destinatario", cascade="all, delete-orphan")
     deleted_at = Column(DateTime, nullable=True)  # Campo para soft delete
 
+    @property
+    def id_usuario(self):
+        return self.id
+
 
 # Modelo de Empresa, con datos básicos y relaciones
 class Empresa(Base):
@@ -140,6 +144,10 @@ class Empresa(Base):
     reviews = relationship("Review", back_populates="empresa", cascade="all, delete-orphan")
     marketplaces = relationship("Marketplace", back_populates="empresa", cascade="all, delete-orphan")
     deleted_at = Column(DateTime, nullable=True)  # Campo para soft delete
+
+    @property
+    def id_empresa(self):
+        return self.id
 
 
 # Tabla catálogo de tipos de anuncio para publicidades
@@ -433,3 +441,88 @@ class AuditLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     usuario = relationship('Usuario', backref='audit_logs')
+
+
+# Modelos para Mesa de Servicios / Tickets (Mesa de Ayuda)
+
+class Ticket(Base):
+    __tablename__ = 'tickets'
+
+    id_ticket = Column(Integer, primary_key=True, index=True)
+    codigo_ticket = Column(String(50), unique=True, nullable=False)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id', ondelete="CASCADE"), nullable=False)
+    id_empresa = Column(Integer, ForeignKey('empresas.id', ondelete="SET NULL"), nullable=True)
+    id_producto = Column(Integer, ForeignKey('marketplaces.id', ondelete="SET NULL"), nullable=True)
+    titulo = Column(String(200), nullable=False)
+    descripcion = Column(Text, nullable=False)
+    categoria = Column(String(50), nullable=False, default="SOPORTE") # SOPORTE, VENTAS, FACTURACION, OTROS
+    prioridad = Column(String(20), nullable=False, default="MEDIA") # BAJA, MEDIA, ALTA, URGENTE
+    estado = Column(String(30), nullable=False, default="ABIERTO") # ABIERTO, EN_PROCESO, PENDIENTE_USUARIO, RESUELTO, CERRADO
+    origen = Column(String(20), nullable=False, default="WEB") # WEB, CHAT, EMAIL, etc.
+    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+    fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    fecha_cierre = Column(DateTime, nullable=True)
+    cerrado_por_id = Column(Integer, ForeignKey('usuarios.id', ondelete="SET NULL"), nullable=True)
+    activo = Column(Integer, default=1)
+
+    usuario = relationship("Usuario", foreign_keys=[id_usuario])
+    empresa = relationship("Empresa", foreign_keys=[id_empresa])
+    producto = relationship("Marketplace", foreign_keys=[id_producto])
+    asignado_a_id = Column(Integer, ForeignKey('usuarios.id', ondelete="SET NULL"), nullable=True)
+    asignado_a = relationship("Usuario", foreign_keys=[asignado_a_id])
+    cerrado_por = relationship("Usuario", foreign_keys=[cerrado_por_id])
+
+    mensajes = relationship("TicketMensaje", back_populates="ticket", cascade="all, delete-orphan")
+    adjuntos = relationship("TicketAdjunto", back_populates="ticket", cascade="all, delete-orphan")
+    historial = relationship("TicketHistorial", back_populates="ticket", cascade="all, delete-orphan")
+
+
+class TicketMensaje(Base):
+    __tablename__ = 'ticket_mensajes'
+
+    id_mensaje = Column(Integer, primary_key=True, index=True)
+    id_ticket = Column(Integer, ForeignKey('tickets.id_ticket', ondelete="CASCADE"), nullable=False)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id', ondelete="SET NULL"), nullable=True)
+    rol_usuario = Column(String(50), nullable=True)
+    mensaje = Column(Text, nullable=False)
+    es_nota_interna = Column(Integer, default=0)  # 0 False, 1 True
+    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+
+    ticket = relationship("Ticket", back_populates="mensajes")
+    usuario = relationship("Usuario", foreign_keys=[id_usuario])
+    adjuntos = relationship("TicketAdjunto", back_populates="mensaje", cascade="all, delete-orphan")
+
+
+class TicketAdjunto(Base):
+    __tablename__ = 'ticket_adjuntos'
+
+    id_adjunto = Column(Integer, primary_key=True, index=True)
+    id_ticket = Column(Integer, ForeignKey('tickets.id_ticket', ondelete="CASCADE"), nullable=False)
+    id_mensaje = Column(Integer, ForeignKey('ticket_mensajes.id_mensaje', ondelete="CASCADE"), nullable=True)
+    nombre_archivo = Column(String(255), nullable=False)
+    ruta_archivo = Column(String(500), nullable=False)
+    tipo_archivo = Column(String(100), nullable=True)
+    tamano_archivo = Column(Integer, nullable=True)
+    subido_por_id = Column(Integer, ForeignKey('usuarios.id', ondelete="SET NULL"), nullable=True)
+    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+
+    ticket = relationship("Ticket", back_populates="adjuntos")
+    mensaje = relationship("TicketMensaje", back_populates="adjuntos")
+    subido_por = relationship("Usuario", foreign_keys=[subido_por_id])
+
+
+class TicketHistorial(Base):
+    __tablename__ = 'ticket_historiales'
+
+    id_historial = Column(Integer, primary_key=True, index=True)
+    id_ticket = Column(Integer, ForeignKey('tickets.id_ticket', ondelete="CASCADE"), nullable=False)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id', ondelete="SET NULL"), nullable=True)
+    accion = Column(String(100), nullable=False)
+    valor_anterior = Column(String(255), nullable=True)
+    valor_nuevo = Column(String(255), nullable=True)
+    descripcion = Column(Text, nullable=True)
+    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+
+    ticket = relationship("Ticket", back_populates="historial")
+    usuario = relationship("Usuario", foreign_keys=[id_usuario])
+

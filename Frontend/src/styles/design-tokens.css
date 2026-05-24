@@ -1,0 +1,57 @@
+:root{
+  /* Palette inspired by the photo - warm yellows */
+  --color-bg: #FFF3D6;        /* página: crema/amarillo claro */
+  --color-surface: #FFF8E6;    /* tarjetas: más claro */
+  --color-header: #FFD24A;     /* franja superior: amarillo dorado */
+  --color-footer: #F2C94C;     /* footer ligeramente diferente */
+  --color-primary: #072A4A;    /* para textos y contrastes */
+  --color-accent: #FF6B57;     /* acento coral (mantener) */
+  --color-muted: #6B7280;
+  --color-heading: #041826;
+  --color-text: #1F2937;
+
+  /* Spacing & scale */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,0.04);
+  --shadow-md: 0 8px 24px rgba(7,42,74,0.08);
+
+  /* Motion */
+  --ease-default: cubic-bezier(.2,.9,.2,1);
+}
+
+/* Global base styles */
+html,body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--color-bg); color:var(--color-text);}
+
+a{color:var(--color-primary); text-decoration:none}
+a:hover{color:var(--color-accent); text-decoration:underline}
+
+.card{background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); transition:transform .22s var(--ease-default), box-shadow .22s var(--ease-default); border:1px solid rgba(0,0,0,0.04)}
+.card:hover{transform:translateY(-4px); box-shadow:var(--shadow-md)}
+
+/* Button system */
+.btn { display:inline-flex; align-items:center; gap:.5rem; padding:.5rem 0.9rem; border-radius:var(--radius-md); font-weight:600; cursor:pointer; transition:box-shadow .18s var(--ease-default), transform .12s var(--ease-default); border:1px solid transparent }
+.btn:focus{outline:3px solid rgba(7,42,74,0.12); outline-offset:2px}
+.btn:active{transform:translateY(1px)}
+
+.btn-primary{background:var(--color-header); color:var(--color-primary); border-color: rgba(0,0,0,0.06); box-shadow: 0 6px 18px rgba(7,42,74,0.06)}
+.btn-primary:hover{filter:brightness(.98)}
+
+.btn-secondary{background:transparent; color:var(--color-primary); border-color: rgba(7,42,74,0.06)}
+.btn-secondary:hover{background:rgba(7,42,74,0.03)}
+
+.btn-danger{background:#ef4444; color:white; border-color: rgba(0,0,0,0.04)}
+.btn-danger:hover{filter:brightness(.95)}
+
+.icon-sm{width:16px;height:16px}
+.icon-md{width:20px;height:20px}
+
+.accent-pill{background:var(--color-accent); color:white; padding:.25rem .5rem; border-radius:9999px}
+
+/* Header / footer helpers */
+.site-header{background:var(--color-header)}
+.site-footer{background:var(--color-footer)}
+
+@media (prefers-reduced-motion: reduce){
+  .card, .btn-primary { transition:none }
+}

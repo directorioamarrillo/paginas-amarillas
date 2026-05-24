@@ -1,0 +1,103 @@
+Checkbox.jsx:23: <FontAwesomeIcon icon={faSquare} className="hidden peer-checked:hidden" />
+Checkbox.jsx:24: <FontAwesomeIcon icon={faSquareCheck} className="peer-checked:block" />
+Checkbox.jsx:31: <FontAwesomeIcon icon={faCircleExclamation} className="text-xs" />
+EmptyState.jsx:44: icon={iconComponent}
+EmptyState.jsx:60: <FontAwesomeIcon icon={iconComponent} />
+ReactSelect.jsx:86: <FontAwesomeIcon icon={faCircleExclamation} className="text-xs text-red-500" />
+EmpresaSidebar.jsx:43: <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
+EmpresaSidebar.jsx:55: <FontAwesomeIcon icon={faHouse} className="h-4 w-4" />
+PublicShell.jsx:53: <FontAwesomeIcon icon={faHeart} color="red" size="xl" className="animate-pulse" />
+PublicShell.jsx:84: <FontAwesomeIcon icon={faUser} className="w-4" />
+PublicShell.jsx:91: <FontAwesomeIcon icon={faHeart} className="w-4" />
+PublicShell.jsx:103: <FontAwesomeIcon icon={faLifeRing} className="w-4" />
+PublicShell.jsx:111: <FontAwesomeIcon icon={faStore} className="w-4" />
+PublicShell.jsx:120: <FontAwesomeIcon icon={faBuilding} className="w-4" />
+PublicShell.jsx:137: <FontAwesomeIcon icon={faRightFromBracket} className="w-4" />
+Sidebar.jsx:148: icon={item.icon}
+Topbar.jsx:160: leftIcon={<Search size={18} />}
+AdminCategoriasPage.jsx:106: leftIcon={<Tags size={16} />}
+AdminCategoriasPage.jsx:125: leftIcon={editId ? null : <Plus size={16} />}
+AdminRolesPage.jsx:213: <Input name="correo" type="email" placeholder="correo@empresa.com" value={form.correo} onChange={handleChange} leftIcon={<Mail size={16}/>} required />
+AdminRolesPage.jsx:218: <Input name="password" type="password" placeholder="••••••••" value={form.password} onChange={handleChange} leftIcon={<Lock size={16}/>} required />
+AdminRolesPage.jsx:244: <Button type="submit" className="w-full mt-2" isLoading={isSubmitting} leftIcon={<Plus size={18} />}>
+AdminUsuariosPage.jsx:137: leftIcon={<User size={16} />}
+AdminUsuariosPage.jsx:163: leftIcon={<Mail size={16} />}
+AdminUsuariosPage.jsx:189: leftIcon={<Shield size={16} />}
+AdminUsuariosPage.jsx:201: leftIcon={<Building size={16} />}
+AdminUsuariosPage.jsx:209: leftIcon={<Plus size={18} />}
+DashboardPage.jsx:87: icon={Bell}
+DashboardPage.jsx:95: icon={Search}
+DashboardPage.jsx:102: icon={MessageCircle}
+DashboardPage.jsx:109: icon={LineChart}
+DashboardPage.jsx:124: icon={Eye}
+DashboardPage.jsx:131: icon={MousePointerClick}
+DashboardPage.jsx:138: icon={Receipt}
+DashboardPage.jsx:145: icon={Store}
+EmpresaChatsPage.jsx:343: <FontAwesomeIcon icon={faComments} className="text-slate-600" />
+EmpresaChatsPage.jsx:350: icon={faSearch}
+EmpresaChatsPage.jsx:366: <FontAwesomeIcon icon={faStore} className="mb-3 text-3xl text-slate-300" />
+EmpresaChatsPage.jsx:431: <FontAwesomeIcon icon={faArrowLeft} />
+EmpresaChatsPage.jsx:533: <FontAwesomeIcon icon={faPaperPlane} />
+EmpresaChatsPage.jsx:539: <FontAwesomeIcon icon={faStore} className="mb-4 text-6xl text-slate-200" />
+EmpresaDashboardPage.jsx:62: <StatCard title={stat.title} value={stat.value} icon={stat.icon} trend={stat.trend} trendUp={true} />
+EmpresaMarketplacePage.jsx:120: <Input placeholder="Buscar producto..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search size={16}/>} />
+EmpresaMarketplacePage.jsx:223: <Button onClick={subirImagenes} leftIcon={<UploadCloud size={16}/>}>Subir</Button>
+EmpresaPublicidadesPage.jsx:195: <Button onClick={subirImagenes} leftIcon={<UploadCloud size={16}/>}>Subir</Button>
+EmpresasPage.jsx:165: leftIcon={<Search size={16} />}
+EmpresasPage.jsx:214: <Input placeholder="Buscar por nombre..." value={nombre} onChange={(e) => setNombre(e.target.value)} leftIcon={<Search size={16}/>} />
+EmpresasPage.jsx:306: <Button onClick={subirLogo} leftIcon={<UploadCloud size={16}/>}>Subir</Button>
+LoginPage.jsx:143: icon={User}
+LoginPage.jsx:153: icon={User}
+LoginPage.jsx:163: icon={Mail}
+LoginPage.jsx:175: icon={Mail}
+LoginPage.jsx:187: icon={Lock}
+LoginPage.jsx:192: rightIcon={showPassword ? EyeOff : Eye}
+LoginPage.jsx:202: icon={isRegister ? UserPlus : LogIn}
+MarketplacePage.jsx:103: <Input placeholder="Buscar producto..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search size={16}/>} />
+MiEmpresaPage.jsx:125: <Button className="w-full" onClick={subirLogo} leftIcon={<UploadCloud size={16} />}>Subir imagen</Button>
+MiEmpresaPage.jsx:164: <Button type="submit" isLoading={isSubmitting} leftIcon={<Save size={16} />}>Guardar Cambios</Button>
+MisTicketsPage.jsx:85: <Button onClick={() => setModalOpen(true)} leftIcon={<Plus size={18} />} className="rounded-xl shadow">
+PerfilPage.jsx:197: icon={User}
+PerfilPage.jsx:206: icon={User}
+PerfilPage.jsx:215: icon={Mail}
+PerfilPage.jsx:225: icon={Shield}
+PerfilPage.jsx:234: icon={UserCog}
+PerfilPage.jsx:244: icon={Building}
+PerfilPage.jsx:267: icon={Save}
+ProductDetailPage.jsx:346: <Button onClick={handleFavorite} variant="outline" className={cn("flex-1", isFavorite && "text-status-danger border-status-danger/50 bg-status-danger/10")} leftIcon={<Heart size={18} className={isFavorite ? "fill-status-danger" : ""} />}>
+PublicEmpresaDetallePage.jsx:111: <FontAwesomeIcon icon={faArrowLeft} />
+PublicEmpresaDetallePage.jsx:133: <FontAwesomeIcon icon={faImage} size="lg" />
+PublicEmpresaDetallePage.jsx:153: <FontAwesomeIcon icon={item.icon} className="mr-1" />
+PublicEmpresaPage.jsx:95: <FontAwesomeIcon icon={faStore} size="3x" />
+PublicEmpresaPage.jsx:102: <FontAwesomeIcon icon={faImage} className="mr-1" />
+PublicEmpresaPage.jsx:141: icon={faStar}
+PublicEmpresaPage.jsx:243: <FontAwesomeIcon icon={faBuilding} className="text-slate-400" size="2x" />
+PublicEmpresaPage.jsx:257: <FontAwesomeIcon icon={faEnvelope} className="text-primary-500" />
+PublicEmpresaPage.jsx:263: <FontAwesomeIcon icon={faPhone} className="text-primary-500" />
+PublicEmpresaPage.jsx:269: <FontAwesomeIcon icon={faLocationDot} className="text-primary-500" />
+PublicEmpresaPage.jsx:284: <FontAwesomeIcon icon={faWhatsapp} />
+PublicEmpresaPage.jsx:295: <FontAwesomeIcon icon={faStar} className="mr-2 text-yellow-400" />
+PublicEmpresaPage.jsx:310: <FontAwesomeIcon icon={faChartLine} className="mr-2" />
+PublicEmpresaPage.jsx:330: <FontAwesomeIcon icon={faStore} className="mr-2" />
+PublicEmpresaPage.jsx:341: <FontAwesomeIcon icon={faStar} className="mr-2" />
+PublicFavoritosPage.jsx:64: <FontAwesomeIcon icon={faStore} size="2x" />
+PublicFavoritosPage.jsx:99: <FontAwesomeIcon icon={faWhatsapp} className="mr-2" />
+PublicFavoritosPage.jsx:106: <FontAwesomeIcon icon={faTrash} />
+PublicFavoritosPage.jsx:159: <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+PublicFavoritosPage.jsx:165: <FontAwesomeIcon icon={faHeart} size="lg" />
+PublicMarketplacePage.jsx:110: <FontAwesomeIcon icon={faStore} size="3x" />
+PublicMarketplacePage.jsx:117: <FontAwesomeIcon icon={faImage} className="mr-1" />
+PublicMarketplacePage.jsx:128: icon={faHeart}
+PublicMarketplacePage.jsx:185: icon={faStar}
+PublicMarketplacePage.jsx:326: icon={faSearch}
+PublicMarketplacePage.jsx:437: <FontAwesomeIcon icon={faFilter} />
+PublicMarketplacePage.jsx:469: <FontAwesomeIcon icon={faXmark} className="text-slate-400" />
+PublicPerfilPage.jsx:248: icon={User}
+PublicPerfilPage.jsx:257: icon={User}
+PublicPerfilPage.jsx:266: icon={Mail}
+PublicPerfilPage.jsx:285: icon={Lock}
+PublicPerfilPage.jsx:290: rightIcon={showPassword ? EyeOff : Eye}
+PublicPerfilPage.jsx:297: icon={Lock}
+PublicPerfilPage.jsx:312: icon={Save}
+TicketDetallePage.jsx:371: leftIcon={<Send size={16} />}
+TicketDetallePage.jsx:498: leftIcon={<Paperclip size={12} />}

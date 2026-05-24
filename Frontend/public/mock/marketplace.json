@@ -1,0 +1,4 @@
+[
+  { "id_marketplace": 1, "titulo": "Servicio de catering (mock)", "descripcion": "Catering para eventos" },
+  { "id_marketplace": 2, "titulo": "Fotografía profesional (mock)", "descripcion": "Sesiones para empresas" }
+]
