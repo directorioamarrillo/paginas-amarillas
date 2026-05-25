@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""
+Script para llenar datos de prueba usando SQLAlchemy
+Ejecutar desde el directorio raíz del proyecto
+"""
+
+import asyncio
+import sys
+from pathlib import Path
+
+# Agregar el backend al path
+sys.path.insert(0, str(Path(__file__).parent / "backend"))
+
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import select
+from datetime import datetime
+
+from app.models.models import (
+    Categoria, Empresa, Marketplace, Rol, Permiso, 
+    Departamento, Municipio, EstadoMarketplace, Usuario, Pais
+)
+from app.db.conexion import Base
+from app.core.config import settings
+from app.api.auth import hash_password
+
+# Para SQLite, usar sqlite+aiosqlite
+DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+
+async def init_db():
+    """Inicializa la conexión a la base de datos"""
+    engine = create_async_engine(DATABASE_URL, echo=False)
+    
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    return engine
+
+async def main():
+    print("=== SEED ADMIN DATA (AsyncSQLAlchemy) ===\n")
+    
+    engine = await init_db()
+    AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    
+    async with AsyncSessionLocal() as session:
+        # Verificar si hay datos ya
+        result = await session.execute(select(Categoria))
+        categorias_existentes = result.scalars().all()
+        if categorias_existentes:
+            print("⚠ Las categorías ya existen. Abortando para no duplicar datos.")
+            await engine.dispose()
+            return
+        
+        # ====== PAÍS ======
+        pais = Pais(nombre="Colombia", codigo_iso="CO")
+        session.add(pais)
+        await session.flush()
+        print("✓ País creado\n")
+        
+        # ====== DEPARTAMENTO Y MUNICIPIO ======
+        print("--- Creando Geográfica ---")
+        departamento = Departamento(nombre="Bogotá D.C.", id_pais=pais.id)
+        session.add(departamento)
+        await session.flush()
+        
+        municipio = Municipio(nombre="Bogotá", id_departamento=departamento.id)
+        session.add(municipio)
+        await session.flush()
+        print(f"✓ Departamento y Municipio creados\n")
+        
+        # ====== CATEGORÍAS ======
+        print("--- Creando Categorías ---")
+        categorias_data = [
+            ("Tecnología", "Productos y servicios tecnológicos"),
+            ("Salud", "Servicios de salud y bienestar"),
+            ("Educación", "Servicios educativos y formación")
+        ]
+        
+        categorias = []
+        for nombre, desc in categorias_data:
+            cat = Categoria(nombre=nombre, descripcion=desc)
+            session.add(cat)
+            categorias.append(cat)
+            print(f"  ✓ Categoría '{nombre}' creada")
+        
+        await session.flush()
+        print()
+        
+        # ====== ESTADO MARKETPLACE ======
+        print("--- Creando Estados de Marketplace ---")
+        estados_data = [
+            ("Activo", "Producto activo y disponible"),
+            ("Inactivo", "Producto inactivo"),
+            ("Sin stock", "Producto sin inventario")
+        ]
+        
+        estados = []
+        for nombre, desc in estados_data:
+            est = EstadoMarketplace(nombre=nombre, descripcion=desc)
+            session.add(est)
+            estados.append(est)
+            print(f"  ✓ Estado '{nombre}' creado")
+        
+        await session.flush()
+        print()
+        
+        # ====== USUARIO CREADOR ======
+        # Crear un usuario admin para ser el creador
+        usuario_admin = Usuario(
+            nombre="Admin",
+            apellido="Sistema",
+            correo="admin@admin.com",
+            password=hash_password("admin123"),
+            id_rol=None
+        )
+        session.add(usuario_admin)
+        await session.flush()
+        print("✓ Usuario admin creado\n")
+        
+        # ====== EMPRESAS ======
+        print("--- Creando Empresas ---")
+        empresas_data = [
+            ("TechCorp", "123456789", "techcorp@company.com", "Calle 1 No 100", "3001234567", 0),
+            ("HealthPlus", "987654321", "healthplus@company.com", "Calle 2 No 200", "3007654321", 1),
+            ("EduCenter", "555666777", "educenter@company.com", "Calle 3 No 300", "3009876543", 2)
+        ]
+        
+        empresas = []
+        for nombre, nit, correo, direccion, telefono, cat_idx in empresas_data:
+            emp = Empresa(
+                nombre=nombre,
+                nit=nit,
+                correo=correo,
+                direccion=direccion,
+                telefono=telefono,
+                id_categoria=categorias[cat_idx].id,
+                id_municipio=municipio.id,
+                id_usuario_creador=usuario_admin.id
+            )
+            session.add(emp)
+            empresas.append(emp)
+            print(f"  ✓ Empresa '{nombre}' creada")
+        
+        await session.flush()
+        print()
+        
+        # ====== MARKETPLACE ======
+        print("--- Creando Marketplace Items ---")
+        marketplace_data = [
+            ("Laptop Dell", "Laptop de alta performance", 1200.00, 10, 0, 0),
+            ("Consulta Médica", "Consulta médica general", 50.00, 100, 1, 1),
+            ("Curso Online", "Curso de programación Python", 99.99, 1000, 2, 2)
+        ]
+        
+        marketplaces = []
+        for nombre, desc, precio, stock, emp_idx, cat_idx in marketplace_data:
+            market = Marketplace(
+                nombre=nombre,
+                descripcion=desc,
+                precio=precio,
+                stock=stock,
+                id_estado=estados[0].id,  # Activo
+                id_empresa=empresas[emp_idx].id,
+                id_categoria=categorias[cat_idx].id,
+                fecha_publicacion=datetime.utcnow()
+            )
+            session.add(market)
+            marketplaces.append(market)
+            print(f"  ✓ Marketplace '{nombre}' creado")
+        
+        await session.flush()
+        print()
+        
+        # ====== ROLES ======
+        print("--- Creando Roles ---")
+        roles_data = [
+            ("Administrador", "Usuario con acceso total"),
+            ("Vendedor", "Usuario que puede vender productos"),
+            ("Cliente", "Usuario cliente regular")
+        ]
+        
+        roles = []
+        for nombre, desc in roles_data:
+            rol = Rol(nombre=nombre, descripcion=desc)
+            session.add(rol)
+            roles.append(rol)
+            print(f"  ✓ Rol '{nombre}' creado")
+        
+        await session.flush()
+        print()
+        
+        # ====== PERMISOS ======
+        print("--- Creando Permisos ---")
+        permisos_data = [
+            ("CREAR_EMPRESA", "Permiso para crear empresas"),
+            ("MODIFICAR_EMPRESA", "Permiso para modificar empresas"),
+            ("ELIMINAR_EMPRESA", "Permiso para eliminar empresas")
+        ]
+        
+        permisos = []
+        for key, desc in permisos_data:
+            perm = Permiso(key=key, descripcion=desc)
+            session.add(perm)
+            permisos.append(perm)
+            print(f"  ✓ Permiso '{key}' creado")
+        
+        await session.flush()
+        print()
+        
+        # Commit final
+        await session.commit()
+    
+    await engine.dispose()
+    
+    print("=== SEED COMPLETADO EXITOSAMENTE ===")
+    print(f"✓ Categorías: {len(categorias_data)}")
+    print(f"✓ Empresas: {len(empresas_data)}")
+    print(f"✓ Marketplace: {len(marketplace_data)}")
+    print(f"✓ Roles: {len(roles_data)}")
+    print(f"✓ Permisos: {len(permisos_data)}")
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
