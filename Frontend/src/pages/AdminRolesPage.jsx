@@ -2,6 +2,18 @@ import React, { useEffect, useState } from "react";
 import { rolesApi, usuariosApi, empresasApi } from "../services/api";
 import { usePermissions } from "../context/PermissionsContext";
 import { toast } from "react-toastify";
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent 
+} from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Label } from "../components/ui/Label";
+import { Badge } from "../components/ui/Badge";
+import { UserCheck, Users, Briefcase, Edit3, Trash2, Plus, Save, X, Key, Shield } from "lucide-react";
 
 export function AdminRolesPage() {
   const [roles, setRoles] = useState([]);
@@ -92,77 +104,231 @@ export function AdminRolesPage() {
     }
   };
 
-  if (loading) return <div>Cargando...</div>;
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-yellow border-t-transparent"></div>
+        <span className="ml-3 font-medium text-slate-500">Cargando roles...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold">Roles</h2>
-      <p className="mt-2 text-sm text-slate-600">Roles registrados en el sistema</p>
+    <div className="space-y-6 p-6 max-w-7xl mx-auto animate-fade-in">
+      {/* Page Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-brand-yellow/10 rounded-2xl text-brand-yellow-hover">
+          <UserCheck size={28} />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Roles y Comerciantes</h2>
+          <p className="text-sm text-slate-500 mt-0.5">Administra los roles del sistema y asocia comerciantes a sus respectivas empresas.</p>
+        </div>
+      </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border bg-white p-4">
-          <h3 className="font-semibold">Listado de roles</h3>
-          <ul className="mt-3 space-y-2">
-            {roles.map((r) => (
-              <li key={r.id} className="flex items-center justify-between">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
+        {/* Left Side: Roles list & edit */}
+        <div className="lg:col-span-6 space-y-6">
+          <Card className="shadow-sm border border-neutral-100 dark:border-dark-tertiary">
+            <CardHeader className="border-b border-slate-100 dark:border-dark-tertiary pb-4">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Shield size={18} className="text-slate-400" />
+                Listado de Roles
+              </CardTitle>
+              <CardDescription>Roles definidos para el control de acceso.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ul className="divide-y divide-slate-100 dark:divide-dark-tertiary">
+                {roles.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between p-4 hover:bg-slate-50/50 dark:hover:bg-dark-secondary/20 transition-all duration-150">
+                    <div className="space-y-1">
+                      <div className="font-semibold text-slate-800 dark:text-neutral-200 capitalize">{r.nombre}</div>
+                      <div className="text-xs text-slate-500 dark:text-neutral-400">{r.descripcion}</div>
+                    </div>
+                    <div className="flex items-center gap-4 shrink-0">
+                      <Badge variant="default" className="font-mono">ID {r.id}</Badge>
+                      <div className="flex items-center gap-1.5">
+                        {hasPermission("modificar_roles") && (
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleEditRole(r)}
+                            className="h-8 w-8 p-0 rounded-lg text-slate-500 hover:text-brand-yellow-hover"
+                            title="Editar"
+                          >
+                            <Edit3 size={15} />
+                          </Button>
+                        )}
+                        {hasPermission("modificar_roles") && (
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleDeleteRole(r.id)}
+                            className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-status-danger"
+                            title="Desactivar"
+                          >
+                            <Trash2 size={15} />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          {editingRole && (
+            <Card className="shadow-md border border-brand-yellow/30 bg-brand-yellow/5 dark:bg-dark-secondary/50">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <div>
-                  <div className="font-medium">{r.nombre}</div>
-                  <div className="text-sm text-slate-500">{r.descripcion}</div>
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <Edit3 size={18} className="text-brand-yellow-hover" />
+                    Editar Rol: {editingRole.nombre}
+                  </CardTitle>
+                  <CardDescription>Modifica los detalles generales del rol.</CardDescription>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-sm text-slate-400">ID {r.id}</div>
-                  {hasPermission("modificar_roles") && (
-                    <button className="text-sm text-blue-600" onClick={() => handleEditRole(r)}>Editar</button>
-                  )}
-                  {hasPermission("modificar_roles") && (
-                    <button className="text-sm text-red-600" onClick={() => handleDeleteRole(r.id)}>Desactivar</button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setEditingRole(null)}
+                  className="h-8 w-8 p-0 rounded-lg"
+                >
+                  <X size={16} />
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <RoleEditor 
+                  role={editingRole} 
+                  onSave={handleSaveRole} 
+                  onCancel={() => setEditingRole(null)} 
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        <div className="rounded-lg border bg-white p-4">
-          <h3 className="font-semibold">Comerciantes</h3>
-          <p className="text-sm text-slate-500">Usuarios con rol 'empresa'</p>
+        {/* Right Side: Merchants list & create */}
+        <div className="lg:col-span-6 space-y-6">
+          <Card className="shadow-sm border border-neutral-100 dark:border-dark-tertiary">
+            <CardHeader className="pb-4 border-b border-slate-100 dark:border-dark-tertiary">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Users size={18} className="text-slate-400" />
+                Comerciantes Asociados
+              </CardTitle>
+              <CardDescription>Usuarios con privilegios de gestión comercial (Rol: Empresa).</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ul className="divide-y divide-slate-100 dark:divide-dark-tertiary max-h-[300px] overflow-y-auto">
+                {comerciantes.length === 0 ? (
+                  <li className="p-6 text-center text-sm text-slate-400 italic">No hay comerciantes registrados.</li>
+                ) : (
+                  comerciantes.map((u) => {
+                    const emp = empresas.find(e => e.id === u.id_empresa);
+                    return (
+                      <li key={u.id} className="flex items-center justify-between p-4 hover:bg-slate-50/50 dark:hover:bg-dark-secondary/20 transition-all duration-150">
+                        <div>
+                          <div className="font-semibold text-slate-800 dark:text-neutral-200">{u.nombre} {u.apellido}</div>
+                          <div className="text-xs text-slate-500 dark:text-neutral-400">{u.correo}</div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge variant="brand" className="gap-1 font-medium">
+                            <Briefcase size={12} />
+                            {emp ? emp.nombre : 'Sin Empresa'}
+                          </Badge>
+                        </div>
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+            </CardContent>
+          </Card>
 
-          <ul className="mt-3 space-y-2">
-            {comerciantes.map((u) => (
-              <li key={u.id} className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{u.nombre} {u.apellido}</div>
-                  <div className="text-sm text-slate-500">{u.correo}</div>
+          <Card className="shadow-sm border border-neutral-100 dark:border-dark-tertiary">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Plus size={18} className="text-brand-yellow-hover" />
+                Crear Nuevo Comerciante
+              </CardTitle>
+              <CardDescription>Crea una cuenta de usuario con rol 'empresa' y conéctala a un comercio.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateComerciante} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="nombre">Nombre</Label>
+                    <Input 
+                      id="nombre"
+                      name="nombre" 
+                      placeholder="Nombre" 
+                      value={form.nombre} 
+                      onChange={handleChange} 
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="apellido">Apellido</Label>
+                    <Input 
+                      id="apellido"
+                      name="apellido" 
+                      placeholder="Apellido" 
+                      value={form.apellido} 
+                      onChange={handleChange} 
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="text-sm text-slate-400">Empresa: {u.id_empresa || '—'}</div>
-              </li>
-            ))}
-          </ul>
 
-          <form className="mt-4 space-y-3" onSubmit={handleCreateComerciante}>
-            <h4 className="font-medium">Crear comerciante</h4>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <input name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} className="input" />
-              <input name="apellido" placeholder="Apellido" value={form.apellido} onChange={handleChange} className="input" />
-            </div>
-            <input name="correo" placeholder="Correo" value={form.correo} onChange={handleChange} className="input" />
-            <input name="password" placeholder="Contraseña" value={form.password} onChange={handleChange} className="input" />
-            <select name="id_empresa" value={form.id_empresa || ""} onChange={handleChange} className="input">
-              <option value="">Selecciona empresa</option>
-              {empresas.map((e) => (
-                <option key={e.id} value={e.id}>{e.nombre}</option>
-              ))}
-            </select>
-            <div>
-              <button type="submit" className="btn btn-primary">Crear comerciante</button>
-            </div>
-          </form>
-          {editingRole && (
-            <div className="mt-4 border-t pt-4">
-              <h4 className="font-medium">Editar rol: {editingRole.nombre}</h4>
-              <RoleEditor role={editingRole} onSave={handleSaveRole} onCancel={() => setEditingRole(null)} />
-            </div>
-          )}
+                <div className="space-y-1.5">
+                  <Label htmlFor="correo">Correo Electrónico</Label>
+                  <Input 
+                    id="correo"
+                    type="email"
+                    name="correo" 
+                    placeholder="correo@ejemplo.com" 
+                    value={form.correo} 
+                    onChange={handleChange} 
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input 
+                    id="password"
+                    type="password"
+                    name="password" 
+                    placeholder="••••••••" 
+                    value={form.password} 
+                    onChange={handleChange} 
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="id_empresa">Empresa Asociada</Label>
+                  <select 
+                    id="id_empresa"
+                    name="id_empresa" 
+                    value={form.id_empresa || ""} 
+                    onChange={handleChange} 
+                    className="flex h-12 w-full rounded-xl border border-neutral-200 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-yellow/40 hover:border-brand-yellow/50 dark:bg-dark-secondary/50 dark:border-dark-tertiary dark:text-neutral-100 cursor-pointer"
+                    required
+                  >
+                    <option value="">Selecciona una empresa</option>
+                    {empresas.map((e) => (
+                      <option key={e.id} value={e.id}>{e.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="pt-2">
+                  <Button type="submit" className="w-full rounded-xl">Crear Comerciante</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
@@ -172,13 +338,35 @@ export function AdminRolesPage() {
 function RoleEditor({ role, onSave, onCancel }) {
   const [form, setForm] = useState({ nombre: role.nombre, descripcion: role.descripcion });
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSave(role.id, form); }} className="space-y-2">
-      <input name="nombre" value={form.nombre} onChange={handleChange} className="input" />
-      <input name="descripcion" value={form.descripcion} onChange={handleChange} className="input" />
-      <div className="flex gap-2">
-        <button className="btn btn-primary" type="submit">Guardar</button>
-        <button type="button" className="btn" onClick={onCancel}>Cancelar</button>
+    <form onSubmit={(e) => { e.preventDefault(); onSave(role.id, form); }} className="space-y-4">
+      <div className="space-y-1.5">
+        <Label htmlFor="edit-nombre">Nombre del Rol</Label>
+        <Input 
+          id="edit-nombre"
+          name="nombre" 
+          value={form.nombre} 
+          onChange={handleChange} 
+          required
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="edit-desc">Descripción</Label>
+        <Input 
+          id="edit-desc"
+          name="descripcion" 
+          value={form.descripcion} 
+          onChange={handleChange} 
+        />
+      </div>
+      <div className="flex gap-2 pt-2">
+        <Button variant="primary" type="submit" className="flex-1 rounded-xl" leftIcon={<Save size={16} />}>
+          Guardar
+        </Button>
+        <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={onCancel} leftIcon={<X size={16} />}>
+          Cancelar
+        </Button>
       </div>
     </form>
   );
