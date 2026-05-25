@@ -1,7 +1,2 @@
-"""Módulo de rutas secundarias.
+"""API routers for all endpoints."""
 
-Archivo vacío para asegurar que `server/api/api` sea tratado
-como subpaquete y las importaciones relativas funcionen.
-"""
-
-__all__ = []

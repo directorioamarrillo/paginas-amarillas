@@ -167,6 +167,8 @@ if os.environ.get('AUDIT_REDIS_URL'):
     attach_redis_worker(app)
 else:
     attach_queued_worker(app)
+
+
 # Lista de routers que la aplicación expone en tiempo de importación.
 # Incluir routers al importar el módulo permite que los endpoints estén
 # disponibles incluso si la fase `startup` tiene problemas con la base de datos
@@ -233,5 +235,4 @@ async def http_exception_handler(request: Request, exc: FastAPIHTTPException):
 async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.exception("Unhandled exception: %s", exc)
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
-
 
