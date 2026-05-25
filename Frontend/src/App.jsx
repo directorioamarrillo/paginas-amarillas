@@ -40,6 +40,11 @@ import { EquipoPage } from "./pages/EquipoPage";
 import { EmpresaMarketplacePage } from "./pages/EmpresaMarketplacePage";
 import { EmpresaPublicidadesPage } from "./pages/EmpresaPublicidadesPage";
 import { EmpresaChatsPage } from "./pages/EmpresaChatsPage";
+import { AdminTicketsPage } from "./pages/AdminTicketsPage";
+import { MisTicketsPage } from "./pages/MisTicketsPage";
+import { TicketDetallePage } from "./pages/TicketDetallePage";
+import { Backups } from "./pages/admin/Backups";
+
 
 function App() {
   return (
@@ -56,6 +61,22 @@ function App() {
           <Route path="/producto/:productId" element={<ProductDetailPage />} />
           <Route path="/favoritos" element={<PublicFavoritosPage />} />
           <Route path="/mi-perfil" element={<PublicPerfilPage />} />
+          <Route
+            path="/mis-tickets"
+            element={
+              <ProtectedRoute>
+                <MisTicketsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tickets/:id"
+            element={
+              <ProtectedRoute>
+                <TicketDetallePage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
         <Route
           path="/admin"
@@ -96,6 +117,8 @@ function App() {
           <Route path="notificaciones" element={<NotificacionesPage />} />
           <Route path="chat" element={<ChatRoomsPage />} />
           <Route path="chat/:marketplaceId" element={<ChatRoomDetailPage />} />
+          <Route path="tickets" element={<AdminTicketsPage />} />
+          <Route path="backups" element={<Backups />} />
           <Route path="perfil" element={<PerfilPage />} />
         </Route>
         <Route path="mis-chats" element={<UserChatPage />} />

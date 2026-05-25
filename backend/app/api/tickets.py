@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from app.db.conexion import get_async_db as get_db
+from app.db.conexion import get_db
 from app.models import models
 from app.schemas import tickets as schemas_tickets
 from app.api.auth import get_current_user

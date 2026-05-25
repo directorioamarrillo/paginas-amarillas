@@ -193,3 +193,27 @@ export const auditApi = {
   reportSummaryPdf: (params) => http.get('/auditoria/report/summary/pdf', { params, responseType: 'blob' }),
 };
 
+export const ticketsApi = {
+  list: (params) => http.get("/tickets/", { params }),
+  stats: () => http.get("/tickets/stats"),
+  misTickets: (params) => http.get("/tickets/mis-tickets", { params }),
+  get: (id) => http.get(`/tickets/${id}`),
+  create: (payload) => http.post("/tickets/", payload),
+  responder: (id, payload) => http.post(`/tickets/${id}/mensajes`, payload),
+  uploadMensajeAdjuntos: (id, idMensaje, archivos) => {
+    const data = new FormData();
+    archivos.forEach((archivo) => data.append("archivos", archivo));
+    return http.post(`/tickets/${id}/mensajes/${idMensaje}/adjuntos`, data);
+  },
+  uploadAdjuntos: (id, archivos) => {
+    const data = new FormData();
+    archivos.forEach((archivo) => data.append("archivos", archivo));
+    return http.post(`/tickets/${id}/adjuntos`, data);
+  },
+  cambiarEstado: (id, estado) => http.patch(`/tickets/${id}/estado`, { estado }),
+  cambiarPrioridad: (id, prioridad) => http.patch(`/tickets/${id}/prioridad`, { prioridad }),
+  asignar: (id, asignado_a_id) => http.patch(`/tickets/${id}/asignar`, { asignado_a_id }),
+  historial: (id) => http.get(`/tickets/${id}/historial`),
+};
+
+

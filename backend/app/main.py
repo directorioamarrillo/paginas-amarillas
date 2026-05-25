@@ -197,6 +197,8 @@ routers = [
     ("app.api.catalogos", "/api", "Catalogos"),
     ("app.api.admin", "/api", "Admin"),
     ("app.api.auditoria", "/api", "Auditoría"),
+    ("app.api.tickets", "/api/tickets", "Tickets"),
+    ("app.api.backups", "/api", "Backups"),
     ("app.api.health", "", "Health"),
 ]
 

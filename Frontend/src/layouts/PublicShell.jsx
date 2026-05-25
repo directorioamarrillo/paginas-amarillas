@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faRightFromBracket, faStore, faUser, faBuilding } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faRightFromBracket, faStore, faUser, faBuilding, faLifeRing } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../context/AuthContext";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { favoritosApi, empresasApi } from "../services/api";
@@ -83,6 +83,13 @@ function UserMenu() {
             >
               <FontAwesomeIcon icon={faUser} className="w-4" />
               Mi Perfil
+            </Link>
+            <Link
+              to="/mis-tickets"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
+            >
+              <FontAwesomeIcon icon={faLifeRing} className="w-4" />
+              Mis Tickets
             </Link>
             <Link
               to="/favoritos"
