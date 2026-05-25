@@ -1,0 +1,46 @@
+---
+import GlobalLayout from "../layout/GlobalLayout.astro";
+import CardEmpresa from "../components/commons/CardEmpresa";
+import { axiosInstance } from "../utils/axiosInstance";
+import fs from 'fs/promises';
+import path from 'path';
+
+let empresas = [];
+let error = null;
+
+try {
+  const res = await axiosInstance.get("/api/empresas");
+  empresas = res.data;
+  console.log("Empresas cargadas:", empresas.length);
+} catch (err: any) {
+  error = (err && err.message) ? err.message : 'Error al conectar con el backend.';
+  console.warn("Error al cargar empresas:", error);
+  // Intentar fallback a mock local en public/mock/empresas.json
+  try {
+    const mockPath = path.join(process.cwd(), 'public', 'mock', 'empresas.json');
+    const data = await fs.readFile(mockPath, 'utf-8');
+    empresas = JSON.parse(data);
+    console.log('Usando mock local:', mockPath, empresas.length);
+    error = null;
+  } catch (mockErr) {
+    console.error('No se encontró mock o falló la lectura:', mockErr);
+  }
+}
+---
+
+<GlobalLayout title="Directorio de Empresas">
+  <section class="py-12 px-6 bg-gray-50 rounded-xl">
+    <h1 class="text-3xl font-extrabold mb-8 text-center text-gray-900">
+      Directorio de Empresas
+    </h1>
+    
+    {error ? (
+      <div class="text-center py-12">
+        <p class="text-red-500">Error: {error}</p>
+        <p class="text-gray-500 mt-2">Verifica que el backend esté corriendo en http://localhost:8000</p>
+      </div>
+    ) : (
+      <CardEmpresa empresas={empresas} client:load />
+    )}
+  </section>
+</GlobalLayout>

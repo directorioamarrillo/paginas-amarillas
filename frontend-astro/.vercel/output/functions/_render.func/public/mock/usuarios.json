@@ -1,0 +1,10 @@
+[
+  {
+    "id_usuario": 9999,
+    "nombre": "Santiago",
+    "apellido": "Bermudez",
+    "correo": "santiago@bermudezr.com",
+    "rol": "user",
+    "telefono": "3001234567"
+  }
+]

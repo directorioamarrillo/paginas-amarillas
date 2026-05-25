@@ -1,0 +1,50 @@
+---
+import { ListadoMunicipio } from "../../../components/ListadoMunicipios";
+import GlobalLayout from "../../../layout/GlobalLayout.astro";
+import { axiosInstance } from "../../../utils/axiosInstance";
+import fs from 'fs/promises';
+import path from 'path';
+
+const rol = (Astro.cookies.get("rol") || {})?.value;
+
+if (!rol || rol !== "admin") {
+  return Astro.redirect("/");
+}
+let dataMunicipio = [];
+try {
+  const resp = await axiosInstance("/api/municipios", { method: "GET", params: { skip: 0, limit: 100 } });
+  dataMunicipio = resp.data;
+} catch (e) {
+  try {
+    const mockPath = path.join(process.cwd(), 'public', 'mock', 'municipios.json');
+    const content = await fs.readFile(mockPath, 'utf-8');
+    dataMunicipio = JSON.parse(content);
+    console.log('Fallback municipios ->', mockPath);
+  } catch (me) {
+    console.warn('No hay mock de municipios', me);
+    dataMunicipio = [];
+  }
+}
+---
+
+<GlobalLayout title="Municipios">
+  <style>
+    .content-form-crear-empresa {
+      min-height: calc(100vh - 120px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .content-form-crear-empresa h2 {
+      text-align: center;
+      margin-block: 60px;
+    }
+  </style>
+
+  <div class="content-form-crear-empresa">
+    <section>
+      <h2>Municipios</h2>
+      <ListadoMunicipio municipios={dataMunicipio || []} client:load />
+    </section>
+  </div>
+</GlobalLayout>

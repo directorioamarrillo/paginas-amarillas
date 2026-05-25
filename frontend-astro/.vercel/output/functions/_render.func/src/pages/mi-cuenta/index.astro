@@ -1,0 +1,57 @@
+---
+import GlobalLayout from "../../layout/GlobalLayout.astro";
+import { EditarUsuario } from "../../components/Formularios/EditarUsuario";
+import { axiosInstance } from "../../utils/axiosInstance";
+import fs from 'fs/promises';
+import path from 'path';
+const token = (Astro.cookies.get("token") || {})?.value;
+
+if (!token) {
+  return Astro.redirect("/");
+}
+const id_usuario = (Astro.cookies.get("id_usuario") || {})?.value || "";
+
+let data = null;
+try {
+  const resp = await axiosInstance(`/usuarios/${id_usuario}`, { method: 'GET' });
+  data = resp.data;
+} catch (err: any) {
+  const msg = (err && (err.message || err.toString())) || 'Error al conectar con el backend.';
+  console.warn('Error al cargar usuario desde API:', msg);
+  try {
+    const mockPath = path.join(process.cwd(), 'public', 'mock', 'usuarios.json');
+    const content = await fs.readFile(mockPath, 'utf-8');
+    const all = JSON.parse(content);
+    data = all.find((u: any) => String(u.id_usuario) === String(id_usuario)) || all[0] || null;
+    console.log('Usando mock usuario ->', mockPath);
+  } catch (me) {
+    console.warn('No hay mock de usuarios:', me);
+    data = null;
+  }
+}
+
+console.log({ data });
+---
+
+<GlobalLayout title="Mi cuenta">
+  <style>
+    .content-page {
+      min-height: calc(100vh - 120px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .content-page h2 {
+      text-align: center;
+      margin-block: 60px;
+    }
+  </style>
+
+  <div class="content-page">
+    <section>
+      <h2>Mi cuenta</h2>
+
+      <EditarUsuario defaultValues={data} idUser={id_usuario} client:load />
+    </section>
+  </div>
+</GlobalLayout>

@@ -1,0 +1,11 @@
+---
+import GlobalLayout from "../../layout/GlobalLayout.astro";
+import { InicioSesion } from "../../components/Formularios/InicioSesion";
+---
+
+<GlobalLayout title="Iniciar sesión" auth={true}>
+  <section class="flex flex-col items-center justify-center py-12">
+    <h2 class="text-2xl font-bold mb-6">Iniciar sesión</h2>
+    <InicioSesion client:load />
+  </section>
+</GlobalLayout>

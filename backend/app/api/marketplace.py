@@ -1,0 +1,450 @@
+from datetime import datetime
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Request
+from sqlalchemy import select, and_, or_, func
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+
+from app.db.conexion import get_db
+from app.models.models import Marketplace, Empresa, ImagenMarketplace, EstadoMarketplace, UsuarioFavorito, EventoMarketplace, TIPOS_EVENTO_POR_CLAVE
+from app.schemas.schemas import MarketplaceCreate, MarketplaceResponse
+from app.api.auth import can_view_deleted_records, require_permission, get_current_user_optional, is_admin_user
+from app.api.notificaciones import create_business_notification
+from app.utils.uploads import ensure_upload_dir, save_upload_file, build_public_url, get_upload_root
+from seeders.seed_permisos import Permisos
+from pathlib import Path
+from fastapi.responses import FileResponse
+from app.services.audit_service import registrar_auditoria
+
+router = APIRouter()
+
+
+def _is_admin(user) -> bool:
+    return is_admin_user(user)
+
+
+async def _registrar_evento_marketplace(
+    db: AsyncSession,
+    *,
+    item: Marketplace,
+    tipo_evento: str,
+    request: Request,
+    current_user=None,
+) -> None:
+    if tipo_evento not in {"vista", "click"}:
+        return
+
+    event = EventoMarketplace(
+        id_marketplace=item.id,
+        id_usuario=getattr(current_user, "id", None) if current_user else None,
+        tipo_evento=tipo_evento,
+        id_tipo_evento=TIPOS_EVENTO_POR_CLAVE[tipo_evento],
+        ip_origen=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+    db.add(event)
+    await db.commit()
+
+
+async def _assert_marketplace_owner_or_admin(db: AsyncSession, user, marketplace: Marketplace) -> None:
+    if _is_admin(user):
+        return
+
+    empresa_result = await db.execute(
+        select(Empresa).where(Empresa.id == marketplace.id_empresa, Empresa.deleted_at.is_(None))
+    )
+    empresa = empresa_result.scalars().first()
+    if not empresa or empresa.id_usuario_creador != user.id:
+        raise HTTPException(status_code=403, detail="Solo el propietario de la empresa puede modificar este producto")
+
+
+async def _assert_empresa_owner_or_admin(db: AsyncSession, user, id_empresa: int) -> None:
+    # Siempre verificar que la empresa exista
+    empresa_result = await db.execute(
+        select(Empresa).where(Empresa.id == id_empresa, Empresa.deleted_at.is_(None))
+    )
+    empresa = empresa_result.scalars().first()
+    if not empresa:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+    # Si no es admin, verificar propietario
+    if not _is_admin(user) and empresa.id_usuario_creador != user.id:
+        raise HTTPException(status_code=403, detail="Solo el propietario de la empresa puede publicar productos")
+
+
+async def _resolve_estado_stock_cero(db: AsyncSession) -> Optional[int]:
+    """Busca el estado para stock=0 priorizando 'sin stock' y luego 'inactivo'."""
+    query = select(EstadoMarketplace).where(
+        func.lower(EstadoMarketplace.nombre).in_(["sin stock", "sinstock", "inactivo"]),
+        EstadoMarketplace.deleted_at.is_(None),
+    )
+    result = await db.execute(query)
+    estados = result.scalars().all()
+
+    # Prioridad de nombres
+    priority = ["sin stock", "sinstock", "inactivo"]
+    for key in priority:
+        for estado in estados:
+            if (estado.nombre or "").strip().lower() == key:
+                return estado.id
+    return None
+
+# Listar productos/servicios marketplace con filtros
+@router.get("/marketplace", response_model=List[MarketplaceResponse])
+async def get_marketplace(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    id_categoria: Optional[int] = Query(None),
+    id_empresa: Optional[int] = Query(None),
+    precio_min: Optional[float] = Query(None, ge=0),
+    precio_max: Optional[float] = Query(None, ge=0),
+    id_estado: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
+    ordenar: Optional[str] = Query("fecha_publicacion", regex="^(fecha_publicacion|precio|nombre)$"),
+    can_view_deleted: bool = Depends(can_view_deleted_records),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Listar productos/servicios con filtros avanzados
+    - search: Busca en nombre y descripción
+    - id_categoria: Filtrar por categoría
+    - id_empresa: Filtrar por empresa
+    - precio_min/precio_max: Rango de precios
+    - id_estado: Filtrar por estado
+    - ordenar: Ordenar por fecha_publicacion (desc), precio (asc) o nombre (asc)
+    """
+    query = select(Marketplace).options(
+        joinedload(Marketplace.empresa),
+        joinedload(Marketplace.categoria),
+        joinedload(Marketplace.estado),
+        joinedload(Marketplace.imagenes),
+    )
+    
+    filters = []
+    if not can_view_deleted:
+        filters.append(Marketplace.deleted_at.is_(None))
+    
+    if id_categoria:
+        filters.append(Marketplace.id_categoria == id_categoria)
+    
+    if id_empresa:
+        filters.append(Marketplace.id_empresa == id_empresa)
+    
+    if precio_min is not None:
+        filters.append(Marketplace.precio >= precio_min)
+    
+    if precio_max is not None:
+        filters.append(Marketplace.precio <= precio_max)
+    
+    if id_estado:
+        filters.append(Marketplace.id_estado == id_estado)
+    
+    if search:
+        search_filter = or_(
+            Marketplace.nombre.ilike(f"%{search}%"),
+            Marketplace.descripcion.ilike(f"%{search}%")
+        )
+        filters.append(search_filter)
+    
+    if filters:
+        query = query.where(and_(*filters))
+    
+    # Ordenamiento
+    if ordenar == "precio":
+        query = query.order_by(Marketplace.precio.asc())
+    elif ordenar == "nombre":
+        query = query.order_by(Marketplace.nombre.asc())
+    else:
+        query = query.order_by(Marketplace.fecha_publicacion.desc())
+    
+    result = await db.execute(query.offset(skip).limit(limit))
+    return result.scalars().unique().all()
+
+# Obtener producto/servicio por ID
+@router.get("/marketplace/{id_marketplace}", response_model=MarketplaceResponse)
+async def get_marketplace_item(
+    id_marketplace: int,
+    request: Request,
+    current_user = Depends(get_current_user_optional),
+    can_view_deleted: bool = Depends(can_view_deleted_records),
+    db: AsyncSession = Depends(get_db),
+):
+    query = select(Marketplace).options(
+        joinedload(Marketplace.empresa),
+        joinedload(Marketplace.categoria),
+        joinedload(Marketplace.estado),
+        joinedload(Marketplace.imagenes),
+    ).where(Marketplace.id == id_marketplace)
+    if not can_view_deleted:
+        query = query.where(Marketplace.deleted_at.is_(None))
+    result = await db.execute(query)
+    item = result.scalars().first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Marketplace item not found")
+
+    await _registrar_evento_marketplace(
+        db,
+        item=item,
+        tipo_evento="vista",
+        request=request,
+        current_user=current_user,
+    )
+
+    return item
+
+# Mis productos (para usuario autenticado)
+@router.get("/marketplace/usuario/mis-productos", response_model=List[MarketplaceResponse])
+async def get_mis_productos(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    current_user = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    """Obtener mis productos como vendedor"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Debe estar autenticado")
+    
+    # Obtener empresas del usuario
+    result = await db.execute(
+        select(Empresa).where(Empresa.id_usuario_creador == current_user.id)
+    )
+    empresas = result.scalars().all()
+    empresa_ids = [e.id for e in empresas]
+    
+    if not empresa_ids:
+        return []
+    
+    query = select(Marketplace).options(
+        joinedload(Marketplace.empresa),
+        joinedload(Marketplace.categoria),
+        joinedload(Marketplace.estado),
+        joinedload(Marketplace.imagenes),
+    ).where(Marketplace.id_empresa.in_(empresa_ids))
+    
+    result = await db.execute(query.offset(skip).limit(limit))
+    return result.scalars().unique().all()
+
+# Crear producto/servicio
+@router.post("/marketplace", response_model=MarketplaceResponse, status_code=201)
+async def create_marketplace(
+    item: MarketplaceCreate,
+    current_user = Depends(require_permission(Permisos.CREAR_MARKETPLACE)),
+    db: AsyncSession = Depends(get_db)
+):
+    await _assert_empresa_owner_or_admin(db, current_user, item.id_empresa)
+
+    if item.stock is not None and item.stock < 0:
+        raise HTTPException(status_code=400, detail="No se permite stock negativo")
+
+    payload = item.model_dump()
+    if payload.get("stock") == 0:
+        estado_id = await _resolve_estado_stock_cero(db)
+        if estado_id is not None:
+            payload["id_estado"] = estado_id
+
+    db_item = Marketplace(**payload)
+    db.add(db_item)
+    try:
+        await db.commit()
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Error al crear marketplace: datos inválidos")
+    await db.refresh(db_item)
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='crear_producto', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(db_item.id), descripcion=f'Producto creado: {db_item.nombre}', metodo_http='POST', endpoint='/marketplace')
+    except Exception:
+        pass
+    return db_item
+
+# Editar producto/servicio
+@router.put("/marketplace/{id_marketplace}", response_model=MarketplaceResponse)
+async def update_marketplace(
+    id_marketplace: int,
+    item: MarketplaceCreate,
+    current_user = Depends(require_permission(Permisos.MODIFICAR_MARKETPLACE)),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Marketplace).where(Marketplace.id == id_marketplace))
+    db_item = result.scalars().first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Marketplace item not found")
+
+    await _assert_marketplace_owner_or_admin(db, current_user, db_item)
+
+    if item.stock is not None and item.stock < 0:
+        raise HTTPException(status_code=400, detail="No se permite stock negativo")
+
+    if db_item.deleted_at is not None and (
+        item.precio != db_item.precio or item.stock != db_item.stock
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="No se permite editar precio/stock en productos eliminados",
+        )
+
+    precio_anterior = db_item.precio
+    payload = item.model_dump()
+    if payload.get("stock") == 0:
+        estado_id = await _resolve_estado_stock_cero(db)
+        if estado_id is not None:
+            payload["id_estado"] = estado_id
+
+    for key, value in payload.items():
+        setattr(db_item, key, value)
+    await db.commit()
+    await db.refresh(db_item)
+
+    if precio_anterior != db_item.precio:
+        fav_result = await db.execute(
+            select(UsuarioFavorito.id_usuario)
+            .where(
+                UsuarioFavorito.id_marketplace == db_item.id,
+                UsuarioFavorito.deleted_at.is_(None),
+            )
+        )
+        recipient_ids = {user_id for user_id in fav_result.scalars().all() if user_id is not None}
+
+        if recipient_ids:
+            for recipient_id in recipient_ids:
+                try:
+                    await create_business_notification(
+                        db,
+                        id_usuario_destinatario=recipient_id,
+                        tipo="favorite_price_change",
+                        contenido=(
+                            f"El producto '{db_item.nombre}' cambió de precio: "
+                            f"{precio_anterior} -> {db_item.precio}"
+                        ),
+                        id_usuario_remitente=None,
+                    )
+                except HTTPException:
+                    continue
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='actualizar_producto', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(db_item.id), descripcion=f'Producto actualizado: {db_item.nombre}', metodo_http='PUT', endpoint=f'/marketplace/{id_marketplace}', datos_anteriores={'precio_anterior': precio_anterior}, datos_nuevos={'precio_nuevo': db_item.precio})
+    except Exception:
+        pass
+
+    return db_item
+
+# Eliminar producto/servicio
+@router.delete("/marketplace/{id_marketplace}")
+async def delete_marketplace(
+    id_marketplace: int,
+    current_user = Depends(require_permission(Permisos.MODIFICAR_MARKETPLACE)),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Marketplace).where(Marketplace.id == id_marketplace))
+    db_item = result.scalars().first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Marketplace item not found")
+
+    await _assert_marketplace_owner_or_admin(db, current_user, db_item)
+
+    db_item.deleted_at = datetime.utcnow()
+    await db.commit()
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='desactivar_producto', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(db_item.id), descripcion=f'Producto desactivado: {db_item.nombre}', metodo_http='DELETE', endpoint=f'/marketplace/{id_marketplace}')
+    except Exception:
+        pass
+    return {"detail": "Marketplace item deactivated"}
+
+
+@router.patch("/marketplace/{id_marketplace}/restore")
+async def restore_marketplace(
+    id_marketplace: int,
+    _: object = Depends(require_permission(Permisos.RESTAURAR_REGISTROS_ELIMINADOS)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Marketplace).where(Marketplace.id == id_marketplace))
+    item = result.scalars().first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Marketplace item not found")
+
+    item.deleted_at = None
+    await db.commit()
+    return {"detail": "Marketplace item restored"}
+
+
+@router.post("/marketplace/{id_marketplace}/imagenes/upload")
+async def upload_marketplace_images(
+    id_marketplace: int,
+    archivos: list[UploadFile] = File(...),
+    current_user = Depends(require_permission(Permisos.MODIFICAR_MARKETPLACE)),
+    db: AsyncSession = Depends(get_db),
+):
+    """Sube una o varias imágenes para un producto de marketplace."""
+    if not archivos:
+        raise HTTPException(status_code=400, detail="Debe enviar al menos un archivo")
+
+    result = await db.execute(
+        select(Marketplace).where(Marketplace.id == id_marketplace, Marketplace.deleted_at.is_(None))
+    )
+    item = result.scalars().first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Marketplace item not found")
+
+    await _assert_marketplace_owner_or_admin(db, current_user, item)
+
+    upload_dir = ensure_upload_dir(get_upload_root(), "marketplace")
+    uploaded_urls: list[str] = []
+
+    for archivo in archivos:
+        file_name = await save_upload_file(archivo, upload_dir)
+        image_url = build_public_url(file_name, "marketplace")
+        db.add(ImagenMarketplace(id_marketplace=id_marketplace, imagen_url=image_url))
+        uploaded_urls.append(image_url)
+
+    await db.commit()
+
+    try:
+        await registrar_auditoria(db, usuario_id=getattr(current_user, 'id', None), nombre_usuario=getattr(current_user, 'correo', None), rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None), accion='cambio_imagenes', modulo='marketplace', entidad_afectada='marketplace', entidad_id=str(id_marketplace), descripcion='Imágenes actualizadas', metodo_http='POST', endpoint=f'/marketplace/{id_marketplace}/imagenes/upload', datos_nuevos=uploaded_urls)
+    except Exception:
+        pass
+
+    return {
+        "message": "Imágenes subidas correctamente",
+        "id_marketplace": id_marketplace,
+        "imagenes": uploaded_urls,
+    }
+
+
+@router.post("/marketplace/{id_marketplace}/click")
+async def track_marketplace_click(
+    id_marketplace: int,
+    request: Request,
+    current_user = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    """Registra un evento de click del producto para embudo comercial."""
+    result = await db.execute(
+        select(Marketplace).where(Marketplace.id == id_marketplace, Marketplace.deleted_at.is_(None))
+    )
+    item = result.scalars().first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Marketplace item not found")
+
+    await _registrar_evento_marketplace(
+        db,
+        item=item,
+        tipo_evento="click",
+        request=request,
+        current_user=current_user,
+    )
+
+    return {"message": "Click registrado", "id_marketplace": id_marketplace}
+
+@router.get('/uploads/marketplace/{url}')
+async def get_marketplace_images(
+    url: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Endpoint para servir las imágenes del marketplace"""
+    # Para simplicidad, servimos la primera imagen encontrada
+    file_path = Path(get_upload_root()) / "marketplace" / url
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Archivo de imagen no encontrado")
+
+    return FileResponse(file_path)

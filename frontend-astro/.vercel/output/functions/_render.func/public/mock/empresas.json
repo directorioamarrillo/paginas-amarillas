@@ -1,0 +1,24 @@
+[
+  {
+    "id_empresa": 1,
+    "nombre": "Café Central (mock)",
+    "descripcion": "Café y repostería — mock data",
+    "direccion": "Calle Falsa 123",
+    "telefono": "3001234567",
+    "correo": "cafecentral@example.com",
+    "logo": "https://placehold.co/600x400?text=Cafe+Central",
+    "categoria": { "id_categoria": 1, "nombre": "Cafetería" },
+    "municipio": { "id_municipio": 1, "nombre": "Ciudad Mock" }
+  },
+  {
+    "id_empresa": 2,
+    "nombre": "Panadería La Esquina (mock)",
+    "descripcion": "Panadería y pastelería — mock data",
+    "direccion": "Av. Siempre Viva 742",
+    "telefono": "3007654321",
+    "correo": "panaderia@example.com",
+    "logo": "https://placehold.co/600x400?text=Panaderia",
+    "categoria": { "id_categoria": 2, "nombre": "Panadería" },
+    "municipio": { "id_municipio": 1, "nombre": "Ciudad Mock" }
+  }
+]

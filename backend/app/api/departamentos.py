@@ -1,0 +1,114 @@
+from datetime import datetime
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select, and_
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.conexion import get_db
+from app.models.models import Departamento
+from app.schemas.schemas import DepartamentoCreate, DepartamentoResponse
+from app.api.auth import can_view_deleted_records, require_permission
+from seeders.seed_permisos import Permisos
+
+router = APIRouter()
+
+
+@router.post("/departamentos/", response_model=DepartamentoResponse)
+async def create_departamento(
+    departamento: DepartamentoCreate,
+    current_user = Depends(require_permission(Permisos.CREAR_DEPARTAMENTOS)),
+    db: AsyncSession = Depends(get_db)
+):
+    db_departamento = Departamento(**departamento.model_dump())
+    db.add(db_departamento)
+    await db.commit()
+    await db.refresh(db_departamento)
+    return db_departamento
+
+
+@router.get("/departamentos/", response_model=list[DepartamentoResponse])
+async def read_departamentos(
+    skip: int = 0,
+    limit: int = 10,
+    id_pais: Optional[int] = None,
+    can_view_deleted: bool = Depends(can_view_deleted_records),
+    db: AsyncSession = Depends(get_db),
+):
+    query = select(Departamento)
+    
+    filters = []
+    if id_pais is not None:
+        filters.append(Departamento.id_pais == id_pais)
+    if not can_view_deleted:
+        filters.append(Departamento.deleted_at.is_(None))
+    
+    if filters:
+        query = query.where(and_(*filters))
+    
+    result = await db.execute(query.offset(skip).limit(limit))
+    return result.scalars().all()
+
+
+@router.get("/departamentos/{departamento_id}", response_model=DepartamentoResponse)
+async def read_departamento(
+    departamento_id: int,
+    can_view_deleted: bool = Depends(can_view_deleted_records),
+    db: AsyncSession = Depends(get_db),
+):
+    query = select(Departamento).where(Departamento.id == departamento_id)
+    if not can_view_deleted:
+        query = query.where(Departamento.deleted_at.is_(None))
+    result = await db.execute(query)
+    departamento = result.scalars().first()
+    if not departamento:
+        raise HTTPException(status_code=404, detail="Departamento no encontrado")
+    return departamento
+
+
+@router.put("/departamentos/{departamento_id}", response_model=DepartamentoResponse)
+async def update_departamento(
+    departamento_id: int,
+    departamento: DepartamentoCreate,
+    current_user = Depends(require_permission(Permisos.MODIFICAR_DEPARTAMENTOS)),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Departamento).where(Departamento.id == departamento_id))
+    db_departamento = result.scalars().first()
+    if not db_departamento:
+        raise HTTPException(status_code=404, detail="Departamento no encontrado")
+
+    for key, value in departamento.model_dump().items():
+        setattr(db_departamento, key, value)
+
+    await db.commit()
+    await db.refresh(db_departamento)
+    return db_departamento
+
+
+@router.delete("/departamentos/{departamento_id}")
+async def delete_departamento(departamento_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Departamento).where(Departamento.id == departamento_id))
+    departamento = result.scalars().first()
+    if not departamento:
+        raise HTTPException(status_code=404, detail="Departamento no encontrado")
+
+    departamento.deleted_at = datetime.utcnow()
+    await db.commit()
+    return {"message": "Departamento desactivado correctamente"}
+
+
+@router.patch("/departamentos/{departamento_id}/restore")
+async def restore_departamento(
+    departamento_id: int,
+    _: object = Depends(require_permission(Permisos.RESTAURAR_REGISTROS_ELIMINADOS)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Departamento).where(Departamento.id == departamento_id))
+    departamento = result.scalars().first()
+    if not departamento:
+        raise HTTPException(status_code=404, detail="Departamento no encontrado")
+
+    departamento.deleted_at = None
+    await db.commit()
+    return {"message": "Departamento restaurado correctamente"}
