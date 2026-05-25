@@ -94,15 +94,15 @@ function ProductCard({ producto }) {
 
   return (
     <div
-      className="group cursor-pointer rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+      className="group cursor-pointer rounded-2xl border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20"
       onClick={() => navigate(`/producto/${producto.id}`)}
     >
-      <div className="relative overflow-hidden rounded-t-2xl bg-gradient-to-br from-slate-100 to-slate-50 aspect-square">
+      <div className="relative overflow-hidden rounded-t-2xl bg-slate-50 aspect-square">
         {primeraImagen ? (
           <img
             src={`${API_BASE_URL}/${getImageUrl(primeraImagen)}`}
             alt={producto.nombre}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-400">
@@ -112,15 +112,15 @@ function ProductCard({ producto }) {
 
         {/* Image Count Badge */}
         {totalImagenes > 1 && (
-          <div className="absolute top-3 left-3 rounded-full bg-black/70 px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur">
-            <FontAwesomeIcon icon={faImage} className="mr-1" />
+          <div className="absolute top-3 left-3 rounded-xl bg-[#212121]/80 px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur">
+            <FontAwesomeIcon icon={faImage} className="mr-1 text-primary" />
             {totalImagenes}
           </div>
         )}
 
         <button
           onClick={handleFavorite}
-          className="absolute top-3 right-3 rounded-full bg-white/95 p-2.5 shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl"
+          className="absolute top-3 right-3 rounded-full bg-white/95 p-2.5 shadow-md transition-all duration-200 hover:scale-110 hover:shadow-lg"
         >
           <FontAwesomeIcon
             icon={faHeart}
@@ -129,21 +129,21 @@ function ProductCard({ producto }) {
         </button>
 
         {esSinStock && (
-          <div className="absolute top-3 left-3 rounded-full bg-gradient-to-r from-red-500 to-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
+          <div className="absolute top-3 left-3 rounded-xl bg-danger px-3 py-1.5 text-xs font-bold text-white shadow">
             Sin stock
           </div>
         )}
 
         {/* Stock badge */}
         {!esSinStock && producto.stock > 0 && producto.stock <= 5 && (
-          <div className="absolute top-3 left-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
+          <div className="absolute top-3 left-3 rounded-xl bg-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow">
             ¡Últimos {producto.stock}!
           </div>
         )}
 
         {/* Category Badge */}
         {categoriaNombre && (
-          <div className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-md backdrop-blur">
+          <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur">
             {categoriaNombre}
           </div>
         )}
@@ -153,7 +153,7 @@ function ProductCard({ producto }) {
         {/* Company Name */}
         {empresaNombre ? (
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-500 text-xs font-bold text-slate-900">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-[#1F1F1F]">
               {empresaNombre[0].toUpperCase()}
             </div>
             <p className="text-xs font-medium text-slate-600 truncate">{empresaNombre}</p>
@@ -162,16 +162,16 @@ function ProductCard({ producto }) {
           <p className="mb-2 text-xs text-slate-500">Vendedor independiente</p>
         )}
 
-        <h3 className="mt-1.5 line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-primary-600 transition-colors duration-200">
+        <h3 className="mt-1 line-clamp-2 text-sm font-bold text-slate-800 group-hover:text-primary-hover transition-colors duration-200">
           {producto.nombre}
         </h3>
 
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-2xl font-bold text-slate-900">{precioFormateado}</span>
+        <div className="mt-2.5 flex items-baseline gap-2">
+          <span className="text-xl font-extrabold text-slate-900">{precioFormateado}</span>
         </div>
 
         {producto.rating_promedio && (
-          <div className="mt-2.5 flex items-center gap-1.5">
+          <div className="mt-2 flex items-center gap-1">
             <div className="flex items-center">
               {[1, 2, 3, 4, 5].map((star) => (
                 <FontAwesomeIcon
@@ -179,22 +179,22 @@ function ProductCard({ producto }) {
                   icon={faStar}
                   className={
                     star <= Math.round(pickNumber(producto.rating_promedio))
-                      ? "text-yellow-400"
-                      : "text-slate-300"
+                      ? "text-primary"
+                      : "text-slate-200"
                   }
                   size="xs"
                 />
               ))}
             </div>
-            <span className="text-xs text-slate-500">
+            <span className="text-[10px] text-slate-500 font-medium ml-1">
               ({producto.total_reviews || 0})
             </span>
           </div>
         )}
 
         <div className="mt-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-            <div className={`h-2 w-2 rounded-full ${esSinStock ? "bg-red-500" : producto.stock > 10 ? "bg-green-500" : "bg-orange-500"}`} />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 border border-slate-100">
+            <div className={`h-1.5 w-1.5 rounded-full ${esSinStock ? "bg-red-500" : producto.stock > 10 ? "bg-success" : "bg-orange-500"}`} />
             {producto.stock > 0 ? `${Math.floor(producto.stock)} disponibles` : "Agotado"}
           </span>
         </div>
@@ -208,7 +208,7 @@ function EmpresaCard({ empresa }) {
 
   return (
     <div
-      className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+      className="group cursor-pointer rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20"
       onClick={() => navigate(`/empresa/${empresa.id}`)}
     >
       <div className="flex items-start gap-4">
@@ -216,21 +216,21 @@ function EmpresaCard({ empresa }) {
           <img
             src={`${API_BASE_URL}/empresas/${empresa.id}/logo`}
             alt={`Logo de ${empresa.nombre}`}
-            className="h-20 w-20 rounded-xl border-2 border-slate-100 object-cover shadow-sm"
+            className="h-16 w-16 rounded-xl border border-slate-100 object-cover shadow-sm"
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-slate-100">
-            <FontAwesomeIcon icon={faBuilding} className="text-slate-400" size="2x" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 shrink-0">
+            <FontAwesomeIcon icon={faBuilding} className="text-slate-400" size="lg" />
           </div>
         )}
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-bold text-slate-900 group-hover:text-primary-600 transition-colors duration-200">
+          <h3 className="truncate text-base font-bold text-slate-900 group-hover:text-primary-hover transition-colors duration-200">
             {empresa.nombre}
           </h3>
-          <p className="mt-1.5 truncate text-sm text-slate-600">{empresa.correo}</p>
+          <p className="mt-0.5 truncate text-xs text-slate-500">{empresa.correo}</p>
           {empresa.categoria && (
-            <span className="mt-2 inline-block rounded-full bg-gradient-to-r from-primary-100 to-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 shadow-sm">
+            <span className="mt-2 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-yellow-800">
               {empresa.categoria.nombre}
             </span>
           )}
@@ -238,9 +238,9 @@ function EmpresaCard({ empresa }) {
       </div>
 
       {empresa.municipio && (
-        <div className="mt-4 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
-          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-primary-500" />
-          <span className="font-medium">{empresa.municipio.nombre}</span>
+        <div className="mt-4 flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-100/50 px-3 py-2 text-xs text-slate-600">
+          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-primary" />
+          <span className="font-semibold">{empresa.municipio.nombre}</span>
         </div>
       )}
     </div>
@@ -280,39 +280,42 @@ export function HomePage() {
   const loading = productosDestacados.loading || empresasDestacadas.loading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 via-white to-slate-50">
+    <div className="min-h-screen bg-[#F5F5F5] pb-12">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 text-white">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
-        <div className="relative mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
-          <div className="text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl">
+      <section className="relative overflow-hidden bg-[#1F1F1F] py-16 md:py-24 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,193,7,0.12)_0%,_transparent_55%)]"></div>
+        <div className="relative mx-auto max-w-7xl px-4 md:px-6">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary tracking-wide uppercase border border-primary/20">
+              Directorio Comercial & Marketplace
+            </span>
+            <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl text-white">
               Páginas Amarillas
-              <span className="block text-slate-900">Marketplace</span>
+              <span className="block text-primary mt-1">Directorio Local</span>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg md:text-xl text-primary-50">
-              Descubre empresas, productos y servicios. Conecta con vendedores al instante.
+            <p className="mx-auto max-w-2xl text-base md:text-lg text-neutral-300">
+              Encuentra rápidamente empresas locales, servicios profesionales y los artículos más populares del marketplace.
             </p>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="mx-auto mt-8 max-w-2xl">
-              <div className="flex rounded-2xl bg-white p-2 shadow-2xl">
-                <div className="relative flex-1">
+            <form onSubmit={handleSearch} className="mx-auto max-w-2xl pt-2">
+              <div className="flex rounded-2xl bg-white p-2 md:p-2.5 shadow-2xl border border-neutral-800/10">
+                <div className="relative flex-1 flex items-center">
                   <FontAwesomeIcon
                     icon={faSearch}
-                    className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-400"
+                    className="absolute left-4 text-slate-400"
                   />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="¿Qué estás buscando?"
-                    className="w-full rounded-l-xl border-0 py-4 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="¿Qué estás buscando? (ej: restaurantes, repuestos, calzado)"
+                    className="w-full rounded-xl border-0 py-3.5 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0 text-sm md:text-base bg-transparent"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-slate-900 px-8 py-4 font-semibold text-white transition hover:bg-slate-800"
+                  className="rounded-xl bg-[#212121] px-6 md:px-8 py-3.5 font-bold text-white transition hover:bg-neutral-800 shadow"
                 >
                   Buscar
                 </button>
@@ -323,21 +326,21 @@ export function HomePage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
               <Link
                 to="/empresas"
-                className="rounded-full bg-white/20 px-4 py-2 font-semibold backdrop-blur transition hover:bg-white/30"
+                className="rounded-xl bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/10 backdrop-blur transition hover:bg-white/20"
               >
-                Ver empresas
+                Ver Directorio
               </Link>
               <Link
                 to="/marketplace"
-                className="rounded-full bg-white/20 px-4 py-2 font-semibold backdrop-blur transition hover:bg-white/30"
+                className="rounded-xl bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/10 backdrop-blur transition hover:bg-white/20"
               >
-                Ver productos
+                Ver Artículos
               </Link>
               <Link
                 to="/login"
-                className="rounded-full bg-white px-4 py-2 font-semibold text-primary-600 transition hover:bg-primary-50"
+                className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-[#1F1F1F] transition hover:bg-primary-hover shadow"
               >
-                Iniciar sesión
+                Registrar Negocio
               </Link>
             </div>
           </div>
@@ -348,15 +351,15 @@ export function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-12 md:px-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900 md:text-3xl">
+            <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#1F1F1F] md:text-2xl">
               <FontAwesomeIcon icon={faFire} className="text-orange-500" />
-              Productos Destacados
+              Artículos Destacados
             </h2>
-            <p className="mt-1 text-slate-600">Los más populares del marketplace</p>
+            <p className="text-xs text-slate-500 mt-0.5">Los productos más nuevos y buscados en el catálogo comercial</p>
           </div>
           <Link
             to="/marketplace"
-            className="flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700"
+            className="flex items-center gap-1 text-xs font-bold text-primary-600 hover:text-primary-hover"
           >
             Ver todos
             <FontAwesomeIcon icon={faChevronRight} />
@@ -366,8 +369,8 @@ export function HomePage() {
         {loading ? (
           <Loading text="Cargando productos destacados..." />
         ) : productosDestacados.data?.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
-            <p className="text-slate-600">Aún no hay productos publicados</p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+            <p className="text-slate-500 font-medium">Aún no hay productos publicados en el marketplace</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -382,17 +385,17 @@ export function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-12 md:px-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900 md:text-3xl">
-              <FontAwesomeIcon icon={faStore} className="text-primary-500" />
+            <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#1F1F1F] md:text-2xl">
+              <FontAwesomeIcon icon={faStore} className="text-primary" />
               Empresas Destacadas
             </h2>
-            <p className="mt-1 text-slate-600">Conoce las mejores empresas del directorio</p>
+            <p className="text-xs text-slate-500 mt-0.5">Comercios locales verificados y listos para atenderte</p>
           </div>
           <Link
             to="/empresas"
-            className="flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700"
+            className="flex items-center gap-1 text-xs font-bold text-primary-600 hover:text-primary-hover"
           >
-            Ver todas
+            Ver directorio completo
             <FontAwesomeIcon icon={faChevronRight} />
           </Link>
         </div>
@@ -400,8 +403,8 @@ export function HomePage() {
         {loading ? (
           <Loading text="Cargando empresas destacadas..." />
         ) : empresasDestacadas.data?.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
-            <p className="text-slate-600">Aún no hay empresas publicadas</p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+            <p className="text-slate-500 font-medium">Aún no hay empresas registradas en el directorio</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -416,37 +419,37 @@ export function HomePage() {
       {topEmpresas.data?.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-12 md:px-6">
           <div className="mb-8">
-            <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900 md:text-3xl">
-              <FontAwesomeIcon icon={faStar} className="text-yellow-400" />
-              Mejor Valoradas
+            <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#1F1F1F] md:text-2xl">
+              <FontAwesomeIcon icon={faStar} className="text-primary" />
+              Empresas Mejor Valoradas
             </h2>
-            <p className="mt-1 text-slate-600">Empresas con mejor calificación</p>
+            <p className="text-xs text-slate-500 mt-0.5">Los comercios con mejores recomendaciones de sus clientes</p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(topEmpresas.data || []).map((empresa, index) => (
               <div
                 key={empresa.id_empresa}
-                className="product-card cursor-pointer rounded-xl border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-white p-5 shadow-sm"
+                className="product-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20 transition-all duration-300"
                 onClick={() => navigate(`/empresa/${empresa.id_empresa}`)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400 text-xl font-bold text-white">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-extrabold text-[#1F1F1F] shadow-sm">
                       {index + 1}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900">{empresa.empresa}</h3>
+                      <h3 className="font-bold text-slate-900">{empresa.empresa}</h3>
                       <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <FontAwesomeIcon icon={faStar} className="text-yellow-400" size="xs" />
-                        <span>{empresa.rating_promedio?.toFixed(1) || "0.0"}</span>
+                        <FontAwesomeIcon icon={faStar} className="text-primary" size="xs" />
+                        <span className="font-semibold text-slate-800">{empresa.rating_promedio?.toFixed(1) || "0.0"}</span>
                         <span className="text-xs text-slate-500">
                           ({empresa.total_reviews} reseñas)
                         </span>
                       </div>
                     </div>
                   </div>
-                  <FontAwesomeIcon icon={faChartLine} className="text-yellow-500" size="lg" />
+                  <FontAwesomeIcon icon={faChartLine} className="text-primary" size="lg" />
                 </div>
               </div>
             ))}
@@ -455,24 +458,24 @@ export function HomePage() {
       )}
 
       {/* Call to Action */}
-      <section className="mx-auto max-w-7xl px-4 py-12 md:px-6">
-        <div className="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-8 text-center text-white shadow-xl md:p-12">
-          <h2 className="text-2xl font-bold md:text-3xl">¿Tienes una empresa?</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-300">
-            Registra tu empresa y comienza a vender tus productos en nuestro marketplace. ¡Es fácil!
+      <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
+        <div className="rounded-3xl border border-neutral-800 bg-gradient-to-r from-[#1F1F1F] via-[#2A2A2A] to-[#1F1F1F] p-8 text-center text-white shadow-xl md:p-12">
+          <h2 className="text-2xl font-bold md:text-3xl">¿Eres propietario de un negocio?</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-neutral-300 text-sm md:text-base">
+            Crea tu perfil comercial en Páginas Amarillas, publica tus productos en el marketplace y recibe contactos directos de tus clientes vía WhatsApp y correo.
           </p>
-          <div className="mt-6 flex justify-center gap-3">
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               to="/login"
-              className="rounded-xl bg-primary-500 px-6 py-3 font-semibold text-slate-900 transition hover:bg-primary-400"
+              className="rounded-xl bg-primary px-6 py-3 font-semibold text-[#1F1F1F] transition hover:bg-primary-hover shadow-md"
             >
-              Crear cuenta
+              Comenzar Gratis
             </Link>
             <Link
               to="/empresas"
-              className="rounded-xl border-2 border-white px-6 py-3 font-semibold transition hover:bg-white/10"
+              className="rounded-xl border border-neutral-700 px-6 py-3 font-semibold text-white hover:bg-neutral-800 transition"
             >
-              Ver directorio
+              Explorar Directorio
             </Link>
           </div>
         </div>

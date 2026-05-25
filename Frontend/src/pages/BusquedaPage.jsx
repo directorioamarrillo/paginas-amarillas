@@ -52,16 +52,30 @@ export function BusquedaPage() {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900">Búsqueda global</h3>
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-[#1F1F1F]">Búsqueda global</h3>
         <div className="mt-3 flex gap-2">
-          <input className="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Buscar en empresas y productos" value={query} onChange={(e) => setQuery(e.target.value)} />
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={buscar}>Buscar</button>
+          <input 
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-200" 
+            placeholder="Buscar en empresas y productos" 
+            value={query} 
+            onChange={(e) => setQuery(e.target.value)} 
+          />
+          <button 
+            className="rounded-xl bg-[#212121] px-6 py-3 text-sm font-bold text-white hover:bg-neutral-800 transition shadow" 
+            onClick={buscar}
+          >
+            Buscar
+          </button>
         </div>
         {sugerencias.length ? (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {sugerencias.map((item) => (
-              <button key={item} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700" onClick={() => setQuery(item)}>
+              <button 
+                key={item} 
+                className="rounded-full bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-primary/10 hover:text-yellow-800 transition duration-200" 
+                onClick={() => setQuery(item)}
+              >
                 {item}
               </button>
             ))}
@@ -69,49 +83,61 @@ export function BusquedaPage() {
         ) : null}
       </div>
 
-      {loading ? <p className="text-sm text-slate-600">Consultando backend...</p> : null}
+      {loading ? <p className="text-sm text-slate-500 font-medium">Consultando el directorio...</p> : null}
       {!loading && result && (result.empresas?.length || 0) === 0 && (result.productos?.length || 0) === 0 ? (
-        <EmptyState title="Sin coincidencias" description="Intenta con otro término." />
+        <EmptyState title="Sin coincidencias" description="Intenta con otro término de búsqueda." />
       ) : null}
 
       {result?.empresas?.length ? (
-        <DataTable
-          columns={[
-            { key: "id", label: "ID" },
-            { key: "nombre", label: "Empresa" },
-            { key: "correo", label: "Correo" },
-            {
-              key: "acciones",
-              label: "Ir",
-              render: () => (
-                <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white" onClick={() => navigate(`/empresas?search=${encodeURIComponent(query)}`)}>
-                  Ver empresas
-                </button>
-              ),
-            },
-          ]}
-          rows={result.empresas}
-        />
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+          <h4 className="text-sm font-bold text-slate-900 mb-3 px-2">Empresas encontradas</h4>
+          <DataTable
+            columns={[
+              { key: "id", label: "ID" },
+              { key: "nombre", label: "Empresa" },
+              { key: "correo", label: "Correo" },
+              {
+                key: "acciones",
+                label: "Ir",
+                render: () => (
+                  <button 
+                    className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-[#1F1F1F] hover:bg-primary-hover transition shadow-sm" 
+                    onClick={() => navigate(`/empresas?search=${encodeURIComponent(query)}`)}
+                  >
+                    Ver empresas
+                  </button>
+                ),
+              },
+            ]}
+            rows={result.empresas}
+          />
+        </div>
       ) : null}
 
       {result?.productos?.length ? (
-        <DataTable
-          columns={[
-            { key: "id", label: "ID" },
-            { key: "nombre", label: "Producto" },
-            { key: "precio", label: "Precio" },
-            {
-              key: "acciones",
-              label: "Ir",
-              render: () => (
-                <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white" onClick={() => navigate(`/marketplace?search=${encodeURIComponent(query)}`)}>
-                  Ver marketplace
-                </button>
-              ),
-            },
-          ]}
-          rows={result.productos}
-        />
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+          <h4 className="text-sm font-bold text-slate-900 mb-3 px-2">Productos encontrados</h4>
+          <DataTable
+            columns={[
+              { key: "id", label: "ID" },
+              { key: "nombre", label: "Producto" },
+              { key: "precio", label: "Precio" },
+              {
+                key: "acciones",
+                label: "Ir",
+                render: () => (
+                  <button 
+                    className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-[#1F1F1F] hover:bg-primary-hover transition shadow-sm" 
+                    onClick={() => navigate(`/marketplace?search=${encodeURIComponent(query)}`)}
+                  >
+                    Ver marketplace
+                  </button>
+                ),
+              },
+            ]}
+            rows={result.productos}
+          />
+        </div>
       ) : null}
     </section>
   );

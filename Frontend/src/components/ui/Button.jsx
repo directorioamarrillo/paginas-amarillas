@@ -22,15 +22,15 @@ const Button = React.forwardRef(
 
     const variants = {
       primary:
-        "bg-brand-yellow text-dark-primary hover:bg-brand-yellow-hover hover:shadow-elevation-sm focus-visible:ring-brand-yellow",
+        "bg-primary text-[#1F1F1F] font-semibold hover:bg-primary-hover hover:shadow-md focus-visible:ring-primary",
       secondary:
-        "bg-dark-primary text-neutral-50 hover:bg-dark-tertiary hover:shadow-elevation-sm focus-visible:ring-dark-primary dark:bg-neutral-100 dark:text-dark-primary dark:hover:bg-neutral-200",
+        "bg-[#212121] text-white hover:bg-[#1F1F1F] hover:shadow-md focus-visible:ring-[#212121] dark:bg-neutral-100 dark:text-[#1F1F1F] dark:hover:bg-neutral-200",
       outline:
-        "border-2 border-neutral-200 bg-transparent hover:bg-neutral-100 text-neutral-900 focus-visible:ring-neutral-200 dark:border-dark-tertiary dark:text-neutral-100 dark:hover:bg-dark-secondary",
+        "border-2 border-neutral-200 bg-transparent hover:bg-neutral-100 text-[#1F1F1F] focus-visible:ring-neutral-200 dark:border-dark-tertiary dark:text-neutral-100 dark:hover:bg-dark-secondary",
       ghost:
-        "bg-transparent hover:bg-neutral-100 text-neutral-900 dark:text-neutral-100 dark:hover:bg-dark-secondary shadow-none hover:translate-y-0",
+        "bg-transparent hover:bg-slate-100 text-[#1F1F1F] dark:text-neutral-100 dark:hover:bg-dark-secondary shadow-none hover:translate-y-0",
       danger:
-        "bg-status-danger text-white hover:bg-red-600 hover:shadow-elevation-sm focus-visible:ring-status-danger",
+        "bg-danger text-white hover:bg-red-600 hover:shadow-md focus-visible:ring-danger",
     };
 
     const sizes = {
