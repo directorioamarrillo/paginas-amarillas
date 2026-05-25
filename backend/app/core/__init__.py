@@ -1,1 +1,1 @@
-# Core configuration
+"""Core configuration and constants."""
