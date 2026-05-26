@@ -4,6 +4,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
+import ssl
 from dotenv import load_dotenv
 
 from fastapi import FastAPI
@@ -12,28 +13,42 @@ from contextlib import asynccontextmanager
 # Load environment variables
 load_dotenv()
 
-USER = os.environ.get("USER")
-PASSWORD = os.environ.get("PASSWORD")
-HOST = os.environ.get("HOST")
-DATABASE = os.environ.get("DATABASE")
-PORT = os.environ.get("PORT", "5432")  # Puerto por defecto para PostgreSQL
+# Variables de base de datos con prefijo DB_ para no conflictuar con HOST/PORT del servidor
+DB_USER     = os.environ.get("DB_USER") or os.environ.get("USER")
+DB_PASSWORD = os.environ.get("DB_PASSWORD") or os.environ.get("PASSWORD")
+DB_HOST     = os.environ.get("DB_HOST") or os.environ.get("HOST")
+DB_NAME     = os.environ.get("DB_NAME") or os.environ.get("DATABASE")
+DB_PORT     = os.environ.get("DB_PORT") or os.environ.get("DB_PORT_NUM", "5432")
+DB_SSL      = os.environ.get("DB_SSL", "false").lower() in ("true", "1", "yes")
 
-if not USER:
-    raise ValueError("La variable de entorno 'USER' no está definida.")
-if not PASSWORD:
-    raise ValueError("La variable de entorno 'PASSWORD' no está definida.")
-if not HOST:
-    raise ValueError("La variable de entorno 'HOST' no está definida.")
-if not DATABASE:
-    raise ValueError("La variable de entorno 'DATABASE' no está definida.")
+if not DB_USER:
+    raise ValueError("Falta variable de entorno 'DB_USER'")
+if not DB_PASSWORD:
+    raise ValueError("Falta variable de entorno 'DB_PASSWORD'")
+if not DB_HOST:
+    raise ValueError("Falta variable de entorno 'DB_HOST'")
+if not DB_NAME:
+    raise ValueError("Falta variable de entorno 'DB_NAME'")
+
+DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+# Configurar SSL para Aiven u otros proveedores cloud
+connect_args = {}
+if DB_SSL:
+    ssl_ctx = ssl.create_default_context()
+    ssl_ctx.check_hostname = False
+    ssl_ctx.verify_mode = ssl.CERT_NONE  # Aiven usa certs auto-firmados en algunos planes
+    connect_args["ssl"] = ssl_ctx
 
 # Database connection
 DB_ECHO = os.environ.get("DB_ECHO", "false").lower() == "true"
 engine = create_async_engine(
-    f"postgresql+asyncpg://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}", echo=DB_ECHO
+    DATABASE_URL,
+    echo=DB_ECHO,
+    connect_args=connect_args,
 )
 
-# sesion para interactuar con la DB
+# Sesión para interactuar con la DB
 async_session = sessionmaker(
     engine,
     class_=AsyncSession,
@@ -42,7 +57,7 @@ async_session = sessionmaker(
     autoflush=False,
 )
 
-# Clase base para las tablas como una plantilla
+# Clase base para los modelos
 Base = declarative_base(metadata=MetaData())
 
 
@@ -51,13 +66,12 @@ async def get_session_async() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
 
-# Database session dependency
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
 
 
-# Create tables before the app start
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
