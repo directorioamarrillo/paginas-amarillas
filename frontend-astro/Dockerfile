@@ -13,15 +13,16 @@ RUN cd frontend-astro && npm run build
 FROM node:22-alpine
 WORKDIR /app
 
-# Copy built output from builder
+# Copy built output and dependencies
 COPY --from=builder /app/frontend-astro/dist ./dist
 COPY --from=builder /app/frontend-astro/node_modules ./node_modules
 COPY --from=builder /app/frontend-astro/package.json ./
 
 ENV NODE_ENV=production
-ENV PORT=3000
 ENV HOST=0.0.0.0
+ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["node", "./dist/server/entry.mjs"]
+# Startup wrapper to log the port being used
+CMD ["sh", "-c", "echo \"==> Starting server on HOST=${HOST} PORT=${PORT}\" && node ./dist/server/entry.mjs"]

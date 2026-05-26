@@ -5,7 +5,7 @@ const DEFAULT_BACKEND = "http://127.0.0.1:8000";
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.PUBLIC_BACKEND_URL || DEFAULT_BACKEND,
-  timeout: 10000,
+  timeout: 3000,
 });
 
 // Request interceptor: attach Authorization header if token cookie exists (client only)
