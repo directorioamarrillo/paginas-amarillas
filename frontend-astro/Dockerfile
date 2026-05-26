@@ -9,7 +9,6 @@ RUN cd frontend-astro && npm run build
 
 FROM node:22-alpine
 WORKDIR /app
-RUN apk add --no-cache dumb-init
 COPY --from=builder /app/frontend-astro/dist ./dist
 
 ENV NODE_ENV=production
@@ -18,5 +17,4 @@ ENV HOST=0.0.0.0
 
 EXPOSE 3000
 
-ENTRYPOINT ["/usr/sbin/dumb-init", "--"]
 CMD ["node", "dist/server/entry.mjs"]
