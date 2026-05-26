@@ -36,4 +36,4 @@ pwdlib
 pwdlib[argon2]
 uvicorn[standard]
 PyJWT==2.13.0
-reportlab==3.9.0
+reportlab
