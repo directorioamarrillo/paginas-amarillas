@@ -9,5 +9,7 @@ export default defineConfig({
   }), tailwind()],
 
   output: "server",
-  adapter: node(),
+  adapter: node({
+    mode: 'middleware',
+  }),
 });
