@@ -13,16 +13,19 @@ RUN cd frontend-astro && npm run build
 FROM node:22-alpine
 WORKDIR /app
 
-# Copy built output and dependencies
+# Copiar artefactos del build
 COPY --from=builder /app/frontend-astro/dist ./dist
 COPY --from=builder /app/frontend-astro/node_modules ./node_modules
 COPY --from=builder /app/frontend-astro/package.json ./
 
+# Script de arranque que fuerza binding a 0.0.0.0
+COPY frontend-astro/start.mjs ./start.mjs
+
 ENV NODE_ENV=production
-ENV HOST=0.0.0.0
 ENV PORT=3000
+ENV HOST=0.0.0.0
 
 EXPOSE 3000
 
-# Startup wrapper to log the port being used
-CMD ["sh", "-c", "echo \"==> Starting server on HOST=${HOST} PORT=${PORT}\" && node ./dist/server/entry.mjs"]
+# Usar start.mjs para parchear el binding antes de arrancar Astro
+CMD ["node", "./start.mjs"]
