@@ -9,7 +9,5 @@ export default defineConfig({
   }), tailwind()],
 
   output: "server",
-  adapter: node({
-    mode: 'standalone',
-  }),
+  adapter: node(),
 });
