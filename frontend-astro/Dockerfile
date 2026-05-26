@@ -10,6 +10,8 @@ RUN cd frontend-astro && npm run build
 FROM node:22-alpine
 WORKDIR /app
 COPY --from=builder /app/frontend-astro/dist ./dist
+COPY --from=builder /app/frontend-astro/node_modules ./node_modules
+COPY --from=builder /app/frontend-astro/package.json ./
 
 ENV NODE_ENV=production
 ENV PORT=3000
