@@ -2,6 +2,19 @@ import React, { useEffect, useState } from "react";
 import { auditApi, rolesApi } from "../services/api";
 import { toast } from "react-toastify";
 import { Line } from 'react-chartjs-2';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSearch,
+  faFileCsv,
+  faFilePdf,
+  faChartPie,
+  faCalendarAlt,
+  faFilter,
+  faChevronLeft,
+  faChevronRight,
+  faXmark,
+  faInfoCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -115,79 +128,172 @@ export function AdminAuditoriaPage() {
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold">Registro de Actividad / Historial del sistema</h2>
-      <p className="mt-2 text-sm text-slate-600">Registros de actividad y eventos del sistema (solo lectura)</p>
-
-      <div className="mt-4 flex gap-2">
-        <form onSubmit={handleSearch} className="flex gap-2 items-center">
-          <button className="btn btn-primary">Buscar</button>
-          <select value={rol} onChange={(e) => setRol(e.target.value)} className="input">
-            <option value="">Todos roles</option>
-            {rolesList.map(r => (<option key={r.id} value={r.nombre}>{r.nombre}</option>))}
-          </select>
-          <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} className="input" />
-          <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} className="input" />
-        </form>
-        <button className="btn" onClick={handleExport}>Exportar CSV</button>
-        <button className="btn" onClick={handleReport} disabled={loadingReport}>{loadingReport ? 'Generando...' : 'Generar reporte resumen'}</button>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-extrabold text-[#1F1F1F] tracking-tight">Registro de Actividad</h2>
+          <p className="text-sm text-slate-500 mt-1">Historial de auditoría y eventos de seguridad en el sistema (solo lectura)</p>
+        </div>
       </div>
-        <button className="btn" onClick={async () => {
-          try {
-            const res = await auditApi.exportPdf({ q, rol, accion: accionFilter, fecha_desde: fechaDesde, fecha_hasta: fechaHasta });
-            const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'auditoria.pdf';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          } catch (err) {
-            console.error(err);
-            toast.error('Error exportando PDF');
-          }
-        }}>Exportar PDF</button>
 
-      <div className="mt-4 overflow-x-auto">
+      {/* Filter Panel */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <form onSubmit={handleSearch} className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 flex-1">
+            {/* Role Select */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Rol de Usuario</label>
+              <select 
+                value={rol} 
+                onChange={(e) => setRol(e.target.value)} 
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition cursor-pointer"
+              >
+                <option value="">Todos los roles</option>
+                {rolesList.map(r => (<option key={r.id} value={r.nombre}>{r.nombre}</option>))}
+              </select>
+            </div>
+
+            {/* Date From */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Fecha Desde</label>
+              <input 
+                type="date" 
+                value={fechaDesde} 
+                onChange={(e) => setFechaDesde(e.target.value)} 
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition" 
+              />
+            </div>
+
+            {/* Date To */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Fecha Hasta</label>
+              <input 
+                type="date" 
+                value={fechaHasta} 
+                onChange={(e) => setFechaHasta(e.target.value)} 
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition" 
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex items-end">
+              <button 
+                type="submit" 
+                className="w-full rounded-xl bg-primary hover:bg-primary-hover px-5 py-2.5 font-bold text-[#1F1F1F] transition shadow-sm flex items-center justify-center gap-2"
+              >
+                <FontAwesomeIcon icon={faSearch} />
+                Buscar
+              </button>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-2 pt-2 lg:pt-0 shrink-0">
+            <button 
+              type="button" 
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
+              onClick={handleExport}
+            >
+              <FontAwesomeIcon icon={faFileCsv} className="text-emerald-500" />
+              Exportar CSV
+            </button>
+            
+            <button 
+              type="button" 
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
+              onClick={async () => {
+                try {
+                  const res = await auditApi.exportPdf({ q, rol, accion: accionFilter, fecha_desde: fechaDesde, fecha_hasta: fechaHasta });
+                  const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'auditoria.pdf';
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                } catch (err) {
+                  console.error(err);
+                  toast.error('Error exportando PDF');
+                }
+              }}
+            >
+              <FontAwesomeIcon icon={faFilePdf} className="text-red-500" />
+              Exportar PDF
+            </button>
+
+            <button 
+              type="button" 
+              className="rounded-xl bg-[#212121] px-4 py-2.5 text-sm font-bold text-white hover:bg-neutral-800 transition shadow-sm flex items-center gap-2"
+              onClick={handleReport} 
+              disabled={loadingReport}
+            >
+              <FontAwesomeIcon icon={faChartPie} className="text-primary" />
+              {loadingReport ? 'Generando...' : 'Reporte Resumen'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Table Data */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         {loading ? (
-          <div>Cargando...</div>
+          <div className="p-8 text-center text-sm font-medium text-slate-500">Cargando registros de auditoría...</div>
         ) : (
-          <table className="table-auto w-full bg-white">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Acción</th>
-                <th>Módulo</th>
-                <th>Entidad</th>
-                <th>IP</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((it) => (
-                <tr key={it.id} className="border-t hover:bg-slate-50 cursor-pointer" onClick={() => setSelected(it)}>
-                  <td>{new Date(it.timestamp).toLocaleString()}</td>
-                  <td>{it.nombre_usuario}</td>
-                  <td>{it.rol_usuario}</td>
-                  <td>{it.accion}</td>
-                  <td><span className={`px-2 py-1 rounded ${badgeFor(it.accion)}`}>{it.accion}</span></td>
-                  <td>{it.entidad_afectada} {it.entidad_id ? `#${it.entidad_id}` : ''}</td>
-                  <td>{it.ip}</td>
-                  <td>{it.estado_evento}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100 text-left">
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Usuario</th>
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Rol</th>
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Acción</th>
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Módulo</th>
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Entidad</th>
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">IP</th>
+                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {items.map((it) => (
+                  <tr key={it.id} className="hover:bg-slate-50/50 cursor-pointer transition duration-150" onClick={() => setSelected(it)}>
+                    <td className="px-4 py-3.5 text-xs font-medium text-slate-600 whitespace-nowrap">{new Date(it.timestamp).toLocaleString()}</td>
+                    <td className="px-4 py-3.5 text-sm font-bold text-slate-900">{it.nombre_usuario}</td>
+                    <td className="px-4 py-3.5 text-xs text-slate-500 capitalize">{it.rol_usuario}</td>
+                    <td className="px-4 py-3.5 text-xs font-mono text-slate-500">{it.accion}</td>
+                    <td className="px-4 py-3.5 text-xs">
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg font-semibold ${badgeFor(it.accion)}`}>
+                        {it.accion}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-xs font-medium text-slate-600">{it.entidad_afectada} {it.entidad_id ? `#${it.entidad_id}` : ''}</td>
+                    <td className="px-4 py-3.5 text-xs font-mono text-slate-500">{it.ip}</td>
+                    <td className="px-4 py-3.5 text-xs font-bold text-slate-800">{it.estado_evento}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <div>Mostrando {items.length} de {total}</div>
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-xs font-semibold text-slate-500">Mostrando {items.length} de {total} registros</div>
         <div className="flex gap-2">
-          <button disabled={skip === 0} className="btn" onClick={() => setSkip(Math.max(0, skip - limit))}>Anterior</button>
-          <button disabled={skip + limit >= total} className="btn btn-primary" onClick={() => setSkip(skip + limit)}>Siguiente</button>
+          <button 
+            disabled={skip === 0} 
+            className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition disabled:opacity-50 disabled:pointer-events-none" 
+            onClick={() => setSkip(Math.max(0, skip - limit))}
+          >
+            Anterior
+          </button>
+          <button 
+            disabled={skip + limit >= total} 
+            className="px-4 py-2 text-xs font-bold rounded-xl bg-[#212121] hover:bg-neutral-800 text-white transition disabled:opacity-50 disabled:pointer-events-none" 
+            onClick={() => setSkip(skip + limit)}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
       {/* Modal detalle simple */}

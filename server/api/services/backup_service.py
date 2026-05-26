@@ -11,6 +11,7 @@ from api.core.config import settings
 from api.services.google_drive_service import GoogleDriveService
 from api.models.backup_setting import BackupSetting
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 # Variable en memoria para indicar si hay un proceso activo
 _is_processing = False
@@ -379,16 +380,16 @@ class BackupService:
         cls.clean_temp_dir()
         
         # Buscar o crear configuración de backup
-        setting = db.query(BackupSetting).first()
+        setting = (await db.execute(select(BackupSetting))).scalar_one_or_none()
         if not setting:
             setting = BackupSetting(frequency="daily")
             db.add(setting)
-            db.commit()
-            db.refresh(setting)
+            await db.commit()
+            await db.refresh(setting)
 
         setting.last_status = "running"
         setting.last_message = "Generando archivo de respaldo de base de datos..."
-        db.commit()
+        await db.commit()
 
         try:
             # 1. Generar backup crudo
@@ -418,7 +419,7 @@ class BackupService:
             setting.last_run_at = datetime.now()
             setting.last_status = "success"
             setting.last_message = f"Backup generado correctamente en {location}."
-            db.commit()
+            await db.commit()
 
             # 5. Aplicar políticas de retención
             await cls.apply_retention_policy()
@@ -434,7 +435,7 @@ class BackupService:
             setting.last_run_at = datetime.now()
             setting.last_status = "error"
             setting.last_message = str(e)
-            db.commit()
+            await db.commit()
             raise e
         finally:
             cls.clean_temp_dir()
@@ -455,26 +456,26 @@ class BackupService:
         cls.set_running(True)
         cls.clean_temp_dir()
 
-        setting = db.query(BackupSetting).first()
+        setting = (await db.execute(select(BackupSetting))).scalar_one_or_none()
         if not setting:
             setting = BackupSetting(frequency="daily")
             db.add(setting)
-            db.commit()
+            await db.commit()
 
         setting.last_status = "running"
         setting.last_message = "Iniciando proceso de restauración..."
-        db.commit()
+        await db.commit()
 
         backup_safety_path = None
         try:
             # 1. Crear backup de seguridad en caliente antes de restaurar
             setting.last_message = "Creando respaldo de seguridad temporal..."
-            db.commit()
+            await db.commit()
             backup_safety_path = cls._execute_backup_raw()
 
             # 2. Descargar e identificar el ZIP a restaurar
             setting.last_message = "Descargando archivo de backup..."
-            db.commit()
+            await db.commit()
             
             temp_dir = cls.get_temp_dir()
             zip_temp_path = os.path.join(temp_dir, "restore_target.zip")
@@ -499,7 +500,7 @@ class BackupService:
 
             # 3. Descomprimir el ZIP
             setting.last_message = "Descomprimiendo archivos de base de datos..."
-            db.commit()
+            await db.commit()
             
             extracted_dir = os.path.join(temp_dir, "extracted")
             os.makedirs(extracted_dir, exist_ok=True)
@@ -507,14 +508,14 @@ class BackupService:
 
             # 4. Restaurar la base de datos
             setting.last_message = "Importando base de datos..."
-            db.commit()
+            await db.commit()
             
             cls._execute_restore_raw(extracted_file)
 
             # Éxito absoluto
             setting.last_status = "success"
             setting.last_message = "Base de datos restaurada correctamente."
-            db.commit()
+            await db.commit()
 
             return {"success": True, "message": "Restauración exitosa."}
 
@@ -526,7 +527,7 @@ class BackupService:
             if backup_safety_path and os.path.exists(backup_safety_path):
                 try:
                     setting.last_message = f"Restauración fallida. Iniciando Rollback automático..."
-                    db.commit()
+                    await db.commit()
                     cls._execute_restore_raw(backup_safety_path)
                     error_message += " Se realizó rollback al estado anterior con éxito."
                 except Exception as rollback_err:
@@ -534,7 +535,7 @@ class BackupService:
 
             setting.last_status = "error"
             setting.last_message = error_message
-            db.commit()
+            await db.commit()
             raise Exception(error_message)
             
         finally:

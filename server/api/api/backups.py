@@ -4,6 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from api.db.conexion import get_db
 from api.api.auth import require_admin
@@ -23,12 +24,12 @@ router = APIRouter(prefix="/backups", tags=["Backups"])
 async def get_backups_summary(db: Session = Depends(get_db), _=Depends(require_admin)):
     """Obtiene el listado de backups, configuraciones y el resumen del almacenamiento."""
     # Buscar o crear configuración por defecto
-    setting = db.query(BackupSetting).first()
+    setting = (await db.execute(select(BackupSetting))).scalar_one_or_none()
     if not setting:
         setting = BackupSetting(frequency="daily")
         db.add(setting)
-        db.commit()
-        db.refresh(setting)
+        await db.commit()
+        await db.refresh(setting)
 
     try:
         backups = await BackupService.list_backups()
@@ -59,12 +60,12 @@ async def get_backups_summary(db: Session = Depends(get_db), _=Depends(require_a
 @router.get("/status", response_model=BackupStatusResponse)
 async def get_backup_status(db: Session = Depends(get_db), _=Depends(require_admin)):
     """Obtiene el estado del último proceso de backup."""
-    setting = db.query(BackupSetting).first()
+    setting = (await db.execute(select(BackupSetting))).scalar_one_or_none()
     if not setting:
         setting = BackupSetting(frequency="daily")
         db.add(setting)
-        db.commit()
-        db.refresh(setting)
+        await db.commit()
+        await db.refresh(setting)
 
     return {
         "is_running": BackupService.is_running(),
@@ -132,7 +133,7 @@ async def update_backup_schedule(payload: BackupScheduleUpdate, db: Session = De
             detail="Frecuencia inválida. Valores permitidos: 'daily', 'weekly', 'monthly'."
         )
 
-    setting = db.query(BackupSetting).first()
+    setting = (await db.execute(select(BackupSetting))).scalar_one_or_none()
     if not setting:
         setting = BackupSetting(frequency=payload.frequency)
         db.add(setting)
@@ -140,8 +141,8 @@ async def update_backup_schedule(payload: BackupScheduleUpdate, db: Session = De
         setting.frequency = payload.frequency
         setting.updated_at = datetime.utcnow()
         
-    db.commit()
-    db.refresh(setting)
+    await db.commit()
+    await db.refresh(setting)
     return setting
 
 @router.post("/restore")
@@ -172,12 +173,12 @@ async def restore_backup(payload: dict, db: Session = Depends(get_db), _=Depends
 @router.post("/reset-status")
 async def reset_backup_status(db: Session = Depends(get_db), _=Depends(require_admin)):
     """Reinicia un estado bloqueado 'En proceso' en caso de caídas del servidor."""
-    setting = db.query(BackupSetting).first()
+    setting = (await db.execute(select(BackupSetting))).scalar_one_or_none()
     if setting:
         setting.last_status = "error"
         setting.last_message = "Proceso desbloqueado manualmente por el administrador."
-        db.commit()
-        db.refresh(setting)
+        await db.commit()
+        await db.refresh(setting)
     
     BackupService.set_running(False)
     return {"success": True, "message": "Estado de backup desbloqueado correctamente."}

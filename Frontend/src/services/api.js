@@ -19,6 +19,8 @@ export const authApi = {
   signup: (payload) => http.post("/signup", payload),
   mePermisos: () => http.get("/me/permisos"),
   updatePerfil: (payload) => http.put("/me/perfil", payload),
+  verifyEmail: (code) => http.post("/verify-email", { code }),
+  resendCode: () => http.post("/resend-code"),
 };
 
 export const geoApi = {

@@ -41,6 +41,7 @@ export function AuthProvider({ children }) {
       id_rol: data.id_rol,
       id_empresa: data.id_empresa || null,
       permisos: data.permisos || [],
+      is_verified: data.is_verified ?? true,
     };
     saveSession(data.access_token, nextUser);
     setToken(data.access_token);
@@ -56,6 +57,7 @@ export function AuthProvider({ children }) {
       id_rol: data.id_rol,
       id_empresa: data.id_empresa || null,
       permisos: data.permisos || [],
+      is_verified: data.is_verified ?? false,
     };
     saveSession(data.access_token, nextUser);
     setToken(data.access_token);
@@ -77,6 +79,7 @@ export function AuthProvider({ children }) {
       signin,
       signup,
       signout,
+      setUser,
     }),
     [token, user],
   );

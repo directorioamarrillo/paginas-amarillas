@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
+import node from "@astrojs/node";
 import tailwind from "@astrojs/tailwind";
 
 export default defineConfig({
@@ -7,5 +8,8 @@ export default defineConfig({
     experimentalReactChildren: true,
   }), tailwind()],
 
-  output: "static",
+  output: "server",
+  adapter: node({
+    mode: "standalone",
+  }),
 });

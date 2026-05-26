@@ -44,13 +44,34 @@ import { AdminTicketsPage } from "./pages/AdminTicketsPage";
 import { MisTicketsPage } from "./pages/MisTicketsPage";
 import { TicketDetallePage } from "./pages/TicketDetallePage";
 import { Backups } from "./pages/admin/Backups";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
+import { useAuth } from "./context/AuthContext";
+import { useLocation } from "react-router-dom";
 
+function VerificationBanner() {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  if (user && !user.is_verified && location.pathname !== '/verificar-correo') {
+    return (
+      <div className="bg-amber-500 text-white text-center py-2.5 px-4 z-[100] relative font-medium text-sm">
+        Tu cuenta no está verificada. Para usar todas las funciones del directorio, por favor{" "}
+        <a href="/verificar-correo" className="underline font-bold hover:text-amber-100 ml-1">
+          verifica tu correo aquí
+        </a>.
+      </div>
+    );
+  }
+  return null;
+}
 
 function App() {
   return (
     <>
+      <VerificationBanner />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/verificar-correo" element={<VerifyEmailPage />} />
         
         {/* Public Pages - Mercado Libre Style */}
         <Route element={<PublicShell />}>

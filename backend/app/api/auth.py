@@ -14,6 +14,9 @@ from app.models import models
 from app.db import conexion
 from app.schemas.schemas import UsuarioRegister, SigninResponse, UsuarioResponse, PerfilUpdate
 from app.services.audit_service import registrar_auditoria
+from app.services.email_service import EmailService
+import random
+from pydantic import BaseModel
 
 # Configuración de seguridad
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")  # usar variable de entorno en producción
@@ -109,7 +112,7 @@ async def login(
     # Crear token con el correo en el campo `sub` para facilitar la recuperación
     user_sub = user.correo
     rol_nombre, permisos = _extract_auth_context(user)
-    access_token = create_access_token(data={"sub": user_sub, "rol": rol_nombre, "id_usuario": user.id, "id_rol": getattr(user, 'id_rol', None), "id_empresa": getattr(user, 'id_empresa', None)})
+    access_token = create_access_token(data={"sub": user_sub, "rol": rol_nombre, "id_usuario": user.id, "id_rol": getattr(user, 'id_rol', None), "id_empresa": getattr(user, 'id_empresa', None), "is_verified": user.is_verified})
 
     # Establecer cookies para que el SSR y el cliente las reciban.
     # Token como HttpOnly; rol y permisos accesibles si es necesario.
@@ -122,6 +125,8 @@ async def login(
     response.set_cookie(key='id_usuario', value=str(user.id), httponly=False, path='/', samesite='none', secure=secure_flag)
     # id_empresa
     response.set_cookie(key='id_empresa', value=str(user.id_empresa) if user.id_empresa else '', httponly=False, path='/', samesite='none', secure=secure_flag)
+    # is_verified
+    response.set_cookie(key='is_verified', value=str(user.is_verified).lower(), httponly=False, path='/', samesite='none', secure=secure_flag)
     # permisos (serializar como JSON)
     try:
         import json
@@ -137,7 +142,7 @@ async def login(
     except Exception:
         pass
 
-    return {"access_token": access_token, "rol": rol_nombre, "id_usuario": user.id, "id_rol": getattr(user, 'id_rol', None), "id_empresa": getattr(user, 'id_empresa', None), "permisos": permisos}
+    return {"access_token": access_token, "rol": rol_nombre, "id_usuario": user.id, "id_rol": getattr(user, 'id_rol', None), "id_empresa": getattr(user, 'id_empresa', None), "permisos": permisos, "is_verified": user.is_verified}
 
 @router.post("/signup", response_model=SigninResponse)
 async def create_usuario(usuario: UsuarioRegister, db: AsyncSession = Depends(conexion.get_db)):
@@ -151,11 +156,15 @@ async def create_usuario(usuario: UsuarioRegister, db: AsyncSession = Depends(co
     if existing_user:
         raise HTTPException(status_code=400, detail="Ya existe un usuario registrado con este correo electrónico")
 
-    # Crear usuario con password hasheada
+    # Crear usuario con password hasheada y código de verificación
+    verification_code = str(random.randint(100000, 999999))
     data_usuario = {
         **usuario.dict(),
         "id_rol": 2, # ROL USUARIO por defecto
-        "password": hash_password(usuario.password)
+        "password": hash_password(usuario.password),
+        "is_verified": False,
+        "verification_code": verification_code,
+        "code_expires_at": datetime.utcnow() + timedelta(minutes=15)
     }
 
     db_usuario = models.Usuario(**data_usuario)
@@ -184,15 +193,123 @@ async def create_usuario(usuario: UsuarioRegister, db: AsyncSession = Depends(co
     # Registrar auditoría: creación de cuenta
     try:
         await registrar_auditoria(db, usuario_id=db_usuario.id, nombre_usuario=db_usuario.correo, rol_usuario='usuario', accion='crear_usuario', modulo='auth', descripcion='Registro de nuevo usuario', metodo_http='POST', endpoint='/signup')
-    except Exception:
+        # Enviar correo de verificación en background
+        EmailService.send_verification_email(db_usuario.correo, verification_code)
+    except Exception as e:
+        print(f"Error enviando correo o auditoría: {e}")
         pass
+    
     return {
         "access_token": access_token,
         "rol": rol_nombre,
         "id_usuario": created_user.id,
         "id_rol": getattr(created_user, "id_rol", None),
         "permisos": permisos,
+        "is_verified": False,
     }
+
+
+
+# Función para verificar el token y obtener el usuario actual
+async def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: AsyncSession = Depends(conexion.get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No autenticado. Inicia sesión para continuar.",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if not token:
+        raise credentials_exception
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        correo: str = payload.get("sub")
+        if correo is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = await get_user(db, correo)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_user_optional(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(conexion.get_db),
+):
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        correo: str = payload.get("sub")
+        if correo is None:
+            return None
+    except JWTError:
+        return None
+    return await get_user(db, correo)
+
+
+async def can_view_deleted_records(current_user: Optional[models.Usuario] = Depends(get_current_user_optional)) -> bool:
+    return _has_permission(current_user, Permisos.VER_REGISTROS_ELIMINADOS.value)
+
+
+async def require_admin(current_user: models.Usuario = Depends(get_current_user)):
+    if is_admin_user(current_user):
+        return current_user
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Se requieren privilegios de administrador")
+
+
+def require_permission(permission_name: Permisos):
+    async def dependency(current_user: models.Usuario = Depends(get_current_user)):
+        required_permission = permission_name.value if isinstance(permission_name, Permisos) else str(permission_name)
+
+        if _has_permission(current_user, required_permission):
+            return current_user
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Se requiere el permiso '{required_permission}'",
+        )
+
+    return dependency
+
+
+class VerifyEmailRequest(BaseModel):
+    code: str
+
+@router.post("/verify-email")
+async def verify_email(req: VerifyEmailRequest, current_user: models.Usuario = Depends(get_current_user), db: AsyncSession = Depends(conexion.get_db)):
+    if current_user.is_verified:
+        return {"success": True, "message": "Tu cuenta ya está verificada."}
+    
+    if current_user.verification_code != req.code:
+        raise HTTPException(status_code=400, detail="Código de verificación incorrecto.")
+        
+    if not current_user.code_expires_at or current_user.code_expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="El código de verificación ha expirado. Por favor, solicita uno nuevo.")
+        
+    current_user.is_verified = True
+    current_user.verification_code = None
+    current_user.code_expires_at = None
+    await db.commit()
+    
+    return {"success": True, "message": "Cuenta verificada correctamente."}
+
+@router.post("/resend-code")
+async def resend_verification_code(current_user: models.Usuario = Depends(get_current_user), db: AsyncSession = Depends(conexion.get_db)):
+    if current_user.is_verified:
+        return {"success": True, "message": "Tu cuenta ya está verificada."}
+        
+    # Generar nuevo código
+    new_code = str(random.randint(100000, 999999))
+    current_user.verification_code = new_code
+    current_user.code_expires_at = datetime.utcnow() + timedelta(minutes=15)
+    await db.commit()
+    
+    # Enviar correo
+    EmailService.send_verification_email(current_user.correo, new_code)
+    
+    return {"success": True, "message": "Se ha enviado un nuevo código a tu correo."}
+
 
 # Función para verificar el token y obtener el usuario actual
 async def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: AsyncSession = Depends(conexion.get_db)):
@@ -317,6 +434,7 @@ async def actualizar_mi_perfil(
         "rol": getattr(user_completo.rol_obj, "nombre", None) if user_completo.rol_obj else None,
         "id_rol": user_completo.id_rol,
         "id_empresa": user_completo.id_empresa,
+        "is_verified": user_completo.is_verified,
     }
 
 

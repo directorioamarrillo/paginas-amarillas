@@ -174,6 +174,19 @@ export function TicketDetallePage() {
   const t = ticket.data;
   const isClosed = t.estado === "CERRADO" || t.estado === "RESUELTO";
 
+  // Helpers para fechas (El backend envía UTC sin la 'Z')
+  const formatLocalDate = (dateStr) => {
+    if (!dateStr) return "";
+    const isoStr = typeof dateStr === 'string' && !dateStr.endsWith('Z') ? `${dateStr}Z` : dateStr;
+    return new Date(isoStr).toLocaleString("es-CO", { timeZone: "America/Bogota" });
+  };
+
+  const formatShortDate = (dateStr) => {
+    if (!dateStr) return "";
+    const isoStr = typeof dateStr === 'string' && !dateStr.endsWith('Z') ? `${dateStr}Z` : dateStr;
+    return new Date(isoStr).toLocaleDateString("es-CO", { timeZone: "America/Bogota", month: 'short', day: 'numeric' });
+  };
+
   // Agrupar todos los adjuntos (del ticket base y de los mensajes)
   const todosLosAdjuntos = t.adjuntos || [];
 
@@ -194,7 +207,7 @@ export function TicketDetallePage() {
             </h2>
             <div className="flex items-center gap-3 mt-1 text-sm text-neutral-500">
               {getStatusBadge(t.estado)}
-              <span className="flex items-center gap-1"><Clock size={14} /> {new Date(t.fecha_creacion).toLocaleString()}</span>
+              <span className="flex items-center gap-1"><Clock size={14} /> {formatLocalDate(t.fecha_creacion)}</span>
             </div>
           </div>
         </div>
@@ -220,7 +233,7 @@ export function TicketDetallePage() {
                       </span>
                       <span className="text-[11px] text-neutral-400">Creador del Ticket</span>
                     </div>
-                    <span className="text-xs text-neutral-400">{new Date(t.fecha_creacion).toLocaleString()}</span>
+                    <span className="text-xs text-neutral-400">{formatLocalDate(t.fecha_creacion)}</span>
                   </div>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
                     {t.descripcion}
@@ -283,7 +296,7 @@ export function TicketDetallePage() {
                             {isNota ? "Nota Interna (Solo Soporte)" : msg.rol_usuario?.toUpperCase()}
                           </span>
                         </div>
-                        <span className="text-xs text-neutral-400">{new Date(msg.fecha_creacion).toLocaleString()}</span>
+                        <span className="text-xs text-neutral-400">{formatLocalDate(msg.fecha_creacion)}</span>
                       </div>
                       <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.mensaje}</p>
 
@@ -542,7 +555,7 @@ export function TicketDetallePage() {
                                 )}
                               </div>
                               <div className="text-right text-[10px] whitespace-nowrap text-neutral-400 self-start">
-                                <time>{new Date(event.fecha_creacion).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</time>
+                                <time>{formatShortDate(event.fecha_creacion)}</time>
                               </div>
                             </div>
                           </div>

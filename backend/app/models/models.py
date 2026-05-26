@@ -99,6 +99,12 @@ class Usuario(Base):
     id_rol = Column(Integer, ForeignKey('roles.id'), nullable=True)
     id_empresa = Column(Integer, ForeignKey('empresas.id'), nullable=True)
     password = Column(String(255), nullable=False)
+    
+    # 2FA / Verificación de correo
+    is_verified = Column(Boolean, default=False, nullable=False)
+    verification_code = Column(String(10), nullable=True)
+    code_expires_at = Column(DateTime, nullable=True)
+
     rol_obj = relationship('Rol', back_populates='usuarios')
     empresa = relationship("Empresa", back_populates="usuarios", foreign_keys=[id_empresa])
     empresas_creadas = relationship("Empresa", back_populates="usuario_creador", foreign_keys="Empresa.id_usuario_creador")
