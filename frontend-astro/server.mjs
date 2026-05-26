@@ -1,6 +1,6 @@
 /**
- * server.mjs - Servidor HTTP personalizado para Railway
- * Diagnóstico: muestra los exports disponibles de entry.mjs y hace fallback robusto
+ * server.mjs - Servidor HTTP para Railway
+ * Fix: handler de Astro es async, hay que usar await correctamente
  */
 
 import http from 'node:http';
@@ -11,20 +11,12 @@ import { fileURLToPath } from 'node:url';
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = '0.0.0.0';
 
-console.log(`[server] Iniciando en ${HOST}:${PORT}`);
-console.log(`[server] NODE_VERSION: ${process.version}`);
-console.log(`[server] NODE_ENV: ${process.env.NODE_ENV}`);
-
 // Importar el handler de Astro (modo middleware)
-let handler;
-try {
-  const entry = await import('./dist/server/entry.mjs');
-  console.log('[server] entry.mjs exports:', Object.keys(entry));
-  handler = entry.handler ?? entry.default;
-  console.log('[server] handler type:', typeof handler);
-} catch (err) {
-  console.error('[server] ERROR al importar entry.mjs:', err.message);
-}
+const entry = await import('./dist/server/entry.mjs');
+const handler = entry.handler ?? entry.default;
+
+console.log(`✅ [server] Handler cargado. Tipo: ${typeof handler}`);
+console.log(`✅ [server] Arrancando en http://${HOST}:${PORT}`);
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const clientDir = join(__dirname, 'dist', 'client');
@@ -33,16 +25,18 @@ const MIME = {
   '.js': 'application/javascript',
   '.mjs': 'application/javascript',
   '.css': 'text/css',
-  '.html': 'text/html',
+  '.html': 'text/html; charset=utf-8',
   '.json': 'application/json',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.webp': 'image/webp',
+  '.txt': 'text/plain',
 };
 
 function tryStatic(req, res) {
@@ -62,41 +56,41 @@ function tryStatic(req, res) {
   return false;
 }
 
-const server = http.createServer((req, res) => {
+// ⚠️ CRÍTICO: El handler de Astro es async → usar async/await
+const server = http.createServer(async (req, res) => {
   // 1. Archivos estáticos
   if (tryStatic(req, res)) return;
 
-  // 2. Si Astro no cargó, mostrar error diagnóstico
-  if (typeof handler !== 'function') {
-    res.writeHead(503, { 'Content-Type': 'text/plain' });
-    res.end('[ERROR] handler de Astro no disponible. Revisa los Deploy Logs.');
-    return;
-  }
-
-  // 3. Handler de Astro SSR
+  // 2. Handler de Astro SSR con await
   try {
-    handler(req, res, (err) => {
-      if (err) {
-        console.error('[server] Error Astro handler:', err);
-        if (!res.headersSent) { res.writeHead(500); res.end('Error interno'); }
-      } else {
-        if (!res.headersSent) { res.writeHead(404); res.end('Not Found'); }
+    await new Promise((resolve, reject) => {
+      const result = handler(req, res, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      // Si handler retorna una Promise, esperarla también
+      if (result && typeof result.then === 'function') {
+        result.then(resolve, reject);
       }
     });
+
+    // Si Astro no envió respuesta (next llamado sin error = 404)
+    if (!res.headersSent) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Not Found');
+    }
   } catch (err) {
-    console.error('[server] Excepción en handler:', err);
-    if (!res.headersSent) { res.writeHead(500); res.end('Error interno'); }
+    console.error('[server] Error en handler de Astro:', err?.message || err);
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Internal Server Error');
+    }
   }
 });
 
-process.on('uncaughtException', (err) => {
-  console.error('[server] uncaughtException:', err);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('[server] unhandledRejection:', reason);
-});
+process.on('uncaughtException', (err) => console.error('[uncaughtException]', err));
+process.on('unhandledRejection', (r) => console.error('[unhandledRejection]', r));
 
 server.listen(PORT, HOST, () => {
-  console.log(`✅ [server] LISTO en http://${HOST}:${PORT}`);
+  console.log(`🚀 [server] LISTO → http://${HOST}:${PORT}`);
 });
