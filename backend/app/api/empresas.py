@@ -3,12 +3,12 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from typing import Optional
 from pydantic import BaseModel, EmailStr, constr
 
 from app.schemas.schemas import EmpresaCreate, EmpresaResponse, EmpresaResponseGet
-from app.models.models import Empresa, Categoria, Municipio, Review, Usuario
+from app.models.models import Empresa, Categoria, Municipio, Review, Usuario, ImagenEmpresa
 from app.db.conexion import get_db
 from app.api.auth import can_view_deleted_records, require_permission, get_current_user_optional, is_admin_user, get_current_user
 from app.utils.uploads import ensure_upload_dir, save_upload_file, build_public_url, get_upload_root
@@ -115,7 +115,7 @@ async def create_empresa(
 @router.get("/empresas/", response_model=list[EmpresaResponseGet])
 async def read_empresas(
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=500),
     nombre: Optional[str] = Query(None),
     id_categoria: Optional[int] = Query(None),
     id_municipio: Optional[int] = Query(None),
@@ -142,8 +142,12 @@ async def read_empresas(
     
     query = select(Empresa).options(
         joinedload(Empresa.categoria),
-        joinedload(Empresa.municipio)
+        joinedload(Empresa.municipio),
+        selectinload(Empresa.imagenes)
     ).outerjoin(avg_rating, Empresa.id == avg_rating.c.id_empresa)
+
+    import logging
+    logging.warning(f"CAN VIEW DELETED: {can_view_deleted}")
 
     filters = []
     if not can_view_deleted:
@@ -184,7 +188,7 @@ async def read_empresas(
 @router.get("/empresas/usuario/mis-empresas", response_model=list[EmpresaResponseGet])
 async def get_mis_empresas(
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=500),
     current_user = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db)
 ):
@@ -194,7 +198,8 @@ async def get_mis_empresas(
     
     query = select(Empresa).options(
         joinedload(Empresa.categoria),
-        joinedload(Empresa.municipio)
+        joinedload(Empresa.municipio),
+        selectinload(Empresa.imagenes)
     ).where(Empresa.id_usuario_creador == current_user.id)
     
     result = await db.execute(query.offset(skip).limit(limit))
@@ -221,7 +226,7 @@ async def get_mi_empresa(
     if current_user.id_empresa:
         query = (
             select(Empresa)
-            .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio))
+            .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio), selectinload(Empresa.imagenes))
             .where(Empresa.id == current_user.id_empresa, Empresa.deleted_at.is_(None))
         )
         result = await db.execute(query)
@@ -230,7 +235,7 @@ async def get_mi_empresa(
     if not empresa:
         query = (
             select(Empresa)
-            .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio))
+            .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio), selectinload(Empresa.imagenes))
             .where(Empresa.id_usuario_creador == current_user.id, Empresa.deleted_at.is_(None))
         )
         result = await db.execute(query)
@@ -300,7 +305,7 @@ async def update_mi_empresa(
 
     refresh_result = await db.execute(
         select(Empresa)
-        .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio))
+        .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio), selectinload(Empresa.imagenes))
         .where(Empresa.id == empresa.id)
     )
     return refresh_result.scalars().first()
@@ -361,7 +366,7 @@ async def read_empresa(
 ):
     query = (
         select(Empresa)
-        .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio))
+        .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio), selectinload(Empresa.imagenes))
         .where(Empresa.id == empresa_id)
     )
     if not can_view_deleted:
@@ -392,7 +397,7 @@ async def update_empresa(
     await db.commit()
     result = await db.execute(
         select(Empresa)
-        .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio))
+        .options(joinedload(Empresa.categoria), joinedload(Empresa.municipio), selectinload(Empresa.imagenes))
         .where(Empresa.id == empresa_id)
     )
     empresa_actualizada = result.scalars().first()
@@ -614,3 +619,125 @@ async def remove_usuario_empresa(
     usuario.deleted_at = datetime.utcnow()
     await db.commit()
     return {"message": "Usuario removido de la empresa correctamente"}
+
+
+@router.post("/empresas/{empresa_id}/imagenes/upload")
+async def upload_imagenes_empresa(
+    empresa_id: int,
+    archivos: list[UploadFile] = File(...),
+    current_user = Depends(require_permission(Permisos.MODIFICAR_EMPRESAS)),
+    db: AsyncSession = Depends(get_db),
+):
+    """Sube múltiples imágenes para la galería de una empresa."""
+    result = await db.execute(select(Empresa).where(Empresa.id == empresa_id, Empresa.deleted_at.is_(None)))
+    empresa = result.scalars().first()
+    if not empresa:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+    _assert_empresa_owner_or_admin(current_user, empresa)
+
+    upload_dir = ensure_upload_dir(get_upload_root(), "empresas_galeria")
+    
+    nuevas_imagenes = []
+    for archivo in archivos:
+        try:
+            file_name = await save_upload_file(archivo, upload_dir)
+            imagen_url = build_public_url(file_name, "empresas_galeria")
+            
+            db_imagen = ImagenEmpresa(id_empresa=empresa_id, imagen_url=imagen_url)
+            db.add(db_imagen)
+            nuevas_imagenes.append(db_imagen)
+        except HTTPException as he:
+            await db.rollback()
+            raise he
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail=f"Error al guardar la imagen: {str(e)}")
+
+    await db.commit()
+    
+    # Refrescar y obtener los IDs
+    for img in nuevas_imagenes:
+        await db.refresh(img)
+
+    try:
+        await registrar_auditoria(
+            db, 
+            usuario_id=current_user.id if current_user else None, 
+            nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, 
+            rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, 
+            accion='subir_imagenes_galeria', 
+            modulo='empresas', 
+            entidad_afectada='empresa', 
+            entidad_id=str(empresa_id), 
+            descripcion=f'Subidas {len(nuevas_imagenes)} imágenes a la galería', 
+            metodo_http='POST', 
+            endpoint=f'/empresas/{empresa_id}/imagenes/upload'
+        )
+    except Exception:
+        pass
+
+    return {
+        "message": f"Se subieron {len(nuevas_imagenes)} imágenes correctamente",
+        "imagenes": [{"id": img.id, "imagen_url": img.imagen_url} for img in nuevas_imagenes]
+    }
+
+
+@router.delete("/empresas/{empresa_id}/imagenes/{imagen_id}")
+async def delete_imagen_empresa(
+    empresa_id: int,
+    imagen_id: int,
+    current_user = Depends(require_permission(Permisos.MODIFICAR_EMPRESAS)),
+    db: AsyncSession = Depends(get_db),
+):
+    """Elimina una imagen de la galería de una empresa, borrando el archivo físico del disco."""
+    # Verificar la empresa
+    result = await db.execute(select(Empresa).where(Empresa.id == empresa_id, Empresa.deleted_at.is_(None)))
+    empresa = result.scalars().first()
+    if not empresa:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+    _assert_empresa_owner_or_admin(current_user, empresa)
+
+    # Buscar la imagen
+    img_result = await db.execute(
+        select(ImagenEmpresa).where(
+            ImagenEmpresa.id == imagen_id, 
+            ImagenEmpresa.id_empresa == empresa_id
+        )
+    )
+    imagen = img_result.scalars().first()
+    if not imagen:
+        raise HTTPException(status_code=404, detail="Imagen no encontrada en la galería de esta empresa")
+
+    # Borrar físicamente el archivo del disco
+    try:
+        file_name = Path(imagen.imagen_url).name
+        file_path = Path(get_upload_root()) / "empresas_galeria" / file_name
+        if file_path.exists() and file_path.is_file():
+            file_path.unlink()
+    except Exception as e:
+        print(f"Error al eliminar archivo físico de imagen {imagen.imagen_url}: {str(e)}")
+
+    # Eliminar de la DB
+    await db.delete(imagen)
+    await db.commit()
+
+    try:
+        await registrar_auditoria(
+            db, 
+            usuario_id=current_user.id if current_user else None, 
+            nombre_usuario=getattr(current_user, 'correo', None) if current_user else None, 
+            rol_usuario=getattr(getattr(current_user, 'rol_obj', None), 'nombre', None) if current_user else None, 
+            accion='eliminar_imagen_galeria', 
+            modulo='empresas', 
+            entidad_afectada='empresa', 
+            entidad_id=str(empresa_id), 
+            descripcion=f'Eliminada imagen {imagen_id} de la galería', 
+            metodo_http='DELETE', 
+            endpoint=f'/empresas/{empresa_id}/imagenes/{imagen_id}'
+        )
+    except Exception:
+        pass
+
+    return {"message": "Imagen eliminada correctamente"}

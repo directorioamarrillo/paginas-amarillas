@@ -1,0 +1,29 @@
+---
+import GlobalLayout from "../../layout/GlobalLayout.astro";
+import { VerificarCuenta } from "../../components/Formularios/VerificarCuenta";
+
+// Require auth: Si el usuario no está logueado, lo ideal es que lo mande al login.
+// Pero la idea de esta pantalla es que lleguen justo después de crear la cuenta o iniciar sesión.
+---
+
+<GlobalLayout title="Verificar cuenta" auth={true}>
+  <style>
+    .content-form-inicio-sesion {
+      height: calc(100vh - 120px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .content-form-inicio-sesion h2 {
+      text-align: center;
+      margin-block: 60px;
+    }
+  </style>
+
+  <div class="content-form-inicio-sesion">
+    <section>
+      <h2>Activa tu Cuenta</h2>
+      <VerificarCuenta client:load />
+    </section>
+  </div>
+</GlobalLayout>

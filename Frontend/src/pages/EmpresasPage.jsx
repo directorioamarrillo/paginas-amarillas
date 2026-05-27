@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare, faImage, faBuilding } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUpRightFromSquare, faImage, faBuilding, faTrash, faUpload, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { DataTable } from "../components/common/DataTable";
 import { EmptyState } from "../components/common/EmptyState";
 import { Loading } from "../components/common/Loading";
@@ -10,11 +10,13 @@ import { ReactSelect } from "../components/common/ReactSelect";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { categoriasApi, empresasApi, geoApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import { PermissionGate } from "../components/common/PermissionGate";
 import { API_BASE_URL } from "../config/env";
 
 export function EmpresasPage({ readOnly = false }) {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [nombre, setNombre] = useState(searchParams.get("search") || "");
@@ -77,8 +79,9 @@ export function EmpresasPage({ readOnly = false }) {
   };
 
   const empresas = useAsyncData(async () => {
-    const { data } = await empresasApi.list({ search: nombre || undefined, limit: 30 });
-    return data;
+    const { data } = await empresasApi.list({ search: nombre || undefined, limit: 200 });
+    // Only active empresas (soft-deleted go to Archivo de Registros Eliminados)
+    return (data || []).filter((x) => !x.deleted_at);
   }, nombre);
 
   const crearEmpresa = async (event) => {
@@ -166,11 +169,45 @@ export function EmpresasPage({ readOnly = false }) {
     }
   };
 
-  const eliminarEmpresa = async (idEmpresa) => {
-    const confirmado = window.confirm("¿Seguro que deseas desactivar esta empresa?");
-    if (!confirmado) {
+  const [subiendoGaleria, setSubiendoGaleria] = useState(false);
+
+  const subirImagenesGaleria = async (event) => {
+    const archivos = Array.from(event.target.files || []);
+    if (archivos.length === 0) return;
+    if (!editForm.id) {
+      pushToast({ title: "Empresa no seleccionada", message: "Por favor selecciona una empresa primero", type: "error" });
       return;
     }
+    
+    setSubiendoGaleria(true);
+    try {
+      await empresasApi.uploadImagenes(Number(editForm.id), archivos);
+      pushToast({ title: "Galería actualizada", message: `Se subieron ${archivos.length} imágenes correctamente`, type: "success" });
+      await cargarDetalle(Number(editForm.id));
+    } catch (error) {
+      pushToast({ title: "Error", message: error?.response?.data?.detail || "No se pudieron subir las imágenes", type: "error" });
+    } finally {
+      setSubiendoGaleria(false);
+    }
+  };
+
+  const eliminarImagenGaleria = async (imagenId) => {
+    const isConfirmed = await confirm("¿Seguro que deseas eliminar esta foto de la galería?", "Eliminar Foto");
+    if (!isConfirmed) return;
+
+    try {
+      await empresasApi.deleteImagen(Number(editForm.id), imagenId);
+      pushToast({ title: "Imagen eliminada", message: "La foto fue quitada de la galería", type: "success" });
+      await cargarDetalle(Number(editForm.id));
+    } catch (error) {
+      pushToast({ title: "Error", message: error?.response?.data?.detail || "No se pudo eliminar la imagen", type: "error" });
+    }
+  };
+
+  const eliminarEmpresa = async (idEmpresa) => {
+    const isConfirmed = await confirm("¿Seguro que deseas desactivar esta empresa?", "Desactivar Empresa");
+    if (!isConfirmed) return;
+    
     try {
       await empresasApi.remove(idEmpresa);
       pushToast({ title: "Empresa desactivada", message: `Empresa ${idEmpresa} eliminada`, type: "success" });
@@ -384,6 +421,59 @@ export function EmpresasPage({ readOnly = false }) {
                 <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID empresa" value={editForm.id} onChange={(e) => setEditForm((prev) => ({ ...prev, id: e.target.value }))} />
                 <input className="rounded-xl border border-slate-300 px-3 py-2" type="file" onChange={(e) => setLogoArchivo(e.target.files?.[0] || null)} />
                 <button className="rounded-xl bg-teal-600 px-4 py-2 text-white" onClick={subirLogo}>Subir logo</button>
+              </div>
+            </div>
+
+            {/* Galería de la Empresa */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Galería de Fotos de Interés</h3>
+                <p className="text-xs text-slate-500 mt-1">Sube fotografías reales de las instalaciones, productos o servicios de la empresa (máx. 5MB por foto).</p>
+              </div>
+
+              {empresaSeleccionada?.imagenes && empresaSeleccionada.imagenes.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                  {empresaSeleccionada.imagenes.map((img) => (
+                    <div key={img.id} className="group relative aspect-video overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
+                      <img
+                        src={`${API_BASE_URL}${img.imagen_url}`}
+                        alt="Galería empresa"
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => eliminarImagenGaleria(img.id)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-600 text-white transition hover:bg-rose-700 hover:scale-110 shadow"
+                          title="Eliminar imagen"
+                        >
+                          <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-6 text-slate-400 bg-slate-50/50">
+                  <FontAwesomeIcon icon={faImage} className="text-2xl mb-2 text-slate-300" />
+                  <span className="text-xs">No hay fotos en la galería de esta empresa</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50">
+                  <FontAwesomeIcon icon={subiendoGaleria ? faSpinner : faUpload} className={subiendoGaleria ? "animate-spin" : ""} />
+                  {subiendoGaleria ? "Subiendo..." : "Subir Fotos"}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={subirImagenesGaleria}
+                    disabled={subiendoGaleria}
+                    className="hidden"
+                  />
+                </label>
+                {subiendoGaleria && <span className="text-xs text-slate-500 animate-pulse">Cargando archivos al servidor...</span>}
               </div>
             </div>
           </PermissionGate>

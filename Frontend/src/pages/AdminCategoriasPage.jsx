@@ -4,15 +4,18 @@ import { categoriasApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
 import { Input } from "../components/common/Input";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 
 export function AdminCategoriasPage() {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const [form, setForm] = useState({ nombre: "", descripcion: "" });
   const [editId, setEditId] = useState(null);
 
   const categorias = useAsyncData(async () => {
     const { data } = await categoriasApi.list({ limit: 500 });
-    return data || [];
+    // Only active categories (deleted go to Archivo de Registros Eliminados)
+    return (data || []).filter((x) => !x.deleted_at);
   });
 
   const crearCategoria = async (e) => {
@@ -46,10 +49,11 @@ export function AdminCategoriasPage() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("Desactivar categoría?")) return;
+    const isConfirmed = await confirm("¿Desactivar categoría? Se moverá al Archivo de Registros Eliminados.", "Desactivar Categoría");
+    if (!isConfirmed) return;
     try {
       await categoriasApi.remove(id);
-      pushToast({ title: "Categoría desactivada", message: "OK", type: "success" });
+      pushToast({ title: "Categoría desactivada", message: "Movida al archivo", type: "success" });
       categorias.reload();
     } catch (err) {
       pushToast({ title: "Error", message: err?.response?.data?.detail || "No se pudo eliminar", type: "error" });

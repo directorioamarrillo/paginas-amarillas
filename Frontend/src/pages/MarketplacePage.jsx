@@ -9,9 +9,11 @@ import { useAsyncData } from "../hooks/useAsyncData";
 import { categoriasApi, catalogosApi, empresasApi, marketplaceApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import { PermissionGate } from "../components/common/PermissionGate";
+import { useConfirm } from "../context/ConfirmContext";
 
 export function MarketplacePage({ readOnly = false }) {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const [searchParams] = useSearchParams();
   const initialEmpresaId = searchParams.get("id_empresa") || "";
   const [search, setSearch] = useState(searchParams.get("search") || "");
@@ -159,10 +161,8 @@ export function MarketplacePage({ readOnly = false }) {
   };
 
   const eliminarProducto = async (idMarketplace) => {
-    const confirmado = window.confirm("¿Seguro que deseas desactivar este producto?");
-    if (!confirmado) {
-      return;
-    }
+    const isConfirmed = await confirm("¿Seguro que deseas desactivar este producto?", "Desactivar Producto");
+    if (!isConfirmed) return;
     try {
       await marketplaceApi.remove(idMarketplace);
       pushToast({ title: "Producto eliminado", message: `Producto ${idMarketplace} desactivado`, type: "success" });

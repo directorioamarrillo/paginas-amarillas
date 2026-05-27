@@ -3,6 +3,9 @@ import json
 from app.core.config import settings
 
 class GoogleDriveService:
+    _cached_token = None
+    _token_expiry = 0
+
     @staticmethod
     def is_configured() -> bool:
         return bool(
@@ -12,10 +15,15 @@ class GoogleDriveService:
             settings.GOOGLE_DRIVE_FOLDER_ID
         )
 
-    @staticmethod
-    async def _get_access_token() -> str:
-        if not GoogleDriveService.is_configured():
+    @classmethod
+    async def _get_access_token(cls) -> str:
+        import time
+        if not cls.is_configured():
             raise Exception("Google Drive is not fully configured in environment variables.")
+
+        # Retornar token cacheado si aún es válido (margen de 100 segundos)
+        if cls._cached_token and time.time() < cls._token_expiry - 100:
+            return cls._cached_token
 
         url = "https://oauth2.googleapis.com/token"
         data = {
@@ -30,7 +38,12 @@ class GoogleDriveService:
                 response = await client.post(url, data=data, timeout=15.0)
                 if response.status_code != 200:
                     raise Exception(f"Google Token endpoint returned {response.status_code}: {response.text}")
-                return response.json().get("access_token")
+                json_resp = response.json()
+                cls._cached_token = json_resp.get("access_token")
+                # Google normalmente devuelve expires_in = 3599
+                expires_in = json_resp.get("expires_in", 3599)
+                cls._token_expiry = time.time() + expires_in
+                return cls._cached_token
             except Exception as e:
                 raise Exception(f"Failed to refresh Google Drive access token: {str(e)}")
 

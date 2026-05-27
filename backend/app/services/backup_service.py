@@ -12,20 +12,21 @@ from app.services.google_drive_service import GoogleDriveService
 from app.models.backup_setting import BackupSetting
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-
-# Variable en memoria para indicar si hay un proceso activo
-_is_processing = False
-
 class BackupService:
     @staticmethod
-    def is_running() -> bool:
-        global _is_processing
-        return _is_processing
-
-    @staticmethod
-    def set_running(status: bool):
-        global _is_processing
-        _is_processing = status
+    async def is_running(db: Session) -> bool:
+        # Check DB status instead of memory
+        result = await db.execute(select(BackupSetting))
+        setting = result.scalar_one_or_none()
+        if setting and setting.last_status == "running":
+            # Si se quedó pegado hace más de 30 minutos por un crash, ignorar el lock
+            if setting.last_run_at and (datetime.now() - setting.last_run_at).total_seconds() > 1800:
+                setting.last_status = "error"
+                setting.last_message = "Proceso anterior cancelado por timeout del sistema."
+                await db.commit()
+                return False
+            return True
+        return False
 
     @staticmethod
     def get_db_type() -> str:
@@ -132,35 +133,32 @@ class BackupService:
 
     @staticmethod
     def create_zip(source_file: str, zip_path: str, filename_in_zip: str):
-        """Crea un archivo ZIP comprimido, encriptado con contraseña si se especifica y pyzipper está instalado."""
+        """Crea un archivo ZIP comprimido, encriptado de forma segura con pyzipper."""
         password = settings.BACKUP_ARCHIVE_PASSWORD
         pyzipper_lib = BackupService._get_pyzipper()
 
-        if password and pyzipper_lib:
-            # Comprimir con encriptación AES usando pyzipper
-            with pyzipper_lib.AESZipFile(zip_path, 'w', compression=pyzipper_lib.ZIP_DEFLATED, encryption=pyzipper_lib.WZ_AES) as zf:
-                zf.setpassword(password.encode('utf-8'))
-                zf.write(source_file, arcname=filename_in_zip)
-        else:
-            if password and not pyzipper_lib:
-                print("WARNING: BACKUP_ARCHIVE_PASSWORD está configurado pero 'pyzipper' no está instalado. El ZIP se generará sin contraseña.")
-            # Comprimir con zipfile estándar
-            with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
-                zf.write(source_file, arcname=filename_in_zip)
+        if not pyzipper_lib:
+            raise Exception("Seguridad crítica: la librería 'pyzipper' no está instalada. Ejecuta 'pip install pyzipper'.")
+        if not password:
+            raise Exception("Seguridad crítica: la variable 'BACKUP_ARCHIVE_PASSWORD' no está definida en el .env.")
+
+        # Comprimir con encriptación AES 256
+        with pyzipper_lib.AESZipFile(zip_path, 'w', compression=pyzipper_lib.ZIP_DEFLATED, encryption=pyzipper_lib.WZ_AES) as zf:
+            zf.setpassword(password.encode('utf-8'))
+            zf.write(source_file, arcname=filename_in_zip)
 
     @staticmethod
     def extract_zip(zip_path: str, extract_to: str) -> str:
-        """Extrae el contenido de un archivo ZIP. Retorna la ruta del archivo extraído."""
+        """Extrae el contenido de un archivo ZIP encriptado. Retorna la ruta del archivo extraído."""
         password = settings.BACKUP_ARCHIVE_PASSWORD
         pyzipper_lib = BackupService._get_pyzipper()
 
-        if password and pyzipper_lib:
-            with pyzipper_lib.AESZipFile(zip_path) as zf:
-                zf.setpassword(password.encode('utf-8'))
-                zf.extractall(extract_to)
-        else:
-            with zipfile.ZipFile(zip_path) as zf:
-                zf.extractall(extract_to)
+        if not pyzipper_lib or not password:
+            raise Exception("Seguridad crítica: Se requiere 'pyzipper' y una contraseña en '.env' para desencriptar el backup.")
+
+        with pyzipper_lib.AESZipFile(zip_path) as zf:
+            zf.setpassword(password.encode('utf-8'))
+            zf.extractall(extract_to)
         
         # Encontrar el archivo extraído (debería ser el SQL o el DB)
         extracted_files = os.listdir(extract_to)
@@ -375,10 +373,8 @@ class BackupService:
     @classmethod
     async def generate_backup(cls, db: Session) -> Dict[str, Any]:
         """Genera un backup, lo empaqueta, lo sube a la nube (o local) y actualiza el estado en BD."""
-        if cls.is_running():
+        if await cls.is_running(db):
             raise Exception("Ya hay una tarea de backup en proceso.")
-
-        cls.set_running(True)
         cls.clean_temp_dir()
         
         # Buscar o crear configuración de backup
@@ -404,18 +400,18 @@ class BackupService:
             
             cls.create_zip(raw_file, zip_path, os.path.basename(raw_file))
 
-            # 3. Subir a Google Drive (o guardar localmente)
+            # 3. Guardar en disco local SIEMPRE (Regla 3-2-1)
+            local_dir = cls.get_local_storage_dir()
+            dest_local = os.path.join(local_dir, filename)
+            shutil.copy2(zip_path, dest_local)
+            file_id = filename
+            location = "Local"
+
+            # 4. Subir a Google Drive como copia remota redundante
             drive_configured = GoogleDriveService.is_configured()
             if drive_configured:
                 file_id = await GoogleDriveService.upload_backup(zip_path, filename)
-                location = "Google Drive"
-            else:
-                # Guardar localmente si no está configurado
-                local_dir = cls.get_local_storage_dir()
-                dest_local = os.path.join(local_dir, filename)
-                shutil.copy2(zip_path, dest_local)
-                file_id = filename
-                location = "Local"
+                location = "Google Drive + Local"
 
             # 4. Actualizar estado
             setting.last_run_at = datetime.now()
@@ -441,7 +437,11 @@ class BackupService:
             raise e
         finally:
             cls.clean_temp_dir()
-            cls.set_running(False)
+            # Restaurar estado si se quedó en running (esto ya se cubre si hubo error o success, pero por si acaso)
+            if setting and setting.last_status == "running":
+                setting.last_status = "error"
+                setting.last_message = "Proceso terminado inesperadamente"
+                await db.commit()
 
     @classmethod
     def _get_file_from_backup_generation(cls) -> str:
@@ -452,10 +452,8 @@ class BackupService:
     async def restore_backup(cls, db: Session, file_id: str) -> Dict[str, Any]:
         """Descarga el backup, genera un respaldo del estado actual, e intenta restaurarlo.
         Si la restauración falla, hace rollback con el respaldo tomado."""
-        if cls.is_running():
+        if await cls.is_running(db):
             raise Exception("No se puede iniciar la restauración mientras se ejecuta otra operación de backup.")
-
-        cls.set_running(True)
         cls.clean_temp_dir()
 
         setting = (await db.execute(select(BackupSetting))).scalar_one_or_none()
@@ -542,7 +540,10 @@ class BackupService:
             
         finally:
             cls.clean_temp_dir()
-            cls.set_running(False)
+            if setting and setting.last_status == "running":
+                setting.last_status = "error"
+                setting.last_message = "Proceso restaurar terminado inesperadamente"
+                await db.commit()
 
     @classmethod
     async def list_backups(cls) -> List[Dict[str, Any]]:

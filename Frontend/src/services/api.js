@@ -81,6 +81,13 @@ export const empresasApi = {
   getUsuarios: (empresaId) => http.get(`/empresas/${empresaId}/usuarios`),
   addUsuario: (empresaId, payload) => http.post(`/empresas/${empresaId}/usuarios`, payload),
   removeUsuario: (empresaId, usuarioId) => http.delete(`/empresas/${empresaId}/usuarios/${usuarioId}`),
+  restore: (empresaId) => http.patch(`/empresas/${empresaId}/restore`),
+  uploadImagenes: (empresaId, archivos) => {
+    const data = new FormData();
+    archivos.forEach((archivo) => data.append("archivos", archivo));
+    return http.post(`/empresas/${empresaId}/imagenes/upload`, data);
+  },
+  deleteImagen: (empresaId, imagenId) => http.delete(`/empresas/${empresaId}/imagenes/${imagenId}`),
 };
 
 export const marketplaceApi = {
@@ -148,6 +155,7 @@ export const usuariosApi = {
   list: (params) => http.get(`/usuarios`, { params }),
   create: (payload) => http.post(`/usuarios/`, payload),
   remove: (usuarioId) => http.delete(`/usuarios/${usuarioId}`),
+  restore: (usuarioId) => http.patch(`/usuarios/${usuarioId}/restore`),
 };
 
 export const publicidadesApi = {

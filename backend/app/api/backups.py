@@ -68,7 +68,7 @@ async def get_backup_status(db: Session = Depends(get_db), _=Depends(require_adm
         await db.refresh(setting)
 
     return {
-        "is_running": BackupService.is_running(),
+        "is_running": await BackupService.is_running(db),
         "last_run_at": setting.last_run_at,
         "last_status": setting.last_status,
         "last_message": setting.last_message
@@ -77,7 +77,7 @@ async def get_backup_status(db: Session = Depends(get_db), _=Depends(require_adm
 @router.post("/generate", status_code=status.HTTP_202_ACCEPTED)
 async def generate_manual_backup(db: Session = Depends(get_db), _=Depends(require_admin)):
     """Genera una copia de seguridad manual de la base de datos."""
-    if BackupService.is_running():
+    if await BackupService.is_running(db):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Ya existe una tarea de backup en ejecución."
@@ -155,7 +155,7 @@ async def restore_backup(payload: dict, db: Session = Depends(get_db), _=Depends
             detail="Falta el parámetro 'path' con el identificador del backup."
         )
 
-    if BackupService.is_running():
+    if await BackupService.is_running(db):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="No se puede iniciar la restauración mientras otra tarea esté activa."
@@ -180,5 +180,4 @@ async def reset_backup_status(db: Session = Depends(get_db), _=Depends(require_a
         await db.commit()
         await db.refresh(setting)
     
-    BackupService.set_running(False)
     return {"success": True, "message": "Estado de backup desbloqueado correctamente."}

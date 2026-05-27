@@ -10,13 +10,16 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { PermissionsProvider } from "./context/PermissionsContext";
+import { ConfirmProvider } from "./context/ConfirmContext";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
       <PermissionsProvider>
         <ToastProvider>
-          <App />
+          <ConfirmProvider>
+            <App />
+          </ConfirmProvider>
         </ToastProvider>
       </PermissionsProvider>
     </AuthProvider>

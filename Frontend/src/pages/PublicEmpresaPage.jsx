@@ -13,6 +13,7 @@ import {
   faPhone,
   faStar,
   faStore,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useAsyncData } from "../hooks/useAsyncData";
@@ -22,6 +23,7 @@ import { EmptyState } from "../components/common/EmptyState";
 import { API_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { MapEmpresa } from "../components/common/MapEmpresa";
 
 const pickNumber = (...values) => {
   for (const value of values) {
@@ -235,12 +237,48 @@ function ReviewCard({ review }) {
   );
 }
 
+const getCategoryGallery = (categoryName) => {
+  const name = (categoryName || "").toLowerCase();
+  if (name.includes("tecnolog") || name.includes("tecnogolioa")) {
+    return [
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600",
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600",
+      "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?q=80&w=600"
+    ];
+  } else if (name.includes("salud") || name.includes("medica")) {
+    return [
+      "https://images.unsplash.com/photo-1504805572947-34fad45aed93?q=80&w=600",
+      "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=600",
+      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=600"
+    ];
+  } else if (name.includes("educa") || name.includes("curso")) {
+    return [
+      "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=600",
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600",
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600"
+    ];
+  } else if (name.includes("carne") || name.includes("fruta") || name.includes("aliment") || name.includes("pescado") || name.includes("comida")) {
+    return [
+      "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600",
+      "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?q=80&w=600",
+      "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?q=80&w=600"
+    ];
+  } else {
+    return [
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600",
+      "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=600"
+    ];
+  }
+};
+
 export function PublicEmpresaPage() {
   const { empresaId } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { pushToast } = useToast();
   const [activeTab, setActiveTab] = useState("productos");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const idEmpresa = Number(empresaId);
 
@@ -303,87 +341,127 @@ export function PublicEmpresaPage() {
       {/* Header Section */}
       <div className="border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="flex items-start gap-4">
-              {data.logo_url ? (
-                <img
-                  src={`${API_BASE_URL}/empresas/${data.id}/logo`}
-                  alt={`Logo de ${data.nombre}`}
-                  className="h-20 w-20 rounded-2xl border border-slate-100 object-cover shadow-sm md:h-28 md:w-28"
-                />
-              ) : (
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 shrink-0 md:h-28 md:w-28">
-                  <FontAwesomeIcon icon={faBuilding} className="text-slate-400" size="2x" />
-                </div>
-              )}
-
-              <div>
-                <h1 className="text-2xl font-extrabold text-[#1F1F1F] md:text-3xl tracking-tight">{data.nombre}</h1>
-                {data.categoria && (
-                  <span className="mt-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-yellow-800">
-                    {data.categoria.nombre}
-                  </span>
+          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+            {/* Left Side: Info & Metrics */}
+            <div className="flex-1 flex flex-col gap-6 w-full">
+              {/* Profile Details */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                {data.logo_url ? (
+                  <img
+                    src={`${API_BASE_URL}/empresas/${data.id}/logo`}
+                    alt={`Logo de ${data.nombre}`}
+                    className="h-28 w-28 rounded-3xl border border-slate-100 object-cover shadow-md sm:h-36 sm:w-36 md:h-44 md:w-44 transition-all duration-300 hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-28 w-28 items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50 shrink-0 sm:h-36 sm:w-36 md:h-44 md:w-44 shadow-inner">
+                    <FontAwesomeIcon icon={faBuilding} className="text-slate-300" size="4x" />
+                  </div>
                 )}
-                <div className="mt-4 space-y-1.5 text-sm text-[#666666]">
-                  {data.correo && (
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faEnvelope} className="text-primary w-4" />
-                      <span>{data.correo}</span>
-                    </div>
+
+                <div className="text-center sm:text-left">
+                  <h1 className="text-2xl font-extrabold text-[#1F1F1F] md:text-3xl tracking-tight">{data.nombre}</h1>
+                  {data.categoria && (
+                    <span className="mt-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-yellow-800">
+                      {data.categoria.nombre}
+                    </span>
                   )}
-                  {data.telefono && (
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faPhone} className="text-primary w-4" />
-                      <span>{data.telefono}</span>
+                  <div className="mt-4 space-y-1.5 text-sm text-[#666666] flex flex-col items-center sm:items-start">
+                    {data.correo && (
+                      <div className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faEnvelope} className="text-primary w-4" />
+                        <span>{data.correo}</span>
+                      </div>
+                    )}
+                    {data.telefono && (
+                      <div className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faPhone} className="text-primary w-4" />
+                        <span>{data.telefono}</span>
+                      </div>
+                    )}
+                    {data.direccion && (
+                      <div className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faLocationDot} className="text-primary w-4" />
+                        <span>{data.direccion}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
+                  <div className="flex items-center justify-center text-2xl font-extrabold text-slate-800">
+                    <FontAwesomeIcon icon={faStar} className="mr-2 text-primary" />
+                    {promedioRating.toFixed(1)}
+                  </div>
+                  <p className="mt-1 text-xs text-[#666666]">Rating promedio</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
+                  <div className="text-2xl font-extrabold text-slate-800">{reviewsList.length}</div>
+                  <p className="mt-1 text-xs text-[#666666]">Reseñas</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
+                  <div className="text-2xl font-extrabold text-slate-800">{productosList.length}</div>
+                  <p className="mt-1 text-xs text-[#666666]">Productos</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
+                  <div className="flex items-center justify-center text-2xl font-extrabold text-slate-800">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2 text-primary" />
+                    {totalClicks}
+                  </div>
+                  <p className="mt-1 text-xs text-[#666666]">Clics totales</p>
+                </div>
+              </div>
+
+              {/* Fotos de Interés */}
+              <div className="space-y-3 pt-2">
+                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block text-left">
+                  Galería y Fotos de Interés
+                </span>
+                <div className="grid grid-cols-3 gap-3">
+                  {(data.imagenes && data.imagenes.length > 0
+                    ? data.imagenes.map((img) => `${API_BASE_URL}${img.imagen_url}`)
+                    : getCategoryGallery(data.categoria?.nombre)
+                  ).map((imgUrl, idx) => (
+                    <div 
+                      key={idx} 
+                      className="relative rounded-2xl overflow-hidden aspect-video border border-slate-100 shadow-sm group cursor-zoom-in"
+                      onClick={() => setSelectedImage(imgUrl)}
+                    >
+                      <img 
+                        src={imgUrl} 
+                        alt={`Galería de ${data.nombre} ${idx + 1}`} 
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-sm scale-95 group-hover:scale-100 transition-transform duration-300">
+                          Ampliar
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  {data.direccion && (
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faLocationDot} className="text-primary w-4" />
-                      <span>{data.direccion}</span>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            {/* Right Side: Actions & Map */}
+            <div className="flex flex-col gap-4 w-full md:w-[350px] shrink-0">
               {data.telefono && (
                 <button
                   onClick={() => openWhatsAppApp(data.telefono, data.nombre)}
-                  className="flex items-center gap-2 rounded-xl bg-success px-6 py-3 font-semibold text-white transition hover:bg-green-600 shadow-md"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-success px-6 py-3.5 font-bold text-white transition hover:bg-green-600 shadow-md w-full"
                   aria-label={`Contactar ${data.nombre} por WhatsApp`}
                 >
                   <FontAwesomeIcon icon={faWhatsapp} />
                   Contactar por WhatsApp
                 </button>
               )}
-            </div>
-          </div>
-
-          {/* Metrics */}
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-              <div className="flex items-center justify-center text-2xl font-extrabold text-slate-800">
-                <FontAwesomeIcon icon={faStar} className="mr-2 text-primary" />
-                {promedioRating.toFixed(1)}
-              </div>
-              <p className="mt-1 text-xs text-[#666666]">Rating promedio</p>
-            </div>
-            <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-              <div className="text-2xl font-extrabold text-slate-800">{reviewsList.length}</div>
-              <p className="mt-1 text-xs text-[#666666]">Reseñas</p>
-            </div>
-            <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-              <div className="text-2xl font-extrabold text-slate-800">{productosList.length}</div>
-              <p className="mt-1 text-xs text-[#666666]">Productos</p>
-            </div>
-            <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-              <div className="flex items-center justify-center text-2xl font-extrabold text-slate-800">
-                <FontAwesomeIcon icon={faChartLine} className="mr-2 text-primary" />
-                {totalClicks}
-              </div>
-              <p className="mt-1 text-xs text-[#666666]">Clics totales</p>
+              <MapEmpresa
+                direccion={data.direccion}
+                municipio={data.municipio?.nombre}
+                nombre={data.nombre}
+              />
             </div>
           </div>
         </div>
@@ -447,6 +525,24 @@ export function PublicEmpresaPage() {
           </div>
         )}
       </div>
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-[#111111]/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[85vh] overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-slate-950">
+            <img src={selectedImage} alt="Vista ampliada" className="max-w-full max-h-[80vh] object-contain" />
+            <button 
+              className="absolute top-4 right-4 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold p-2.5 rounded-full backdrop-blur transition-all"
+              onClick={() => setSelectedImage(null)}
+            >
+              <FontAwesomeIcon icon={faTimes} className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

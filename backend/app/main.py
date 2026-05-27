@@ -14,6 +14,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from importlib import import_module
 from starlette.middleware.base import BaseHTTPMiddleware
 from pathlib import Path
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.utils.rate_limit import limiter
 from app.utils.logging_setup import configure_daily_logging
 import jwt as pyjwt
 from app.api import auth as auth_module
@@ -72,7 +75,15 @@ class LogMiddleware(BaseHTTPMiddleware):
         logger.info("Response status: %s", response.status_code)
         return response
 
-app = FastAPI(title="Directorio API", description="API del Sistema de Directorio Empresarial", version="1.0.0", lifespan=lifespan)
+app = FastAPI(
+    title="Directorio Comercial API",
+    description="API robusta y escalable para el marketplace",
+    version="2.0.0",
+    lifespan=lifespan
+)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 uploads_dir = Path(__file__).resolve().parents[1] / "uploads"
 uploads_dir.mkdir(parents=True, exist_ok=True)

@@ -121,6 +121,7 @@ class EmpresaResponse(BaseModel):
 class CategoriaBase(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
+    model_config = {"from_attributes": True}
 
 class CategoriaCreate(CategoriaBase):
     pass
@@ -130,6 +131,7 @@ class CategoriaResponse(CategoriaBase):
     Respuesta para categorías con su identificador
     """
     id: int
+    deleted_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
@@ -137,6 +139,7 @@ class CategoriaResponse(CategoriaBase):
 class MunicipioBase(BaseModel):
     nombre: str
     id_departamento: int
+    model_config = {"from_attributes": True}
 
 class MunicipioCreate(MunicipioBase):
     pass
@@ -286,6 +289,7 @@ class UsuarioResponse(BaseModel):
     rol: Optional[str] = None
     id_rol: Optional[int] = None
     id_empresa: Optional[int] = None
+    deleted_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
@@ -399,6 +403,7 @@ class RolCreate(RolBase):
 class RolResponse(RolBase):
     id: int
     permisos: Optional[list[PermisoResponse]] = []
+    deleted_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
@@ -436,6 +441,13 @@ class ProductoResponse(ProductoBase):
 
     model_config = {"from_attributes": True}
 
+class ImagenEmpresaResponse(BaseModel):
+    id: int
+    id_empresa: int
+    imagen_url: str
+
+    model_config = {"from_attributes": True}
+
 class EmpresaResponseGet(EmpresaBase):
     """
     Respuesta detallada de empresa incluyendo su categoría y municipio
@@ -443,6 +455,8 @@ class EmpresaResponseGet(EmpresaBase):
     id: int
     categoria: CategoriaBase 
     municipio: MunicipioBase
+    imagenes: Optional[list[ImagenEmpresaResponse]] = []
+    deleted_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 

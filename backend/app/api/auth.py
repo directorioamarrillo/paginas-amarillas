@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from app.utils.rate_limit import limiter
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from pwdlib import PasswordHash
@@ -90,7 +91,9 @@ async def authenticate_user(db: AsyncSession, correo: str, password: str):
 
 # Ruta para autenticación de usuarios (login)
 @router.post("/signin", response_model=SigninResponse)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(conexion.get_db),
@@ -145,7 +148,8 @@ async def login(
     return {"access_token": access_token, "rol": rol_nombre, "id_usuario": user.id, "id_rol": getattr(user, 'id_rol', None), "id_empresa": getattr(user, 'id_empresa', None), "permisos": permisos, "is_verified": user.is_verified}
 
 @router.post("/signup", response_model=SigninResponse)
-async def create_usuario(usuario: UsuarioRegister, db: AsyncSession = Depends(conexion.get_db)):
+@limiter.limit("3/minute")
+async def create_usuario(request: Request, usuario: UsuarioRegister, db: AsyncSession = Depends(conexion.get_db)):
     # Validación longitud de contraseña
     if len(usuario.password) < 8:
         raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 8 caracteres")
@@ -295,7 +299,8 @@ async def verify_email(req: VerifyEmailRequest, current_user: models.Usuario = D
     return {"success": True, "message": "Cuenta verificada correctamente."}
 
 @router.post("/resend-code")
-async def resend_verification_code(current_user: models.Usuario = Depends(get_current_user), db: AsyncSession = Depends(conexion.get_db)):
+@limiter.limit("3/minute")
+async def resend_verification_code(request: Request, current_user: models.Usuario = Depends(get_current_user), db: AsyncSession = Depends(conexion.get_db)):
     if current_user.is_verified:
         return {"success": True, "message": "Tu cuenta ya está verificada."}
         

@@ -73,6 +73,29 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    import subprocess
+    import os
+    
+    # Executar migraciones en subprocess para evitar bloqueo del event loop y conflictos de asyncio
+    try:
+        backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+        subprocess.run(
+            ["alembic", "upgrade", "head"],
+            cwd=backend_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error corriendo migraciones: {e.stderr}")
+        raise e
+    
+    # Iniciar el scheduler de backups en el background
+    from app.scheduler.backup_scheduler import run_daemon
+    import asyncio
+    backup_task = asyncio.create_task(run_daemon(interval_seconds=3600))
+    
     yield
+    
+    # Cancelar la tarea al apagar
+    backup_task.cancel()

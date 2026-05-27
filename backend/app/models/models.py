@@ -149,11 +149,24 @@ class Empresa(Base):
     publicidades = relationship("Publicidad", back_populates="empresa", cascade="all, delete-orphan")
     reviews = relationship("Review", back_populates="empresa", cascade="all, delete-orphan")
     marketplaces = relationship("Marketplace", back_populates="empresa", cascade="all, delete-orphan")
+    imagenes = relationship("ImagenEmpresa", back_populates="empresa", cascade="all, delete-orphan")
     deleted_at = Column(DateTime, nullable=True)  # Campo para soft delete
 
     @property
     def id_empresa(self):
         return self.id
+
+
+# Tabla de imágenes para permitir múltiples imágenes por empresa
+class ImagenEmpresa(Base):
+    __tablename__ = 'imagenes_empresa'
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_empresa = Column(Integer, ForeignKey('empresas.id', ondelete="CASCADE"), nullable=False)
+    imagen_url = Column(String(255), nullable=False)
+    deleted_at = Column(DateTime, nullable=True)
+
+    empresa = relationship("Empresa", back_populates="imagenes")
 
 
 # Tabla catálogo de tipos de anuncio para publicidades

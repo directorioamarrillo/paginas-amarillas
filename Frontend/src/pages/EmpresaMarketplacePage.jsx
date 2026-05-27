@@ -8,9 +8,11 @@ import { useAsyncData } from "../hooks/useAsyncData";
 import { categoriasApi, catalogosApi, empresasApi, marketplaceApi } from "../services/api";
 import { usePermissions } from "../context/PermissionsContext";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 
 export function EmpresaMarketplacePage() {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const [search, setSearch] = useState("");
   const [filtros, setFiltros] = useState({
     id_empresa: "",
@@ -165,8 +167,8 @@ export function EmpresaMarketplacePage() {
   };
 
   const eliminarProducto = async (idMarketplace) => {
-    const confirmado = window.confirm("¿Seguro que deseas desactivar este producto?");
-    if (!confirmado) {
+    const isConfirmed = await confirm("¿Seguro que deseas desactivar este producto?", "Desactivar Producto");
+    if (!isConfirmed) {
       return;
     }
     try {

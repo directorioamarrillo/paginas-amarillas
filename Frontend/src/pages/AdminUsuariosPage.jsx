@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
 import { usuariosApi, rolesApi, empresasApi } from "../services/api";
 import { usePermissions } from "../context/PermissionsContext";
+import { useConfirm } from "../context/ConfirmContext";
 import { toast } from "react-toastify";
 import { 
   Card, 
@@ -22,16 +22,18 @@ export function AdminUsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ nombre: "", apellido: "", correo: "", password: "", id_rol: null, id_empresa: null });
   const { hasPermission } = usePermissions();
+  const confirm = useConfirm();
 
   useEffect(() => {
     async function load() {
       try {
         const u = await usuariosApi.list({ limit: 200 });
-        setUsuarios(u.data || []);
+        // Only show active users (soft-deleted ones go to Archivo de Registros Eliminados)
+        setUsuarios((u.data || []).filter((x) => !x.deleted_at));
         const r = await rolesApi.list();
         setRoles(r.data || []);
         const e = await empresasApi.list({ limit: 200 });
-        setEmpresas(e.data || []);
+        setEmpresas((e.data || []).filter((x) => !x.deleted_at));
       } catch (err) {
         console.error(err);
         toast.error("Error al cargar usuarios");
@@ -60,7 +62,8 @@ export function AdminUsuariosPage() {
   };
 
   const handleDisable = async (id) => {
-    if (!confirm("¿Deshabilitar usuario?")) return;
+    const isConfirmed = await confirm("¿Deshabilitar usuario? Se moverá al Archivo de Registros Eliminados.", "Deshabilitar Usuario");
+    if (!isConfirmed) return;
     try {
       if (!hasPermission("modificar_usuarios")) return toast.error("Sin permiso para deshabilitar usuarios");
       await usuariosApi.remove(id);

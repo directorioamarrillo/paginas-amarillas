@@ -62,7 +62,11 @@ export function CrearCuenta() {
         document.cookie = `id_usuario=${data.id_usuario}; path=/; SameSite=Strict`;
       }
 
-      window.location.href = "/";
+      if (data.is_verified === false) {
+        window.location.href = "/verificar";
+      } else {
+        window.location.href = "/";
+      }
     } catch (error: any) {
       console.error('CrearCuenta error:', error);
       // Determine development or demo-forced flag safely
@@ -90,7 +94,7 @@ export function CrearCuenta() {
           document.cookie = `id_usuario=${fakeData.id_usuario}; path=/; SameSite=Strict`;
         }
         setStatusForm((prev) => ({ ...prev, isLoading: false, success: true, error: null }));
-        window.location.href = '/';
+        window.location.href = '/verificar'; // In demo mode, assume verification is needed to show the flow
         return;
       }
 

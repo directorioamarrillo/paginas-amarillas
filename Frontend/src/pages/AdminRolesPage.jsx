@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { rolesApi, usuariosApi, empresasApi } from "../services/api";
 import { usePermissions } from "../context/PermissionsContext";
+import { useConfirm } from "../context/ConfirmContext";
 import { toast } from "react-toastify";
 import { 
   Card, 
@@ -23,17 +24,19 @@ export function AdminRolesPage() {
 
   const [form, setForm] = useState({ nombre: "", apellido: "", correo: "", password: "", id_empresa: null });
   const { hasPermission } = usePermissions();
+  const confirm = useConfirm();
   const [editingRole, setEditingRole] = useState(null);
 
   useEffect(() => {
     async function load() {
       try {
         const r = await rolesApi.list();
-        setRoles(r.data || []);
+        // Only active roles (deleted go to Archivo de Registros Eliminados)
+        setRoles((r.data || []).filter((x) => !x.deleted_at));
         const u = await usuariosApi.list({ limit: 200 });
-        setUsuarios(u.data || []);
+        setUsuarios((u.data || []).filter((x) => !x.deleted_at));
         const e = await empresasApi.list({ limit: 200 });
-        setEmpresas(e.data || []);
+        setEmpresas((e.data || []).filter((x) => !x.deleted_at));
       } catch (err) {
         console.error(err);
         toast.error("Error al cargar datos de roles/usuarios/empresas");
@@ -92,12 +95,13 @@ export function AdminRolesPage() {
   };
 
   const handleDeleteRole = async (roleId) => {
-    if (!confirm("¿Desactivar rol?")) return;
+    const isConfirmed = await confirm("¿Desactivar rol? Se moverá al Archivo de Registros Eliminados.", "Desactivar Rol");
+    if (!isConfirmed) return;
     try {
       await rolesApi.remove(roleId);
-      toast.success("Rol desactivado");
+      toast.success("Rol desactivado y archivado");
       const r = await rolesApi.list();
-      setRoles(r.data || []);
+      setRoles((r.data || []).filter((x) => !x.deleted_at));
     } catch (err) {
       console.error(err);
       toast.error(err?.response?.data?.detail || "Error desactivando rol");

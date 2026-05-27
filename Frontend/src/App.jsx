@@ -44,6 +44,7 @@ import { AdminTicketsPage } from "./pages/AdminTicketsPage";
 import { MisTicketsPage } from "./pages/MisTicketsPage";
 import { TicketDetallePage } from "./pages/TicketDetallePage";
 import { Backups } from "./pages/admin/Backups";
+import { ArchiveRegistrosPage } from "./pages/ArchiveRegistrosPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { useAuth } from "./context/AuthContext";
 import { useLocation } from "react-router-dom";
@@ -140,6 +141,7 @@ function App() {
           <Route path="chat/:marketplaceId" element={<ChatRoomDetailPage />} />
           <Route path="tickets" element={<AdminTicketsPage />} />
           <Route path="backups" element={<Backups />} />
+          <Route path="papelera" element={<ArchiveRegistrosPage />} />
           <Route path="perfil" element={<PerfilPage />} />
         </Route>
         <Route path="mis-chats" element={<UserChatPage />} />
