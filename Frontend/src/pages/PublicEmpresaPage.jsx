@@ -14,13 +14,15 @@ import {
   faStar,
   faStore,
   faTimes,
+  faChevronLeft,
+  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { empresasApi, marketplaceApi, reviewsApi, favoritosApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
 import { EmptyState } from "../components/common/EmptyState";
-import { API_BASE_URL } from "../config/env";
+import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { MapEmpresa } from "../components/common/MapEmpresa";
@@ -88,7 +90,7 @@ function ProductCard({ producto }) {
       } else {
         await favoritosApi.agregar(producto.id);
         setIsFavorite(true);
-        pushToast({ title: "Agregado", message: "Producto agregado a favoritos", type: "success" });
+        pushToast({ title: "Agregado", message: "Producto agregado de favoritos", type: "success" });
       }
     } catch (error) {
       pushToast({
@@ -129,7 +131,7 @@ function ProductCard({ producto }) {
       <div className="relative overflow-hidden rounded-t-2xl bg-slate-50 aspect-square">
         {primeraImagen ? (
           <img
-            src={`${API_BASE_URL}/${getImageUrl(primeraImagen)}`}
+            src={`${SERVER_BASE_URL}/${getImageUrl(primeraImagen)}`}
             alt={producto.nombre}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
@@ -278,7 +280,7 @@ export function PublicEmpresaPage() {
   const { isAuthenticated } = useAuth();
   const { pushToast } = useToast();
   const [activeTab, setActiveTab] = useState("productos");
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
   const idEmpresa = Number(empresaId);
 
@@ -318,6 +320,10 @@ export function PublicEmpresaPage() {
     (acc, item) => acc + pickNumber(item.total_clicks, item.clicks, item.cantidad_clicks),
     0
   );
+
+  const galleryImages = data.imagenes && data.imagenes.length > 0
+    ? data.imagenes.map((img) => `${SERVER_BASE_URL}${img.imagen_url}`)
+    : getCategoryGallery(data.categoria?.nombre);
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] pb-12">
@@ -420,14 +426,11 @@ export function PublicEmpresaPage() {
                   Galería y Fotos de Interés
                 </span>
                 <div className="grid grid-cols-3 gap-3">
-                  {(data.imagenes && data.imagenes.length > 0
-                    ? data.imagenes.map((img) => `${API_BASE_URL}${img.imagen_url}`)
-                    : getCategoryGallery(data.categoria?.nombre)
-                  ).map((imgUrl, idx) => (
+                  {galleryImages.map((imgUrl, idx) => (
                     <div 
                       key={idx} 
                       className="relative rounded-2xl overflow-hidden aspect-video border border-slate-100 shadow-sm group cursor-zoom-in"
-                      onClick={() => setSelectedImage(imgUrl)}
+                      onClick={() => setSelectedImageIndex(idx)}
                     >
                       <img 
                         src={imgUrl} 
@@ -527,19 +530,48 @@ export function PublicEmpresaPage() {
       </div>
 
       {/* Lightbox Modal */}
-      {selectedImage && (
+      {selectedImageIndex !== null && (
         <div 
           className="fixed inset-0 z-[9999] bg-[#111111]/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setSelectedImageIndex(null)}
         >
-          <div className="relative max-w-4xl max-h-[85vh] overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-slate-950">
-            <img src={selectedImage} alt="Vista ampliada" className="max-w-full max-h-[80vh] object-contain" />
+          <div 
+            className="relative max-w-4xl max-h-[85vh] overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-slate-950 flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img src={galleryImages[selectedImageIndex]} alt="Vista ampliada" className="max-w-full max-h-[80vh] object-contain select-none" />
+            
+            {/* Botón cerrar */}
             <button 
-              className="absolute top-4 right-4 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold p-2.5 rounded-full backdrop-blur transition-all"
-              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 active:scale-95 text-white p-2.5 rounded-full backdrop-blur transition-all z-10"
+              onClick={() => setSelectedImageIndex(null)}
             >
               <FontAwesomeIcon icon={faTimes} className="h-5 w-5" />
             </button>
+
+            {/* Botones de navegación */}
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  className="absolute left-4 bg-black/50 hover:bg-black/70 active:scale-95 text-white p-3 rounded-full backdrop-blur transition-all z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+                  }}
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} className="h-5 w-5" />
+                </button>
+                <button
+                  className="absolute right-4 bg-black/50 hover:bg-black/70 active:scale-95 text-white p-3 rounded-full backdrop-blur transition-all z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+                  }}
+                >
+                  <FontAwesomeIcon icon={faChevronRight} className="h-5 w-5" />
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

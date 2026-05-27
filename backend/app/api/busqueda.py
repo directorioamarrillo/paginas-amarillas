@@ -16,6 +16,7 @@ router = APIRouter()
 @router.get("/busqueda/global/")
 async def busqueda_global(
     query: str = Query(..., min_length=2, max_length=100),
+    categoria_id: Optional[int] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     can_view_deleted: bool = Depends(can_view_deleted_records),
@@ -35,11 +36,19 @@ async def busqueda_global(
     search_term = f"%{query}%"
     
     # Búsqueda en empresas
-    empresa_filters = [Empresa.nombre.ilike(search_term) | Empresa.correo.ilike(search_term)]
+    empresa_filters = [
+        or_(
+            Empresa.nombre.ilike(search_term),
+            Empresa.correo.ilike(search_term),
+            Categoria.nombre.ilike(search_term)
+        )
+    ]
+    if categoria_id is not None:
+        empresa_filters.append(Empresa.id_categoria == categoria_id)
     if not can_view_deleted:
         empresa_filters.append(Empresa.deleted_at.is_(None))
     
-    empresa_query = select(Empresa).options(
+    empresa_query = select(Empresa).outerjoin(Categoria).options(
         joinedload(Empresa.categoria),
         joinedload(Empresa.municipio)
     ).where(and_(*empresa_filters)).offset(skip).limit(limit)
@@ -51,13 +60,16 @@ async def busqueda_global(
     marketplace_filters = [
         or_(
             Marketplace.nombre.ilike(search_term),
-            Marketplace.descripcion.ilike(search_term)
+            Marketplace.descripcion.ilike(search_term),
+            Categoria.nombre.ilike(search_term)
         )
     ]
+    if categoria_id is not None:
+        marketplace_filters.append(Marketplace.id_categoria == categoria_id)
     if not can_view_deleted:
         marketplace_filters.append(Marketplace.deleted_at.is_(None))
     
-    marketplace_query = select(Marketplace).options(
+    marketplace_query = select(Marketplace).outerjoin(Categoria).options(
         joinedload(Marketplace.categoria),
         joinedload(Marketplace.empresa),
         joinedload(Marketplace.estado)

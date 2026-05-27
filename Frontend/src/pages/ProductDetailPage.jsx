@@ -22,7 +22,7 @@ import { useAsyncData } from "../hooks/useAsyncData";
 import { favoritosApi, marketplaceApi, mensajesApi, reviewsApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
 import { EmptyState } from "../components/common/EmptyState";
-import { API_BASE_URL } from "../config/env";
+import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
@@ -69,7 +69,7 @@ function ImageGallery({ imagenes, productId, nombre }) {
         onClick={() => setIsZoomed(!isZoomed)}
       >
         <img
-          src={`${API_BASE_URL}/${currentImageUrl}`}
+          src={`${SERVER_BASE_URL}/${currentImageUrl}`}
           alt={`${nombre} - Imagen ${currentIndex + 1}`}
           className={`h-full w-full object-cover transition-transform duration-300 ${isZoomed ? "scale-150" : "scale-100"}`}
         />
@@ -120,7 +120,7 @@ function ImageGallery({ imagenes, productId, nombre }) {
               }`}
             >
               <img
-                src={`${API_BASE_URL}/${getImageUrl(imagen)}`}
+                src={`${SERVER_BASE_URL}/${getImageUrl(imagen)}`}
                 alt={`${nombre} - Thumbnail ${index + 1}`}
                 className="aspect-square w-full object-cover"
               />

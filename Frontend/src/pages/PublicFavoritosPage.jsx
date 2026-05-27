@@ -7,7 +7,7 @@ import { favoritosApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
 import { EmptyState } from "../components/common/EmptyState";
 import { useToast } from "../context/ToastContext";
-import { API_BASE_URL } from "../config/env";
+import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 
 function FavoriteCard({ favorito, onRemove }) {
@@ -54,7 +54,7 @@ function FavoriteCard({ favorito, onRemove }) {
       >
         {producto.imagenes && producto.imagenes.length > 0 ? (
           <img
-            src={`${API_BASE_URL}${producto.imagenes[0]}`}
+            src={`${SERVER_BASE_URL}${producto.imagenes[0]}`}
             alt={producto.nombre}
             className="h-full w-full object-cover"
             loading="lazy"

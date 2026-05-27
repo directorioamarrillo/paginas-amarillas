@@ -5,6 +5,7 @@ import {
   faBuilding,
   faChartLine,
   faChevronRight,
+  faChevronDown,
   faFire,
   faHeart,
   faImage,
@@ -12,11 +13,13 @@ import {
   faSearch,
   faStar,
   faStore,
+  faTags,
+  faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncData } from "../hooks/useAsyncData";
-import { empresasApi, marketplaceApi, reportesApi } from "../services/api";
+import { categoriasApi, empresasApi, marketplaceApi, reportesApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
-import { API_BASE_URL } from "../config/env";
+import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { favoritosApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
@@ -100,7 +103,7 @@ function ProductCard({ producto }) {
       <div className="relative overflow-hidden rounded-t-2xl bg-slate-50 aspect-square">
         {primeraImagen ? (
           <img
-            src={`${API_BASE_URL}/${getImageUrl(primeraImagen)}`}
+            src={`${SERVER_BASE_URL}/${getImageUrl(primeraImagen)}`}
             alt={producto.nombre}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -250,6 +253,12 @@ function EmpresaCard({ empresa }) {
 export function HomePage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategoria, setSelectedCategoria] = useState("");
+
+  const categorias = useAsyncData(async () => {
+    const { data } = await categoriasApi.list({ limit: 100 });
+    return data || [];
+  });
 
   const productosDestacados = useAsyncData(async () => {
     const { data } = await marketplaceApi.list({ limit: 12, ordenar: "fecha_publicacion" });
@@ -273,7 +282,9 @@ export function HomePage() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/busqueda?q=${encodeURIComponent(searchQuery)}`);
+      let url = `/busqueda?q=${encodeURIComponent(searchQuery)}`;
+      if (selectedCategoria) url += `&categoria_id=${selectedCategoria}`;
+      navigate(url);
     }
   };
 
@@ -298,26 +309,50 @@ export function HomePage() {
             </p>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="mx-auto max-w-2xl pt-2">
-              <div className="flex rounded-2xl bg-white p-2 md:p-2.5 shadow-2xl border border-neutral-800/10">
-                <div className="relative flex-1 flex items-center">
-                  <FontAwesomeIcon
-                    icon={faSearch}
-                    className="absolute left-4 text-slate-400"
-                  />
+            <form onSubmit={handleSearch} className="mx-auto max-w-3xl pt-6">
+              <div className="relative flex flex-col sm:flex-row items-center rounded-3xl sm:rounded-full bg-white/10 p-2 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 transition-all duration-500 group">
+                
+                {/* Search Input */}
+                <div className="relative flex-1 flex items-center w-full">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-full bg-white/5 ml-2 text-primary shadow-inner group-focus-within:bg-primary group-focus-within:text-[#1F1F1F] transition-colors duration-300">
+                    <FontAwesomeIcon icon={faSearch} />
+                  </div>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="¿Qué estás buscando? (ej: restaurantes, repuestos, calzado)"
-                    className="w-full rounded-xl border-0 py-3.5 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0 text-sm md:text-base bg-transparent"
+                    placeholder="¿Qué estás buscando? (ej: restaurantes, ferreterías)"
+                    className="w-full bg-transparent border-0 py-4 pl-4 pr-4 text-white placeholder:text-neutral-400 focus:outline-none focus:ring-0 text-base md:text-lg"
                   />
                 </div>
+
+                {/* Divider (Hidden on Mobile) */}
+                <div className="hidden sm:block w-px h-10 bg-white/20 mx-2"></div>
+
+                {/* Category Selector */}
+                <div className="relative w-full sm:w-[220px] flex items-center mt-2 sm:mt-0 border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
+                  <select
+                    value={selectedCategoria}
+                    onChange={(e) => setSelectedCategoria(e.target.value)}
+                    className="w-full appearance-none bg-transparent border-0 py-4 pl-4 pr-10 text-neutral-300 hover:text-white focus:text-white text-base focus:ring-0 cursor-pointer outline-none transition-colors"
+                  >
+                    <option value="" className="text-slate-800">Todas las categorías</option>
+                    {(categorias.data || []).map((cat) => (
+                      <option key={cat.id} value={cat.id} className="text-slate-800">
+                        {cat.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <FontAwesomeIcon icon={faChevronDown} className="absolute right-4 text-neutral-400 pointer-events-none text-sm" />
+                </div>
+
+                {/* Submit Button */}
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#212121] px-6 md:px-8 py-3.5 font-bold text-white transition hover:bg-neutral-800 shadow"
+                  className="w-full sm:w-auto mt-3 sm:mt-0 rounded-full bg-gradient-to-r from-primary to-[#ffb300] px-8 py-4 font-extrabold text-[#1F1F1F] transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,193,7,0.4)] flex items-center justify-center gap-2"
                 >
-                  Buscar
+                  <FontAwesomeIcon icon={faSearch} className="sm:hidden" />
+                  Buscar ahora
                 </button>
               </div>
             </form>
@@ -326,20 +361,23 @@ export function HomePage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
               <Link
                 to="/empresas"
-                className="rounded-xl bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/10 backdrop-blur transition hover:bg-white/20"
+                className="group flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/20 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 shadow-sm"
               >
+                <FontAwesomeIcon icon={faStore} className="text-primary group-hover:scale-110 transition-transform" />
                 Ver Directorio
               </Link>
               <Link
                 to="/marketplace"
-                className="rounded-xl bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/10 backdrop-blur transition hover:bg-white/20"
+                className="group flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/20 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 shadow-sm"
               >
+                <FontAwesomeIcon icon={faTags} className="text-primary group-hover:scale-110 transition-transform" />
                 Ver Artículos
               </Link>
               <Link
                 to="/login"
-                className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-[#1F1F1F] transition hover:bg-primary-hover shadow"
+                className="group flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 font-bold text-[#1F1F1F] transition-all hover:bg-primary-hover hover:-translate-y-0.5 shadow-[0_0_15px_rgba(255,193,7,0.3)]"
               >
+                <FontAwesomeIcon icon={faUserPlus} className="group-hover:scale-110 transition-transform" />
                 Registrar Negocio
               </Link>
             </div>

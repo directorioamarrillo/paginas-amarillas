@@ -12,7 +12,7 @@ import { categoriasApi, empresasApi, geoApi } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import { useConfirm } from "../context/ConfirmContext";
 import { PermissionGate } from "../components/common/PermissionGate";
-import { API_BASE_URL } from "../config/env";
+import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 
 export function EmpresasPage({ readOnly = false }) {
   const { pushToast } = useToast();
@@ -59,6 +59,14 @@ export function EmpresasPage({ readOnly = false }) {
   const categoriaOptions = useMemo(
     () => [{ value: "", label: "Selecciona categoría" }, ...(categorias.data || []).map((c) => ({ value: String(c.id), label: c.nombre }))],
     [categorias.data],
+  );
+  const paisOptions = useMemo(
+    () => [{ value: "", label: "Selecciona país" }, ...(paises.data || []).map((p) => ({ value: String(p.id), label: p.nombre }))],
+    [paises.data],
+  );
+  const departamentoOptions = useMemo(
+    () => [{ value: "", label: "Selecciona departamento" }, ...(departamentos.data || []).map((d) => ({ value: String(d.id), label: d.nombre }))],
+    [departamentos.data],
   );
   const municipioOptions = useMemo(
     () => [{ value: "", label: "Selecciona municipio" }, ...(municipios.data || []).map((m) => ({ value: String(m.id), label: m.nombre }))],
@@ -436,7 +444,7 @@ export function EmpresasPage({ readOnly = false }) {
                   {empresaSeleccionada.imagenes.map((img) => (
                     <div key={img.id} className="group relative aspect-video overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
                       <img
-                        src={`${API_BASE_URL}${img.imagen_url}`}
+                        src={`${SERVER_BASE_URL}${img.imagen_url}`}
                         alt="Galería empresa"
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       />
@@ -505,19 +513,25 @@ export function EmpresasPage({ readOnly = false }) {
                 required
               />
 
-              <Input
+              <ReactSelect
                 label="País"
-                value={form.id_pais}
-                onChange={(e) => setForm((prev) => ({ ...prev, id_pais: e.target.value, id_departamento: "", id_municipio: "" }))}
-                placeholder="Ej: 57 (Colombia)"
+                value={paisOptions.find((o) => o.value === form.id_pais) || null}
+                onChange={(selected) => setForm((prev) => ({ ...prev, id_pais: selected?.value || "", id_departamento: "", id_municipio: "" }))}
+                options={paisOptions.filter((o) => o.value !== "")}
+                placeholder="Selecciona país"
+                isClearable={false}
+                styles={selectStyles}
                 required
               />
 
-              <Input
+              <ReactSelect
                 label="Departamento"
-                value={form.id_departamento}
-                onChange={(e) => setForm((prev) => ({ ...prev, id_departamento: e.target.value, id_municipio: "" }))}
-                placeholder="Ej: 11 (Bogotá D.C.)"
+                value={departamentoOptions.find((o) => o.value === form.id_departamento) || null}
+                onChange={(selected) => setForm((prev) => ({ ...prev, id_departamento: selected?.value || "", id_municipio: "" }))}
+                options={departamentoOptions.filter((o) => o.value !== "")}
+                placeholder="Selecciona departamento"
+                isClearable={false}
+                styles={selectStyles}
                 required
                 disabled={!form.id_pais}
               />

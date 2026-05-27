@@ -4,7 +4,7 @@ import { marketplaceApi, mensajesApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { Loading } from "../components/common/Loading";
-import { API_BASE_URL } from "../config/env";
+import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 
 export function UserChatPage() {
   const navigate = useNavigate();
@@ -290,7 +290,7 @@ export function UserChatPage() {
     if (!imagenes || imagenes.length === 0) return null;
     const img = typeof imagenes[index] === "string" ? imagenes[index] : imagenes[index].imagen_url || imagenes[index].url;
     if (!img) return null;
-    return img.startsWith("/") ? `${API_BASE_URL}${img}` : `${API_BASE_URL}/${img}`;
+    return img.startsWith("/") ? `${SERVER_BASE_URL}${img}` : `${SERVER_BASE_URL}/${img}`;
   };
 
   const formatMessageTime = (fecha) => {
@@ -606,7 +606,7 @@ export function UserChatPage() {
                     <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                       {selectedProduct.imagenes.map((img, index) => {
                         const imgUrl = typeof img === "string" ? img : img.imagen_url || img.url;
-                        const fullUrl = imgUrl ? (imgUrl.startsWith("/") ? `${API_BASE_URL}${imgUrl}` : `${API_BASE_URL}/${imgUrl}`) : null;
+                        const fullUrl = imgUrl ? (imgUrl.startsWith("/") ? `${SERVER_BASE_URL}${imgUrl}` : `${SERVER_BASE_URL}/${imgUrl}`) : null;
                         const isSelected = selectedImageIndex === index;
                         
                         return (
