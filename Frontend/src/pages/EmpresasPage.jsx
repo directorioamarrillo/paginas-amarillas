@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare, faImage, faBuilding, faTrash, faUpload, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUpRightFromSquare, faImage, faBuilding, faTrash, faUpload, faSpinner, faPhone, faEnvelope, faLocationDot, faArrowRight, faEye, faBoxOpen, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { DataTable } from "../components/common/DataTable";
 import { EmptyState } from "../components/common/EmptyState";
 import { Loading } from "../components/common/Loading";
@@ -20,6 +20,7 @@ export function EmpresasPage({ readOnly = false }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [nombre, setNombre] = useState(searchParams.get("search") || "");
+  const [estadoFiltro, setEstadoFiltro] = useState("all");
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
   const [editForm, setEditForm] = useState({
     id: "",
@@ -87,10 +88,10 @@ export function EmpresasPage({ readOnly = false }) {
   };
 
   const empresas = useAsyncData(async () => {
-    const { data } = await empresasApi.list({ search: nombre || undefined, limit: 200 });
-    // Only active empresas (soft-deleted go to Archivo de Registros Eliminados)
+    const { data } = await empresasApi.list({ search: nombre || undefined, limit: 200, estado: estadoFiltro });
+    // Only active/pending empresas (soft-deleted go to Archivo de Registros Eliminados)
     return (data || []).filter((x) => !x.deleted_at);
-  }, nombre);
+  }, `${nombre}-${estadoFiltro}`);
 
   const crearEmpresa = async (event) => {
     event.preventDefault();
@@ -229,6 +230,16 @@ export function EmpresasPage({ readOnly = false }) {
     }
   };
 
+  const aprobarEmpresa = async (idEmpresa) => {
+    try {
+      await empresasApi.aprobar(idEmpresa);
+      pushToast({ title: "Empresa aprobada", message: "La empresa ahora es pública", type: "success" });
+      empresas.reload();
+    } catch (error) {
+      pushToast({ title: "Error", message: error?.response?.data?.detail || "No se pudo aprobar", type: "error" });
+    }
+  };
+
   const marketplacePath = readOnly ? "/marketplace" : "/admin/marketplace";
 
   if (readOnly) {
@@ -244,7 +255,7 @@ export function EmpresasPage({ readOnly = false }) {
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
-            <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={empresas.reload}>
+            <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={empresas.reload}>
               Refrescar
             </button>
           </div>
@@ -260,40 +271,68 @@ export function EmpresasPage({ readOnly = false }) {
             {(empresas.data || []).map((empresa) => (
               <article
                 key={empresa.id}
-                className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary-200"
               >
+                <div className="absolute top-0 right-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-primary-50/50 blur-3xl transition-all group-hover:bg-primary-100/50"></div>
+                
                 <button
                   type="button"
                   onClick={() => navigate(`/empresa/${empresa.id}`)}
-                  className="w-full text-left"
+                  className="relative w-full text-left"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-4">
                     {empresa.logo_url ? (
                       <img
                         src={`${API_BASE_URL}/empresas/${empresa.id}/logo`} // Cache busting
                         alt={`Logo de ${empresa.nombre}`}
-                        className="h-14 w-14 rounded-xl border border-slate-200 object-cover"
+                        className="h-16 w-16 rounded-2xl border border-slate-100 object-cover shadow-sm"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-400">
-                        <FontAwesomeIcon icon={faImage} />
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 text-slate-400 border border-slate-200 shadow-sm">
+                        <FontAwesomeIcon icon={faBuilding} className="text-xl" />
                       </div>
                     )}
 
-                    <div className="min-w-0 flex-1">
-                      <h4 className="truncate text-base font-semibold text-slate-900">{empresa.nombre || "Empresa sin nombre"}</h4>
-                      <p className="mt-1 truncate text-sm text-slate-500">{empresa.correo || "Correo no disponible"}</p>
+                    <div className="min-w-0 flex-1 pt-1">
+                      <h4 className="truncate text-lg font-bold text-slate-900 group-hover:text-primary-700 transition-colors">{empresa.nombre || "Empresa sin nombre"}</h4>
+                      
+                      {empresa.categoria?.nombre && (
+                         <span className="mt-1.5 inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+                           {empresa.categoria.nombre}
+                         </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                    <div className="rounded-lg bg-slate-50 px-2 py-1.5 text-slate-600">NIT: {empresa.nit || "-"}</div>
-                    <div className="rounded-lg bg-slate-50 px-2 py-1.5 text-slate-600">Contacto: {empresa.correo}</div>
+                  <div className="mt-5 space-y-2.5">
+                    {empresa.telefono && (
+                      <div className="flex items-center gap-2.5 text-sm text-slate-600">
+                        <FontAwesomeIcon icon={faPhone} className="w-4 text-slate-400" />
+                        <span className="truncate">{empresa.telefono}</span>
+                      </div>
+                    )}
+                    {empresa.correo && (
+                      <div className="flex items-center gap-2.5 text-sm text-slate-600">
+                        <FontAwesomeIcon icon={faEnvelope} className="w-4 text-slate-400" />
+                        <span className="truncate">{empresa.correo}</span>
+                      </div>
+                    )}
+                    {empresa.municipio?.nombre && (
+                      <div className="flex items-center gap-2.5 text-sm text-slate-600">
+                        <FontAwesomeIcon icon={faLocationDot} className="w-4 text-slate-400" />
+                        <span className="truncate">{empresa.municipio.nombre}</span>
+                      </div>
+                    )}
+                    {!empresa.telefono && !empresa.correo && !empresa.municipio?.nombre && (
+                       <div className="text-sm text-slate-400 italic">Sin información de contacto</div>
+                    )}
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between text-sm font-semibold text-teal-700">
+                  <div className="mt-5 border-t border-slate-100 pt-4 flex items-center justify-between text-sm font-bold text-primary-600">
                     <span>Ver ficha completa</span>
-                    <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="transition group-hover:translate-x-0.5" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-50 transition-colors group-hover:bg-primary-100 group-hover:text-primary-700">
+                      <FontAwesomeIcon icon={faArrowRight} className="transition-transform group-hover:translate-x-0.5" />
+                    </div>
                   </div>
                 </button>
               </article>
@@ -322,7 +361,16 @@ export function EmpresasPage({ readOnly = false }) {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
           />
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={empresas.reload}>
+          <select
+            className="rounded-xl border border-slate-300 px-3 py-2"
+            value={estadoFiltro}
+            onChange={(e) => setEstadoFiltro(e.target.value)}
+          >
+            <option value="all">Todas</option>
+            <option value="activa">Activas</option>
+            <option value="pendiente">Pendientes</option>
+          </select>
+          <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={empresas.reload}>
             Refrescar
           </button>
         </div>
@@ -339,7 +387,18 @@ export function EmpresasPage({ readOnly = false }) {
         <DataTable
           columns={[
             { key: "id", label: "ID" },
-            { key: "nombre", label: "Nombre" },
+            { 
+              key: "nombre", 
+              label: "Nombre",
+              render: (row) => (
+                <div className="flex items-center gap-2">
+                  <span>{row.nombre}</span>
+                  {row.estado === "pendiente" && (
+                    <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-800">Pendiente</span>
+                  )}
+                </div>
+              )
+            },
             { key: "correo", label: "Correo" },
             { key: "nit", label: "NIT" },
             {
@@ -347,17 +406,35 @@ export function EmpresasPage({ readOnly = false }) {
               label: "Acciones",
               render: (row) => (
                 <div className="flex flex-wrap gap-2">
-                  <button className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white" onClick={() => cargarDetalle(row.id)}>
+                  <button 
+                    className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-amber-400 shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-600" 
+                    onClick={() => cargarDetalle(row.id)}
+                  >
+                    <FontAwesomeIcon icon={faEye} className="text-slate-400" />
                     Detalle
                   </button>
                   <button
-                    className="rounded-lg bg-indigo-600 px-2 py-1 text-xs text-white"
+                    className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-amber-400 shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-600"
                     onClick={() => navigate(`${marketplacePath}?id_empresa=${row.id}`)}
                   >
-                    Ver articulos
+                    <FontAwesomeIcon icon={faBoxOpen} className="text-indigo-500" />
+                    Artículos
                   </button>
+                  {!readOnly && row.estado === "pendiente" ? (
+                    <button 
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-amber-400 shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-600" 
+                      onClick={() => aprobarEmpresa(row.id)}
+                    >
+                      <FontAwesomeIcon icon={faCheck} className="text-emerald-500" />
+                      Aprobar
+                    </button>
+                  ) : null}
                   {!readOnly ? (
-                    <button className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white" onClick={() => eliminarEmpresa(row.id)}>
+                    <button 
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-amber-400 shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-600" 
+                      onClick={() => eliminarEmpresa(row.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="text-rose-500" />
                       Eliminar
                     </button>
                   ) : null}
@@ -420,7 +497,7 @@ export function EmpresasPage({ readOnly = false }) {
                 required
               />
 
-              <button className="md:col-span-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white hover:bg-indigo-700">Guardar cambios</button>
+              <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Guardar cambios</button>
             </form>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -428,7 +505,7 @@ export function EmpresasPage({ readOnly = false }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID empresa" value={editForm.id} onChange={(e) => setEditForm((prev) => ({ ...prev, id: e.target.value }))} />
                 <input className="rounded-xl border border-slate-300 px-3 py-2" type="file" onChange={(e) => setLogoArchivo(e.target.files?.[0] || null)} />
-                <button className="rounded-xl bg-teal-600 px-4 py-2 text-white" onClick={subirLogo}>Subir logo</button>
+                <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={subirLogo}>Subir logo</button>
               </div>
             </div>
 
@@ -548,7 +625,7 @@ export function EmpresasPage({ readOnly = false }) {
                 disabled={!form.id_departamento}
               />
 
-              <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white hover:bg-teal-700">Crear empresa</button>
+              <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Crear empresa</button>
             </form>
           </PermissionGate>
         </>

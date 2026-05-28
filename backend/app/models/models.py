@@ -140,6 +140,7 @@ class Empresa(Base):
     id_municipio = Column(Integer, ForeignKey('municipios.id'))
     id_usuario_creador = Column(Integer, ForeignKey('usuarios.id'), nullable=True)
     logo_url = Column(String(255), nullable=True)
+    estado = Column(String(20), nullable=False, default='pendiente')
 
     # Relaciones con otros modelos
     categoria = relationship("Categoria", back_populates="empresas")

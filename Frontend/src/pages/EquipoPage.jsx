@@ -152,7 +152,7 @@ export function EquipoPage() {
                 <div className="flex gap-2">
                   {isCreator && row.id !== user?.id_usuario && (
                     <button
-                      className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white"
+                      className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition"
                       onClick={() => removerMiembro(row.id, `${row.nombre} ${row.apellido}`)}
                     >
                       <FontAwesomeIcon icon={faTrash} className="mr-1" /> Remover
@@ -182,7 +182,7 @@ export function EquipoPage() {
           <div className="md:col-span-2 flex gap-2">
             <button
               type="submit"
-              className="rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white hover:bg-teal-700"
+              className="rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900"
             >
               Añadir miembro
             </button>

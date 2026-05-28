@@ -136,7 +136,7 @@ function ReviewsSection({ idEmpresa }) {
   const [showForm, setShowForm] = useState(false);
   const [comentario, setComentario] = useState("");
   const [calificacion, setCalificacion] = useState(5);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { pushToast } = useToast();
 
   const reviews = useAsyncData(async () => {
@@ -165,8 +165,10 @@ function ReviewsSection({ idEmpresa }) {
     }
 
     try {
+      const userId = user?.id_usuario || user?.id;
       await reviewsApi.create({
         id_empresa: idEmpresa,
+        id_usuario: userId,
         comentario,
         calificacion: Number(calificacion),
       });
@@ -182,9 +184,11 @@ function ReviewsSection({ idEmpresa }) {
       setShowForm(false);
       reviews.reload();
     } catch (error) {
+      const detail = error?.response?.data?.detail;
+      const errorMessage = typeof detail === 'string' ? detail : "No se pudo crear la reseña. Verifica que hayas interactuado con esta empresa antes.";
       pushToast({
         title: "Error",
-        message: error?.response?.data?.detail || "No se pudo crear la reseña",
+        message: errorMessage,
         type: "error",
       });
     }

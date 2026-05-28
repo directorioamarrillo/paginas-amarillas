@@ -133,7 +133,7 @@ export function ComprobantesPage() {
         <h3 className="text-lg font-semibold text-slate-900">Detalle por ID</h3>
         <div className="mt-3 flex flex-wrap gap-2">
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID comprobante" value={detalleId} onChange={(e) => setDetalleId(e.target.value)} />
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={cargarDetalle}>Consultar</button>
+          <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={cargarDetalle}>Consultar</button>
         </div>
         {detalle ? (
           <p className="mt-2 text-sm text-slate-600">Detalle: comprobante #{detalle.id} | estado {detalle.estado} | archivo {detalle.id_archivo}</p>
@@ -150,7 +150,7 @@ export function ComprobantesPage() {
             label: "Acciones",
             render: (row) => (
               <div className="flex flex-wrap gap-2">
-                <button className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white" onClick={() => cargarTimeline(row.id)}>Timeline</button>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => cargarTimeline(row.id)}>Timeline</button>
                 <button
                   className="rounded-lg bg-emerald-600 px-2 py-1 text-xs text-white disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={() => resolver(row, "aprobar")}
@@ -201,7 +201,7 @@ export function ComprobantesPage() {
           Recibo válido
         </label>
         <input className="md:col-span-2 rounded-xl border border-slate-300 px-3 py-2" type="file" onChange={(e) => setForm((prev) => ({ ...prev, archivo: e.target.files?.[0] || null }))} required />
-        <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white">Registrar comprobante</button>
+        <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Registrar comprobante</button>
       </form>
     </section>
   );

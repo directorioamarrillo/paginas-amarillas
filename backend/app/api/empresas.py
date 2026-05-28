@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr, constr
 from app.schemas.schemas import EmpresaCreate, EmpresaResponse, EmpresaResponseGet
 from app.models.models import Empresa, Categoria, Municipio, Review, Usuario, ImagenEmpresa
 from app.db.conexion import get_db
-from app.api.auth import can_view_deleted_records, require_permission, get_current_user_optional, is_admin_user, get_current_user
+from app.api.auth import can_view_deleted_records, require_permission, get_current_user_optional, is_admin_user, get_current_user, require_admin
 from app.utils.uploads import ensure_upload_dir, save_upload_file, build_public_url, get_upload_root
 from seeders.seed_permisos import Permisos
 from pathlib import Path
@@ -122,6 +122,7 @@ async def read_empresas(
     rating_min: Optional[float] = Query(None, ge=0, le=5),
     search: Optional[str] = Query(None),
     ordenar: Optional[str] = Query("nombre", regex="^(nombre|rating)$"),
+    estado: Optional[str] = Query("activa"),
     can_view_deleted: bool = Depends(can_view_deleted_records),
     db: AsyncSession = Depends(get_db)
 ):
@@ -133,6 +134,7 @@ async def read_empresas(
     - id_municipio: Filtrar por municipio/ubicación
     - rating_min: Filtrar por calificación promedio mínima (0-5)
     - ordenar: Ordenar por nombre (asc) o rating (desc)
+    - estado: Estado de la empresa (activa, pendiente, eliminada, all)
     """
     # Calcular promedio de calificación por empresa
     avg_rating = select(
@@ -146,12 +148,13 @@ async def read_empresas(
         selectinload(Empresa.imagenes)
     ).outerjoin(avg_rating, Empresa.id == avg_rating.c.id_empresa)
 
-    import logging
-    logging.warning(f"CAN VIEW DELETED: {can_view_deleted}")
-
     filters = []
     if not can_view_deleted:
         filters.append(Empresa.deleted_at.is_(None))
+        filters.append(Empresa.estado == "activa")
+    else:
+        if estado and estado != "all":
+            filters.append(Empresa.estado == estado)
 
     if nombre:
         filters.append(Empresa.nombre.ilike(f"%{nombre}%"))
@@ -741,3 +744,20 @@ async def delete_imagen_empresa(
         pass
 
     return {"message": "Imagen eliminada correctamente"}
+
+# Aprobar una empresa (solo admin)
+@router.patch("/empresas/{empresa_id}/aprobar", response_model=EmpresaResponseGet)
+async def aprobar_empresa(
+    empresa_id: int,
+    current_user = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Empresa).where(Empresa.id == empresa_id))
+    db_empresa = result.scalars().first()
+    if not db_empresa:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    
+    db_empresa.estado = "activa"
+    await db.commit()
+    await db.refresh(db_empresa)
+    return db_empresa

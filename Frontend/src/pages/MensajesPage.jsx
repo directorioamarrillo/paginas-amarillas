@@ -111,7 +111,7 @@ export function MensajesPage() {
         <h3 className="text-lg font-semibold text-slate-900">Filtros de mensajes</h3>
         <div className="mt-3 flex flex-wrap gap-2">
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="Filtrar por ID marketplace" value={marketplaceFiltro} onChange={(e) => setMarketplaceFiltro(e.target.value)} />
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={mensajes.reload}>Refrescar</button>
+          <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={mensajes.reload}>Refrescar</button>
         </div>
       </div>
 
@@ -127,10 +127,10 @@ export function MensajesPage() {
             label: "Acciones",
             render: (row) => (
               <div className="flex flex-wrap gap-2">
-                <button className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white" onClick={() => cargarDetalle(row.id)}>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => cargarDetalle(row.id)}>
                   Detalle
                 </button>
-                <button className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white" onClick={() => eliminarMensaje(row.id)}>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => eliminarMensaje(row.id)}>
                   Eliminar
                 </button>
               </div>
@@ -160,7 +160,7 @@ export function MensajesPage() {
           <h3 className="md:col-span-2 text-lg font-semibold text-slate-900">Editar mensaje</h3>
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID mensaje" value={editForm.id} onChange={(e) => setEditForm((prev) => ({ ...prev, id: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2 md:col-span-2" placeholder="Contenido" value={editForm.mensaje} onChange={(e) => setEditForm((prev) => ({ ...prev, mensaje: e.target.value }))} required />
-          <button className="md:col-span-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white">Guardar edición</button>
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Guardar edición</button>
         </form>
       </PermissionGate>
 
@@ -195,7 +195,7 @@ export function MensajesPage() {
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID usuario creador chat" value={form.id_usuario_creador_chat} onChange={(e) => setForm((prev) => ({ ...prev, id_usuario_creador_chat: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID usuario remitente" value={form.id_usuario_enviador_mensaje} onChange={(e) => setForm((prev) => ({ ...prev, id_usuario_enviador_mensaje: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="Mensaje" value={form.mensaje} onChange={(e) => setForm((prev) => ({ ...prev, mensaje: e.target.value }))} required />
-          <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white">Enviar</button>
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Enviar</button>
         </form>
       </PermissionGate>
 
@@ -212,7 +212,7 @@ export function MensajesPage() {
           <div className="mt-3 flex flex-wrap gap-2">
             <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID mensaje" value={idMensajeArchivo} onChange={(e) => setIdMensajeArchivo(e.target.value)} />
             <input className="rounded-xl border border-slate-300 px-3 py-2" type="file" onChange={(e) => setArchivo(e.target.files?.[0] || null)} />
-            <button className="rounded-xl bg-indigo-600 px-4 py-2 text-white" onClick={subirArchivo}>Subir</button>
+            <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={subirArchivo}>Subir</button>
           </div>
         </div>
       </PermissionGate>

@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faRightFromBracket, faStore, faUser, faBuilding, faLifeRing } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faRightFromBracket, faStore, faUser, faBuilding, faLifeRing, faShoppingBag, faShieldHalved, faTicket } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../context/AuthContext";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { favoritosApi, empresasApi } from "../services/api";
@@ -85,13 +85,6 @@ function UserMenu() {
               Mi Perfil
             </Link>
             <Link
-              to="/mis-tickets"
-              className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
-            >
-              <FontAwesomeIcon icon={faLifeRing} className="w-4" />
-              Mis Tickets
-            </Link>
-            <Link
               to="/favoritos"
               className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
             >
@@ -103,13 +96,24 @@ function UserMenu() {
                 </span>
               )}
             </Link>
+            <Link
+              to="/mis-tickets"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
+            >
+              <FontAwesomeIcon icon={faTicket} className="w-4" />
+              Mis Tickets
+            </Link>
+          </div>
+          
+          {/* Admin / Empresa / Nexus Control */}
+          <div className="py-2 border-t border-slate-200">
             {isAdmin ? (
               <Link
                 to="/admin"
                 className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
               >
-                <FontAwesomeIcon icon={faStore} className="w-4" />
-                Panel Admin
+                <FontAwesomeIcon icon={faShieldHalved} className="w-4" />
+                Nexus Control
               </Link>
             ) : null}
             {!isAdmin && hasEmpresa ? (
@@ -124,6 +128,14 @@ function UserMenu() {
                     {misEmpresas.data?.length || 0}
                   </span>
                 )}
+              </Link>
+            ) : !isAdmin && !hasEmpresa ? (
+              <Link
+                to="/empresas-panel"
+                className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
+              >
+                <FontAwesomeIcon icon={faBuilding} className="w-4" />
+                Registrar mi negocio
               </Link>
             ) : null}
           </div>
@@ -189,23 +201,7 @@ export function PublicShell() {
           </div>
         </div>
       </header>
-      <section className="mx-auto w-full max-w-[1200px] px-4 pt-6 md:px-6">
-        <div className="overflow-hidden rounded-3xl border border-neutral-800 bg-gradient-to-r from-[#1F1F1F] via-[#2A2A2A] to-[#1F1F1F] p-6 text-white shadow-xl md:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Descubre, compara y conecta</p>
-          <h2 className="mt-2 text-2xl font-bold leading-tight md:text-3xl">Encuentra empresas y artículos en un solo directorio</h2>
-          <p className="mt-2 max-w-2xl text-sm text-neutral-300 md:text-base">
-            Navega el catálogo sin registrarte. Para iniciar conversaciones y gestionar operaciones, entra al panel administrativo.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/empresas" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-primary-hover transition shadow-md">
-              Ver empresas
-            </Link>
-            <Link to="/marketplace" className="rounded-xl border border-neutral-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition">
-              Ver artículos
-            </Link>
-          </div>
-        </div>
-      </section>
+
       <main className="mx-auto w-full max-w-[1200px] px-4 py-6 md:px-6">
         <Outlet />
       </main>

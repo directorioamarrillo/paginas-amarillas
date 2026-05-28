@@ -208,7 +208,7 @@ export function MarketplacePage({ readOnly = false }) {
         ) : null}
         <div className="mt-3 flex gap-2">
           <input className="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Buscar producto" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={marketplace.reload}>Refrescar</button>
+          <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={marketplace.reload}>Refrescar</button>
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-4">
           <ReactSelect
@@ -344,14 +344,14 @@ export function MarketplacePage({ readOnly = false }) {
               label: "Acciones",
               render: (row) => (
                 <div className="flex flex-wrap gap-2">
-                  <button className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white" onClick={() => cargarDetalle(row.id)}>
+                  <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => cargarDetalle(row.id)}>
                     Detalle
                   </button>
-                  <button className="rounded-lg bg-indigo-600 px-2 py-1 text-xs font-semibold text-white" onClick={() => registrarClick(row.id)}>
+                  <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => registrarClick(row.id)}>
                     Click
                   </button>
                   {!readOnly ? (
-                    <button className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white" onClick={() => eliminarProducto(row.id)}>
+                    <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => eliminarProducto(row.id)}>
                       Eliminar
                     </button>
                   ) : null}
@@ -373,7 +373,7 @@ export function MarketplacePage({ readOnly = false }) {
               <p className="text-sm font-medium text-teal-700">Inicia sesion para usar chat, favoritos y gestiones de compra.</p>
               <Link
                 to={`/login?next=${encodeURIComponent(`/admin/mensajes?id_marketplace=${productoDetalle.id}`)}`}
-                className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+                className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-amber-400 border border-slate-700 hover:bg-slate-900"
               >
                 Iniciar sesion para chatear
               </Link>
@@ -430,7 +430,7 @@ export function MarketplacePage({ readOnly = false }) {
                 styles={selectStyles}
               />
 
-              <button className="md:col-span-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white hover:bg-indigo-700">Guardar cambios</button>
+              <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Guardar cambios</button>
             </form>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -438,7 +438,7 @@ export function MarketplacePage({ readOnly = false }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID producto" value={editForm.id} onChange={(e) => setEditForm((prev) => ({ ...prev, id: e.target.value }))} />
                 <input className="rounded-xl border border-slate-300 px-3 py-2" type="file" multiple onChange={(e) => setImagenesArchivos(Array.from(e.target.files || []))} />
-                <button className="rounded-xl bg-teal-600 px-4 py-2 text-white" onClick={subirImagenes}>Subir imágenes</button>
+                <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={subirImagenes}>Subir imágenes</button>
               </div>
             </div>
           </PermissionGate>
@@ -490,7 +490,7 @@ export function MarketplacePage({ readOnly = false }) {
                 styles={selectStyles}
               />
 
-              <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white hover:bg-teal-700">Crear producto</button>
+              <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Crear producto</button>
             </form>
           </PermissionGate>
         </>

@@ -28,7 +28,7 @@ export function EmpresaPublicidadesPage() {
     // Filter to only show ads from user's companies
     const userEmpresaIds = new Set((misEmpresas.data || []).map((e) => String(e.id)));
     return (data || []).filter((p) => userEmpresaIds.has(String(p.id_empresa)));
-  }, [misEmpresas.data]);
+  }, misEmpresas.data);
 
   const tiposAnuncio = useAsyncData(async () => (await catalogosApi.tiposAnuncio({ limit: 100 })).data);
 
@@ -190,13 +190,13 @@ export function EmpresaPublicidadesPage() {
               render: (row) => (
                 <div className="flex flex-wrap gap-2">
                   <button
-                    className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white"
+                    className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition"
                     onClick={() => cargarDetalle(row.id)}
                   >
                     Detalle
                   </button>
                   <button
-                    className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white"
+                    className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition"
                     onClick={() => eliminar(row.id)}
                   >
                     Eliminar
@@ -267,7 +267,7 @@ export function EmpresaPublicidadesPage() {
             value={editForm.fecha_fin}
             onChange={(e) => setEditForm((prev) => ({ ...prev, fecha_fin: e.target.value }))}
           />
-          <button className="md:col-span-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white hover:bg-indigo-700">
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">
             Guardar edición
           </button>
         </form>
@@ -285,7 +285,7 @@ export function EmpresaPublicidadesPage() {
               accept="image/*"
               onChange={(e) => setImagenes(Array.from(e.target.files || []))}
             />
-            <button className="rounded-xl bg-teal-600 px-4 py-2 text-white" onClick={subirImagenes}>
+            <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={subirImagenes}>
               Subir imágenes
             </button>
           </div>
@@ -341,7 +341,7 @@ export function EmpresaPublicidadesPage() {
             value={form.fecha_fin}
             onChange={(e) => setForm((prev) => ({ ...prev, fecha_fin: e.target.value }))}
           />
-          <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white hover:bg-teal-700">
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">
             Crear publicidad
           </button>
         </form>

@@ -252,6 +252,7 @@ function EmpresaCard({ empresa }) {
 
 export function HomePage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoria, setSelectedCategoria] = useState("");
 
@@ -305,7 +306,7 @@ export function HomePage() {
               <span className="block text-primary mt-1">Directorio Local</span>
             </h1>
             <p className="mx-auto max-w-2xl text-base md:text-lg text-neutral-300">
-              Encuentra rápidamente empresas locales, servicios profesionales y los artículos más populares del marketplace.
+              Explora una nueva forma de descubrir lo mejor de tu ciudad.
             </p>
 
             {/* Search Bar */}
@@ -374,7 +375,7 @@ export function HomePage() {
                 Ver Artículos
               </Link>
               <Link
-                to="/login"
+                to={isAuthenticated ? "/empresas-panel" : "/login?mode=register"}
                 className="group flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 font-bold text-[#1F1F1F] transition-all hover:bg-primary-hover hover:-translate-y-0.5 shadow-[0_0_15px_rgba(255,193,7,0.3)]"
               >
                 <FontAwesomeIcon icon={faUserPlus} className="group-hover:scale-110 transition-transform" />

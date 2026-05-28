@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import { toast as reactToast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { playSuccess, playAlert, playNotification } from "../utils/audio";
 
 const ToastContext = createContext(null);
 
@@ -36,6 +37,12 @@ export function ToastProvider({ children }) {
   const pushToast = ({ title, message, type = "info" }) => {
     const config = toastConfig[type] || toastConfig.info;
     
+    // Play sounds based on toast type
+    if (type === "success") playSuccess();
+    else if (type === "error") playAlert();
+    else if (type === "warning") playAlert();
+    else playNotification();
+
     reactToast(
       <div>
         <div className="font-semibold">{title}</div>

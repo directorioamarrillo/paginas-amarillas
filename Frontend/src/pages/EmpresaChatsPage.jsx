@@ -214,8 +214,10 @@ export function EmpresaChatsPage() {
 
     if (miEmpresa.data) {
       loadConversaciones();
+    } else if (!miEmpresa.loading) {
+      setLoading(false);
     }
-  }, [miEmpresa.data, pushToast]);
+  }, [miEmpresa.data, miEmpresa.loading, pushToast]);
 
   // Load messages for selected conversation
   const cargarMensajes = async (conv) => {

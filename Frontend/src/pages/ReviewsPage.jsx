@@ -10,8 +10,13 @@ export function ReviewsPage() {
   const { user } = useAuth();
   const { pushToast } = useToast();
   const [empresaFiltro, setEmpresaFiltro] = useState("");
-  const [editForm, setEditForm] = useState({ id: "", id_empresa: "", comentario: "", calificacion: "" });
+  const [editForm, setEditForm] = useState({ id: "", id_empresa: "", id_usuario: "", comentario: "", calificacion: "" });
   const [form, setForm] = useState({ id_empresa: "", id_usuario: String(user?.id_usuario || ""), comentario: "", calificacion: "" });
+
+  const parseErrorDetail = (error) => {
+    const detail = error?.response?.data?.detail;
+    return typeof detail === 'string' ? detail : "Ocurrió un error. Verifica los datos ingresados.";
+  };
 
   const reviews = useAsyncData(async () => {
     if (empresaFiltro) {
@@ -34,7 +39,7 @@ export function ReviewsPage() {
       setForm({ id_empresa: "", id_usuario: String(user?.id_usuario || ""), comentario: "", calificacion: "" });
       reviews.reload();
     } catch (error) {
-      pushToast({ title: "Error", message: error?.response?.data?.detail || "No se pudo crear", type: "error" });
+      pushToast({ title: "Error", message: parseErrorDetail(error) || "No se pudo crear", type: "error" });
     }
   };
 
@@ -42,6 +47,7 @@ export function ReviewsPage() {
     setEditForm({
       id: String(row.id),
       id_empresa: String(row.id_empresa),
+      id_usuario: String(row.id_usuario),
       comentario: row.comentario || "",
       calificacion: String(row.calificacion ?? ""),
     });
@@ -52,14 +58,14 @@ export function ReviewsPage() {
     try {
       await reviewsApi.update(Number(editForm.id), {
         id_empresa: Number(editForm.id_empresa),
-        id_usuario: Number(user?.id_usuario),
+        id_usuario: Number(editForm.id_usuario),
         comentario: editForm.comentario,
         calificacion: Number(editForm.calificacion),
       });
       pushToast({ title: "Reseña actualizada", message: "Cambios guardados", type: "success" });
       reviews.reload();
     } catch (error) {
-      pushToast({ title: "Error", message: error?.response?.data?.detail || "No se pudo actualizar", type: "error" });
+      pushToast({ title: "Error", message: parseErrorDetail(error) || "No se pudo actualizar", type: "error" });
     }
   };
 
@@ -73,7 +79,7 @@ export function ReviewsPage() {
       pushToast({ title: "Reseña eliminada", message: `Reseña ${reviewId} desactivada`, type: "success" });
       reviews.reload();
     } catch (error) {
-      pushToast({ title: "Error", message: error?.response?.data?.detail || "No se pudo eliminar", type: "error" });
+      pushToast({ title: "Error", message: parseErrorDetail(error) || "No se pudo eliminar", type: "error" });
     }
   };
 
@@ -88,7 +94,7 @@ export function ReviewsPage() {
               <option key={empresa.id} value={empresa.id}>{empresa.nombre}</option>
             ))}
           </select>
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={reviews.reload}>Refrescar</button>
+          <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={reviews.reload}>Refrescar</button>
         </div>
       </div>
 
@@ -104,10 +110,10 @@ export function ReviewsPage() {
             label: "Acciones",
             render: (row) => (
               <div className="flex flex-wrap gap-2">
-                <button className="rounded-lg bg-indigo-600 px-2 py-1 text-xs text-white" onClick={() => prepararEdicion(row)}>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => prepararEdicion(row)}>
                   Editar
                 </button>
-                <button className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white" onClick={() => eliminar(row.id)}>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => eliminar(row.id)}>
                   Eliminar
                 </button>
               </div>
@@ -136,7 +142,7 @@ export function ReviewsPage() {
           </select>
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="Calificación (1-5)" type="number" min="1" max="5" step="0.1" value={editForm.calificacion} onChange={(e) => setEditForm((prev) => ({ ...prev, calificacion: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="Comentario" value={editForm.comentario} onChange={(e) => setEditForm((prev) => ({ ...prev, comentario: e.target.value }))} required />
-          <button className="md:col-span-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white">Guardar edición</button>
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Guardar edición</button>
         </form>
       </PermissionGate>
 
@@ -161,7 +167,7 @@ export function ReviewsPage() {
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID usuario" value={form.id_usuario} onChange={(e) => setForm((prev) => ({ ...prev, id_usuario: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="Calificación (1-5)" type="number" min="1" max="5" step="0.1" value={form.calificacion} onChange={(e) => setForm((prev) => ({ ...prev, calificacion: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="Comentario" value={form.comentario} onChange={(e) => setForm((prev) => ({ ...prev, comentario: e.target.value }))} required />
-          <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white">Crear reseña</button>
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Crear reseña</button>
         </form>
       </PermissionGate>
     </section>

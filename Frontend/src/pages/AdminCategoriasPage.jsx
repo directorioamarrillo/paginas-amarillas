@@ -72,7 +72,7 @@ export function AdminCategoriasPage() {
           <Input label="Nombre" value={form.nombre} onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))} required />
           <Input label="Descripción" value={form.descripcion} onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))} />
           <div className="md:col-span-2">
-            <button type="submit" className="rounded-xl bg-teal-600 px-4 py-2 text-white">{editId ? "Guardar" : "Crear"}</button>
+            <button type="submit" className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900">{editId ? "Guardar" : "Crear"}</button>
             {editId ? (
               <button type="button" className="ml-2 rounded-xl bg-gray-200 px-4 py-2" onClick={() => { setEditId(null); setForm({ nombre: "", descripcion: "" }); }}>Cancelar</button>
             ) : null}
@@ -87,8 +87,8 @@ export function AdminCategoriasPage() {
                 <div className="text-sm text-slate-500">{c.descripcion}</div>
               </div>
               <div className="flex gap-2">
-                <button className="rounded-lg bg-indigo-600 px-2 py-1 text-xs text-white" onClick={() => iniciarEdicion(c)}>Editar</button>
-                <button className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white" onClick={() => eliminar(c.id)}>Eliminar</button>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => iniciarEdicion(c)}>Editar</button>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => eliminar(c.id)}>Eliminar</button>
               </div>
             </div>
           ))}

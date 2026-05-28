@@ -75,7 +75,7 @@ PERMISOS = {
     'id': 1,
     'key': Permisos.CREAR_EMPRESA.value,
     'descripcion': 'Permite crear nuevas empresas en el sistema',
-    'roles_aceptados': [Roles.ADMIN],
+    'roles_aceptados': [Roles.ADMIN, Roles.USUARIO, Roles.EMPRESA],
   },
   Permisos.VER_REGISTROS_ELIMINADOS: {
     'id': 2,

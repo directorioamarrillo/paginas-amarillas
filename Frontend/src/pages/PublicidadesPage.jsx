@@ -120,10 +120,10 @@ export function PublicidadesPage() {
             label: "Acciones",
             render: (row) => (
               <div className="flex flex-wrap gap-2">
-                <button className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white" onClick={() => cargarDetalle(row.id)}>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => cargarDetalle(row.id)}>
                   Detalle
                 </button>
-                <button className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white" onClick={() => eliminar(row.id)}>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => eliminar(row.id)}>
                   Eliminar
                 </button>
               </div>
@@ -167,7 +167,7 @@ export function PublicidadesPage() {
           <input className="md:col-span-2 rounded-xl border border-slate-300 px-3 py-2" placeholder="Descripción" value={editForm.descripcion} onChange={(e) => setEditForm((prev) => ({ ...prev, descripcion: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" type="datetime-local" value={editForm.fecha_inicio} onChange={(e) => setEditForm((prev) => ({ ...prev, fecha_inicio: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" type="datetime-local" value={editForm.fecha_fin} onChange={(e) => setEditForm((prev) => ({ ...prev, fecha_fin: e.target.value }))} />
-          <button className="md:col-span-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white">Guardar edición</button>
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Guardar edición</button>
         </form>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -175,7 +175,7 @@ export function PublicidadesPage() {
           <div className="mt-3 flex flex-wrap gap-2">
             <input className="rounded-xl border border-slate-300 px-3 py-2" placeholder="ID publicidad" value={editForm.id} onChange={(e) => setEditForm((prev) => ({ ...prev, id: e.target.value }))} />
             <input className="rounded-xl border border-slate-300 px-3 py-2" type="file" multiple onChange={(e) => setImagenes(Array.from(e.target.files || []))} />
-            <button className="rounded-xl bg-teal-600 px-4 py-2 text-white" onClick={subirImagenes}>Subir imágenes</button>
+            <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={subirImagenes}>Subir imágenes</button>
           </div>
         </div>
       </PermissionGate>
@@ -208,7 +208,7 @@ export function PublicidadesPage() {
           <input className="md:col-span-2 rounded-xl border border-slate-300 px-3 py-2" placeholder="Descripción" value={form.descripcion} onChange={(e) => setForm((prev) => ({ ...prev, descripcion: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" type="datetime-local" value={form.fecha_inicio} onChange={(e) => setForm((prev) => ({ ...prev, fecha_inicio: e.target.value }))} required />
           <input className="rounded-xl border border-slate-300 px-3 py-2" type="datetime-local" value={form.fecha_fin} onChange={(e) => setForm((prev) => ({ ...prev, fecha_fin: e.target.value }))} />
-          <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white">Crear publicidad</button>
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">Crear publicidad</button>
         </form>
       </PermissionGate>
     </section>

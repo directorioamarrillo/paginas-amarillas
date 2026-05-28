@@ -60,8 +60,8 @@ export function FavoritosPage() {
         <p className="mt-1 text-sm text-slate-600">Total en favoritos: <strong>{conteo.data?.cantidad || 0}</strong></p>
         <div className="mt-3 flex gap-2">
           <input className="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="ID marketplace" value={idMarketplace} onChange={(e) => setIdMarketplace(e.target.value)} />
-          <button className="rounded-xl bg-teal-600 px-4 py-2 text-white" onClick={agregar}>Agregar</button>
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={verificar}>Verificar</button>
+          <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={agregar}>Agregar</button>
+          <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={verificar}>Verificar</button>
         </div>
         {verificacion !== null ? (
           <p className="mt-2 text-xs font-semibold text-slate-600">

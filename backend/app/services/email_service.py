@@ -6,9 +6,15 @@ from app.core.config import settings
 class EmailService:
     @staticmethod
     def send_verification_email(to_email: str, code: str):
-        if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
-            print(f"SMTP no configurado. Código generado para {to_email}: {code}")
-            return False
+        if not settings.SMTP_USER or not settings.SMTP_PASSWORD or settings.SMTP_PASSWORD == "TU_CONTRASENA_DE_APLICACION_AQUI":
+            print(f"SMTP no configurado o tiene la contraseña por defecto. Código generado para {to_email}: {code}")
+            # Guardamos el código en un archivo local para que el desarrollador pueda verlo fácilmente
+            try:
+                with open("verification_codes.log", "a") as f:
+                    f.write(f"Para: {to_email} | Codigo: {code}\\n")
+            except Exception:
+                pass
+            return True
 
         subject = "Verifica tu cuenta - Directorio"
         body = f"""

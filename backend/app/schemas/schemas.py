@@ -109,6 +109,7 @@ class EmpresaBase(BaseModel):
     id_municipio: int
     id_usuario_creador: Optional[int] = None
     logo_url: Optional[str] = None
+    estado: Optional[str] = "pendiente"
 
 class EmpresaCreate(EmpresaBase):
     pass

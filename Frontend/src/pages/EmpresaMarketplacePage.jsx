@@ -210,60 +210,64 @@ export function EmpresaMarketplacePage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900">Mis Productos</h3>
         <p className="mt-1 text-sm text-slate-600">Gestiona los productos de tus empresas en el marketplace</p>
-        <div className="mt-3 flex gap-2">
-          <input
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
-            placeholder="Buscar producto"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-white" onClick={marketplace.reload}>
-            Refrescar
-          </button>
-        </div>
-        <div className="mt-3 grid gap-2 md:grid-cols-4">
-          <ReactSelect
-            value={empresaOptions.find((o) => o.value === filtros.id_empresa) || null}
-            onChange={(selected) => setFiltros((prev) => ({ ...prev, id_empresa: selected?.value || "" }))}
-            options={empresaOptions}
-            placeholder="Mi empresa"
-            isSearchable
-            isClearable
-            styles={selectStyles}
-          />
-          <ReactSelect
-            value={categoriaOptions.find((o) => o.value === filtros.id_categoria) || null}
-            onChange={(selected) => setFiltros((prev) => ({ ...prev, id_categoria: selected?.value || "" }))}
-            options={categoriaOptions}
-            placeholder="Categoría"
-            isSearchable
-            isClearable
-            styles={selectStyles}
-          />
-          <ReactSelect
-            value={estadoOptions.find((o) => o.value === filtros.id_estado) || null}
-            onChange={(selected) => setFiltros((prev) => ({ ...prev, id_estado: selected?.value || "" }))}
-            options={estadoOptions}
-            placeholder="Estado"
-            isSearchable
-            isClearable
-            styles={selectStyles}
-          />
-          <Input
-            className="rounded-xl border border-slate-300 px-3 py-2"
-            placeholder="Precio mínimo"
-            type="number"
-            value={filtros.precio_min}
-            onChange={(e) => setFiltros((prev) => ({ ...prev, precio_min: e.target.value }))}
-          />
-          <Input
-            className="rounded-xl border border-slate-300 px-3 py-2"
-            placeholder="Precio máximo"
-            type="number"
-            value={filtros.precio_max}
-            onChange={(e) => setFiltros((prev) => ({ ...prev, precio_max: e.target.value }))}
-          />
-        </div>
+        {hasEmpresas && (
+          <>
+            <div className="mt-3 flex gap-2">
+              <input
+                className="w-full rounded-xl border border-slate-300 px-3 py-2"
+                placeholder="Buscar producto"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={marketplace.reload}>
+                Refrescar
+              </button>
+            </div>
+            <div className="mt-3 grid gap-2 md:grid-cols-4">
+              <ReactSelect
+                value={empresaOptions.find((o) => o.value === filtros.id_empresa) || null}
+                onChange={(selected) => setFiltros((prev) => ({ ...prev, id_empresa: selected?.value || "" }))}
+                options={empresaOptions}
+                placeholder="Mi empresa"
+                isSearchable
+                isClearable
+                styles={selectStyles}
+              />
+              <ReactSelect
+                value={categoriaOptions.find((o) => o.value === filtros.id_categoria) || null}
+                onChange={(selected) => setFiltros((prev) => ({ ...prev, id_categoria: selected?.value || "" }))}
+                options={categoriaOptions}
+                placeholder="Categoría"
+                isSearchable
+                isClearable
+                styles={selectStyles}
+              />
+              <ReactSelect
+                value={estadoOptions.find((o) => o.value === filtros.id_estado) || null}
+                onChange={(selected) => setFiltros((prev) => ({ ...prev, id_estado: selected?.value || "" }))}
+                options={estadoOptions}
+                placeholder="Estado"
+                isSearchable
+                isClearable
+                styles={selectStyles}
+              />
+              <Input
+                className="rounded-xl border border-slate-300 px-3 py-2"
+                placeholder="Precio mínimo"
+                type="number"
+                value={filtros.precio_min}
+                onChange={(e) => setFiltros((prev) => ({ ...prev, precio_min: e.target.value }))}
+              />
+              <Input
+                className="rounded-xl border border-slate-300 px-3 py-2"
+                placeholder="Precio máximo"
+                type="number"
+                value={filtros.precio_max}
+                onChange={(e) => setFiltros((prev) => ({ ...prev, precio_max: e.target.value }))}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Products Table */}
@@ -346,13 +350,13 @@ export function EmpresaMarketplacePage() {
               render: (row) => (
                 <div className="flex flex-wrap gap-2">
                   <button
-                    className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white"
+                    className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition"
                     onClick={() => cargarDetalle(row.id)}
                   >
                     Detalle
                   </button>
                   <button
-                    className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white"
+                    className="rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-slate-900 transition"
                     onClick={() => eliminarProducto(row.id)}
                   >
                     Eliminar
@@ -413,7 +417,7 @@ export function EmpresaMarketplacePage() {
             styles={selectStyles}
           />
 
-          <button className="md:col-span-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white hover:bg-indigo-700">
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">
             Guardar cambios
           </button>
         </form>
@@ -431,7 +435,7 @@ export function EmpresaMarketplacePage() {
               accept="image/*"
               onChange={(e) => setImagenesArchivos(Array.from(e.target.files || []))}
             />
-            <button className="rounded-xl bg-teal-600 px-4 py-2 text-white" onClick={subirImagenes}>
+            <button className="rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900" onClick={subirImagenes}>
               Subir imágenes
             </button>
           </div>
@@ -479,7 +483,7 @@ export function EmpresaMarketplacePage() {
             styles={selectStyles}
           />
 
-          <button className="md:col-span-2 rounded-xl bg-teal-600 px-4 py-2.5 font-semibold text-white hover:bg-teal-700">
+          <button className="md:col-span-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900">
             Crear producto
           </button>
         </form>

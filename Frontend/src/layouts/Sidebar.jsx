@@ -64,36 +64,45 @@ export function Sidebar() {
   });
 
   return (
-    <aside className="flex h-full w-72 flex-col border-r border-slate-200 bg-white/80 p-6 backdrop-blur lg:h-auto">
-      <h1 className="text-xl font-semibold text-slate-900">Directorio 2.0</h1>
-      <p className="mt-1 text-sm text-slate-500">Panel administrativo</p>
-      <nav className="mt-8 flex-1 space-y-2">
+    <aside className="flex h-full w-72 flex-col border-r border-slate-200 bg-white/80 p-6 backdrop-blur-md lg:h-auto shadow-sm z-20">
+      <h1 className="text-xl font-black text-slate-900 tracking-widest uppercase">
+        Nexus <span className="text-amber-500">Control</span>
+      </h1>
+      <p className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-500">Directorio 2.0</p>
+      <nav className="mt-8 flex-1 space-y-3">
         {visibleItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
               clsx(
-                "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                "flex items-center gap-4 rounded-xl px-4 py-3.5 text-sm font-bold uppercase tracking-widest transition-all duration-300 group",
                 isActive
-                  ? "bg-teal-600 text-white shadow"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                  ? "bg-amber-500/10 text-amber-500 border border-amber-500/30 shadow-[inset_0_0_15px_rgba(245,158,11,0.15)] is-active"
+                  : "text-slate-600 border border-transparent hover:bg-slate-100 hover:text-slate-900",
               )
             }
           >
-            <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
-            <span>{item.label}</span>
+            {({ isActive }) => (
+              <>
+                <FontAwesomeIcon 
+                  icon={item.icon} 
+                  className={isActive ? "text-amber-500 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]" : ""} 
+                />
+                <span>{item.label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
       {/* Volver al Inicio */}
-      <div className="mt-4 border-t border-slate-200 pt-4">
+      <div className="mt-6 border-t border-amber-500/20 pt-6">
         <Link
           to="/"
-          className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-primary-50 hover:text-primary-600"
+          className="flex items-center justify-center gap-3 rounded-xl px-4 py-3.5 text-xs font-black uppercase tracking-widest text-black bg-amber-500 transition-all hover:bg-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)] hover:shadow-[0_0_20px_rgba(245,158,11,0.8)]"
         >
-          <FontAwesomeIcon icon={faHouse} className="h-4 w-4" />
+          <FontAwesomeIcon icon={faHouse} />
           <span>Volver al Inicio</span>
         </Link>
       </div>

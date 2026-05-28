@@ -82,6 +82,7 @@ export const empresasApi = {
   addUsuario: (empresaId, payload) => http.post(`/empresas/${empresaId}/usuarios`, payload),
   removeUsuario: (empresaId, usuarioId) => http.delete(`/empresas/${empresaId}/usuarios/${usuarioId}`),
   restore: (empresaId) => http.patch(`/empresas/${empresaId}/restore`),
+  aprobar: (empresaId) => http.patch(`/empresas/${empresaId}/aprobar`),
   uploadImagenes: (empresaId, archivos) => {
     const data = new FormData();
     archivos.forEach((archivo) => data.append("archivos", archivo));

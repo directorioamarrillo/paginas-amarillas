@@ -227,10 +227,10 @@ export function PublicPerfilPage() {
               className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-600">
-                <FontAwesomeIcon icon={faStore} size="lg" />
+                <FontAwesomeIcon icon={faShieldHalved} size="lg" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900">Panel Admin</p>
+                <p className="text-sm font-bold text-slate-900">Nexus Control</p>
                 <p className="text-xs text-slate-600">Gestionar marketplace</p>
               </div>
             </Link>

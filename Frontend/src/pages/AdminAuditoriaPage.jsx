@@ -30,11 +30,11 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export function AdminAuditoriaPage() {
   const badgeFor = (accion) => {
-    if (!accion) return 'bg-gray-200';
-    if (accion.includes('POST')) return 'bg-green-100 text-green-800';
-    if (accion.includes('PUT') || accion.includes('PATCH')) return 'bg-yellow-100 text-yellow-800';
-    if (accion.includes('DELETE')) return 'bg-red-100 text-red-800';
-    return 'bg-blue-100 text-blue-800';
+    if (!accion) return 'bg-slate-50 text-slate-500 border-slate-200';
+    if (accion.includes('POST') || accion.includes('CREAR')) return 'bg-emerald-50 text-emerald-600 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]';
+    if (accion.includes('PUT') || accion.includes('PATCH') || accion.includes('CAMBIO')) return 'bg-amber-50 text-amber-600 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]';
+    if (accion.includes('DELETE') || accion.includes('DESACTIVAR')) return 'bg-rose-50 text-rose-600 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.1)]';
+    return 'bg-blue-50 text-blue-600 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)]';
   }
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -132,55 +132,57 @@ export function AdminAuditoriaPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#1F1F1F] tracking-tight">Registro de Actividad</h2>
-          <p className="text-sm text-slate-500 mt-1">Historial de auditoría y eventos de seguridad en el sistema (solo lectura)</p>
+          <h2 className="text-3xl font-black text-slate-900 tracking-widest drop-shadow-sm">
+            REGISTRO <span className="text-amber-500">DE ACTIVIDAD</span>
+          </h2>
+          <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest font-bold">Historial de auditoría y eventos de seguridad</p>
         </div>
       </div>
 
       {/* Filter Panel */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <form onSubmit={handleSearch} className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 flex-1">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-md">
+        <form onSubmit={handleSearch} className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 flex-1">
             {/* Role Select */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Rol de Usuario</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Rol de Usuario</label>
               <select 
                 value={rol} 
                 onChange={(e) => setRol(e.target.value)} 
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition cursor-pointer"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition cursor-pointer"
               >
-                <option value="">Todos los roles</option>
-                {rolesList.map(r => (<option key={r.id} value={r.nombre}>{r.nombre}</option>))}
+                <option value="" className="bg-white">Todos los roles</option>
+                {rolesList.map(r => (<option key={r.id} value={r.nombre} className="bg-white">{r.nombre}</option>))}
               </select>
             </div>
 
             {/* Date From */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Fecha Desde</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Desde</label>
               <input 
                 type="date" 
                 value={fechaDesde} 
                 onChange={(e) => setFechaDesde(e.target.value)} 
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition" 
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition" 
               />
             </div>
 
             {/* Date To */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Fecha Hasta</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Hasta</label>
               <input 
                 type="date" 
                 value={fechaHasta} 
                 onChange={(e) => setFechaHasta(e.target.value)} 
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition" 
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition" 
               />
             </div>
 
             {/* Submit Button */}
-            <div className="flex items-end">
+            <div className="flex items-end h-full">
               <button 
                 type="submit" 
-                className="w-full rounded-xl bg-primary hover:bg-primary-hover px-5 py-2.5 font-bold text-[#1F1F1F] transition shadow-sm flex items-center justify-center gap-2"
+                className="w-full h-[46px] rounded-xl border border-slate-900 bg-slate-900 px-5 font-black text-amber-500 uppercase tracking-widest transition shadow-md hover:bg-slate-800 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] flex items-center justify-center gap-2 focus:ring-amber-500"
               >
                 <FontAwesomeIcon icon={faSearch} />
                 Buscar
@@ -189,19 +191,19 @@ export function AdminAuditoriaPage() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex flex-wrap gap-2 pt-2 lg:pt-0 shrink-0">
+          <div className="flex flex-wrap gap-3 shrink-0">
             <button 
               type="button" 
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
+              className="rounded-xl border border-emerald-500/30 bg-emerald-50 px-5 h-[46px] text-sm font-bold text-emerald-500 hover:bg-emerald-100 transition shadow-[0_0_10px_rgba(16,185,129,0.2)] hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center gap-2 uppercase tracking-wider"
               onClick={handleExport}
             >
-              <FontAwesomeIcon icon={faFileCsv} className="text-emerald-500" />
-              Exportar CSV
+              <FontAwesomeIcon icon={faFileCsv} />
+              CSV
             </button>
             
             <button 
               type="button" 
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
+              className="rounded-xl border border-rose-500/30 bg-rose-50 px-5 h-[46px] text-sm font-bold text-rose-500 hover:bg-rose-100 transition shadow-[0_0_10px_rgba(244,63,94,0.2)] hover:shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center gap-2 uppercase tracking-wider"
               onClick={async () => {
                 try {
                   const res = await auditApi.exportPdf({ q, rol, accion: accionFilter, fecha_desde: fechaDesde, fecha_hasta: fechaHasta });
@@ -218,57 +220,72 @@ export function AdminAuditoriaPage() {
                 }
               }}
             >
-              <FontAwesomeIcon icon={faFilePdf} className="text-red-500" />
-              Exportar PDF
+              <FontAwesomeIcon icon={faFilePdf} />
+              PDF
             </button>
 
             <button 
               type="button" 
-              className="rounded-xl bg-[#212121] px-4 py-2.5 text-sm font-bold text-white hover:bg-neutral-800 transition shadow-sm flex items-center gap-2"
+              className="rounded-xl border border-blue-500/30 bg-blue-50 px-5 h-[46px] text-sm font-bold text-blue-500 hover:bg-blue-100 transition shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center gap-2 uppercase tracking-wider"
               onClick={handleReport} 
               disabled={loadingReport}
             >
-              <FontAwesomeIcon icon={faChartPie} className="text-primary" />
-              {loadingReport ? 'Generando...' : 'Reporte Resumen'}
+              <FontAwesomeIcon icon={faChartPie} />
+              {loadingReport ? '...' : 'Reporte'}
             </button>
           </div>
         </form>
       </div>
 
       {/* Table Data */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-sm font-medium text-slate-500">Cargando registros de auditoría...</div>
+          <div className="p-8 text-center text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Cargando registros de sistema...</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-left">
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Usuario</th>
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Rol</th>
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Acción</th>
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Módulo</th>
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Entidad</th>
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">IP</th>
-                  <th className="px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-left">
+                  <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-widest w-1/4">Usuario</th>
+                  <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-widest w-1/4">Actividad</th>
+                  <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-widest w-1/4">Detalles</th>
+                  <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-widest text-right">Fecha</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {items.map((it) => (
-                  <tr key={it.id} className="hover:bg-slate-50/50 cursor-pointer transition duration-150" onClick={() => setSelected(it)}>
-                    <td className="px-4 py-3.5 text-xs font-medium text-slate-600 whitespace-nowrap">{new Date(it.timestamp).toLocaleString()}</td>
-                    <td className="px-4 py-3.5 text-sm font-bold text-slate-900">{it.nombre_usuario}</td>
-                    <td className="px-4 py-3.5 text-xs text-slate-500 capitalize">{it.rol_usuario}</td>
-                    <td className="px-4 py-3.5 text-xs font-mono text-slate-500">{it.accion}</td>
-                    <td className="px-4 py-3.5 text-xs">
-                      <span className={`inline-flex px-2.5 py-1 rounded-lg font-semibold ${badgeFor(it.accion)}`}>
-                        {it.accion}
-                      </span>
+                  <tr key={it.id} className="hover:bg-slate-50 cursor-pointer transition duration-200" onClick={() => setSelected(it)}>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs uppercase">
+                          {it.nombre_usuario ? it.nombre_usuario.charAt(0) : '?'}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-900">{it.nombre_usuario}</span>
+                          <span className="text-xs font-bold text-amber-600 capitalize">{it.rol_usuario}</span>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-4 py-3.5 text-xs font-medium text-slate-600">{it.entidad_afectada} {it.entidad_id ? `#${it.entidad_id}` : ''}</td>
-                    <td className="px-4 py-3.5 text-xs font-mono text-slate-500">{it.ip}</td>
-                    <td className="px-4 py-3.5 text-xs font-bold text-slate-800">{it.estado_evento}</td>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className={`inline-flex px-2 py-0.5 rounded-md font-bold border ${badgeFor(it.accion?.toUpperCase())} uppercase tracking-wider text-[10px]`}>
+                          {it.accion}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col text-xs text-slate-500 gap-0.5">
+                        {it.entidad_afectada ? <span className="font-medium text-slate-700">Entidad: {it.entidad_afectada} {it.entidad_id ? `#${it.entidad_id}` : ''}</span> : <span className="italic opacity-50">Sin entidad</span>}
+                        {it.ip && <span className="font-mono text-[10px] text-slate-400">IP: {it.ip}</span>}
+                        {it.estado_evento && <span className="font-bold text-slate-900">{it.estado_evento}</span>}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex flex-col text-xs text-slate-500 whitespace-nowrap items-end">
+                        <span className="font-medium text-slate-900">{new Date(it.timestamp).toLocaleDateString()}</span>
+                        <span>{new Date(it.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -278,18 +295,18 @@ export function AdminAuditoriaPage() {
       </div>
 
       <div className="flex items-center justify-between mt-4">
-        <div className="text-xs font-semibold text-slate-500">Mostrando {items.length} de {total} registros</div>
-        <div className="flex gap-2">
+        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Mostrando {items.length} de {total} registros</div>
+        <div className="flex gap-3">
           <button 
             disabled={skip === 0} 
-            className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition disabled:opacity-50 disabled:pointer-events-none" 
+            className="px-5 py-2.5 text-xs font-black rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 uppercase tracking-widest transition disabled:opacity-30 disabled:pointer-events-none" 
             onClick={() => setSkip(Math.max(0, skip - limit))}
           >
             Anterior
           </button>
           <button 
             disabled={skip + limit >= total} 
-            className="px-4 py-2 text-xs font-bold rounded-xl bg-[#212121] hover:bg-neutral-800 text-white transition disabled:opacity-50 disabled:pointer-events-none" 
+            className="px-5 py-2.5 text-xs font-black rounded-xl border border-slate-900 bg-slate-900 hover:bg-slate-800 text-amber-500 uppercase tracking-widest shadow-md transition disabled:opacity-30 disabled:pointer-events-none" 
             onClick={() => setSkip(skip + limit)}
           >
             Siguiente
@@ -298,23 +315,22 @@ export function AdminAuditoriaPage() {
       </div>
       {/* Modal detalle simple */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white p-4 rounded w-11/12 max-w-2xl">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold">Detalle evento #{selected.id}</h3>
-              <button className="btn" onClick={() => setSelected(null)}>Cerrar</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-amber-500/30 p-6 rounded-2xl w-11/12 max-w-2xl shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-black text-xl text-white uppercase tracking-widest">Detalle Evento <span className="text-amber-500">#{selected.id}</span></h3>
+              <button className="text-slate-400 hover:text-white transition" onClick={() => setSelected(null)}>
+                <FontAwesomeIcon icon={faXmark} size="xl" />
+              </button>
             </div>
-            <div className="mt-3 grid grid-cols-1 gap-2">
-              <div><strong>Usuario:</strong> {selected.nombre_usuario} ({selected.rol_usuario})</div>
-              <div><strong>Acción:</strong> {selected.accion}</div>
-              <div><strong>Módulo:</strong> {selected.modulo}</div>
-              <div><strong>Entidad:</strong> {selected.entidad_afectada} {selected.entidad_id}</div>
-              <div><strong>Endpoint:</strong> {selected.endpoint}</div>
-              <div><strong>IP:</strong> {selected.ip}</div>
-              <div><strong>User Agent:</strong> {selected.user_agent}</div>
-              <div><strong>Descripción:</strong> <pre className="whitespace-pre-wrap">{selected.descripcion}</pre></div>
-              <div><strong>Datos anteriores:</strong> <pre className="whitespace-pre-wrap">{selected.datos_anteriores}</pre></div>
-              <div><strong>Datos nuevos:</strong> <pre className="whitespace-pre-wrap">{selected.datos_nuevos}</pre></div>
+            <div className="mt-3 grid grid-cols-1 gap-4 text-sm text-slate-300">
+              <div className="bg-black/50 p-3 rounded-lg border border-slate-800"><strong className="text-amber-500 uppercase tracking-wider block mb-1">Usuario</strong> {selected.nombre_usuario} ({selected.rol_usuario})</div>
+              <div className="bg-black/50 p-3 rounded-lg border border-slate-800"><strong className="text-amber-500 uppercase tracking-wider block mb-1">Acción</strong> {selected.accion}</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-black/50 p-3 rounded-lg border border-slate-800"><strong className="text-amber-500 uppercase tracking-wider block mb-1">Módulo</strong> {selected.modulo}</div>
+                <div className="bg-black/50 p-3 rounded-lg border border-slate-800"><strong className="text-amber-500 uppercase tracking-wider block mb-1">IP</strong> {selected.ip}</div>
+              </div>
+              <div className="bg-black/50 p-3 rounded-lg border border-slate-800"><strong className="text-amber-500 uppercase tracking-wider block mb-1">Descripción</strong> <pre className="whitespace-pre-wrap font-mono text-xs">{selected.descripcion}</pre></div>
             </div>
           </div>
         </div>
@@ -322,37 +338,28 @@ export function AdminAuditoriaPage() {
 
       {/* Report modal */}
       {report && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white p-4 rounded w-11/12 max-w-3xl">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold">Reporte - Resumen</h3>
-              <button className="btn" onClick={() => setReport(null)}>Cerrar</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-amber-500/30 p-6 rounded-2xl w-11/12 max-w-3xl shadow-[0_0_30px_rgba(245,158,11,0.2)] overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-black text-xl text-white uppercase tracking-widest">Reporte <span className="text-amber-500">Resumen</span></h3>
+              <button className="text-slate-400 hover:text-white transition" onClick={() => setReport(null)}>
+                <FontAwesomeIcon icon={faXmark} size="xl" />
+              </button>
             </div>
-            <div className="mt-3 grid grid-cols-1 gap-4">
-              <div>
-                <h4 className="font-medium">Por módulo</h4>
-                <table className="table-auto w-full mt-2">
-                  <thead><tr><th>Módulo</th><th>Conteo</th></tr></thead>
-                  <tbody>
+            <div className="mt-3 grid grid-cols-1 gap-6 text-sm text-slate-300">
+              <div className="bg-black/50 p-4 rounded-xl border border-slate-800">
+                <h4 className="font-bold text-amber-500 uppercase tracking-wider mb-3">Por módulo</h4>
+                <table className="w-full text-left">
+                  <thead><tr className="border-b border-slate-700"><th className="pb-2">Módulo</th><th className="pb-2">Conteo</th></tr></thead>
+                  <tbody className="divide-y divide-slate-800">
                     {(report['módulos'] || []).map(r => (
-                      <tr key={r.modulo}><td>{r.modulo}</td><td>{r.count}</td></tr>
+                      <tr key={r.modulo}><td className="py-2">{r.modulo}</td><td className="py-2">{r.count}</td></tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div>
-                <h4 className="font-medium">Por acción</h4>
-                <table className="table-auto w-full mt-2">
-                  <thead><tr><th>Acción</th><th>Conteo</th></tr></thead>
-                  <tbody>
-                    {(report['acciones'] || []).map(r => (
-                      <tr key={r.accion}><td>{r.accion}</td><td>{r.count}</td></tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div>
-                <h4 className="font-medium">Tendencia (diaria)</h4>
+              <div className="bg-black/50 p-4 rounded-xl border border-slate-800">
+                <h4 className="font-bold text-amber-500 uppercase tracking-wider mb-3">Tendencia (diaria)</h4>
                 {timeseries.length === 0 ? (
                   <div className="text-sm text-slate-500">No hay datos para el rango seleccionado.</div>
                 ) : (
@@ -364,8 +371,8 @@ export function AdminAuditoriaPage() {
                           {
                             label: 'Eventos',
                             data: timeseries.map(t => t.count),
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37,99,235,0.1)',
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245,158,11,0.1)',
                           },
                         ],
                       }}
@@ -378,19 +385,6 @@ export function AdminAuditoriaPage() {
                     />
                   </div>
                 )}
-                <div className="mt-2">
-                  <button className="btn" onClick={() => {
-                    // Export report summary CSV
-                    const rows = [];
-                    rows.push(['Tipo','Clave','Conteo']);
-                    (report['módulos'] || []).forEach(r => rows.push(['Módulo', r.modulo, r.count]));
-                    (report['acciones'] || []).forEach(r => rows.push(['Acción', r.accion, r.count]));
-                    const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-                    const blob = new Blob([csv], { type: 'text/csv' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a'); a.href = url; a.download = 'reporte_resumen.csv'; document.body.appendChild(a); a.click(); a.remove();
-                  }}>Exportar resumen CSV</button>
-                </div>
               </div>
             </div>
           </div>

@@ -277,10 +277,12 @@ const getCategoryGallery = (categoryName) => {
 export function PublicEmpresaPage() {
   const { empresaId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { pushToast } = useToast();
   const [activeTab, setActiveTab] = useState("productos");
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ calificacion: 5, comentario: "" });
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const idEmpresa = Number(empresaId);
 
@@ -324,6 +326,34 @@ export function PublicEmpresaPage() {
   const galleryImages = data.imagenes && data.imagenes.length > 0
     ? data.imagenes.map((img) => `${SERVER_BASE_URL}${img.imagen_url}`)
     : getCategoryGallery(data.categoria?.nombre);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) return pushToast({ title: "Inicia sesión", message: "Debes iniciar sesión para calificar", type: "info" });
+    if (!reviewForm.comentario.trim()) return pushToast({ title: "Error", message: "Escribe un comentario", type: "error" });
+    
+    setIsSubmittingReview(true);
+    try {
+      await reviewsApi.create({
+        id_empresa: idEmpresa,
+        id_usuario: user.id_usuario || user.id,
+        calificacion: reviewForm.calificacion,
+        comentario: reviewForm.comentario,
+      });
+      pushToast({ title: "Éxito", message: "Reseña publicada correctamente", type: "success" });
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      const detail = error?.response?.data?.detail;
+      const errorMessage = typeof detail === 'string' ? detail : "No se pudo publicar la reseña. Verifica que hayas interactuado con esta empresa antes.";
+      pushToast({
+        title: "No se pudo publicar",
+        message: errorMessage,
+        type: "error",
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] pb-12">
@@ -516,8 +546,54 @@ export function PublicEmpresaPage() {
         )}
 
         {activeTab === "resenas" && (
-          <div className="space-y-4 max-w-3xl">
-            {reviewsList.length === 0 ? (
+          <div className="space-y-6 max-w-3xl">
+            {isAuthenticated ? (
+              <form onSubmit={handleSubmitReview} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <h3 className="mb-4 text-lg font-bold text-slate-900">Deja tu reseña</h3>
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="text-sm font-medium text-slate-700">Calificación:</span>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewForm({ ...reviewForm, calificacion: star })}
+                      className="transition-transform hover:scale-110"
+                    >
+                      <FontAwesomeIcon
+                        icon={faStar}
+                        className={star <= reviewForm.calificacion ? "text-primary text-xl" : "text-slate-200 text-xl"}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-3"
+                  rows="3"
+                  placeholder="Comparte tu experiencia con esta empresa..."
+                  value={reviewForm.comentario}
+                  onChange={(e) => setReviewForm({ ...reviewForm, comentario: e.target.value })}
+                ></textarea>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReview}
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-hover disabled:opacity-50"
+                  >
+                    {isSubmittingReview ? "Publicando..." : "Publicar Reseña"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 text-center shadow-sm">
+                <p className="mb-3 text-slate-600">Debes iniciar sesión para dejar una reseña.</p>
+                <Link to={`/login?next=/empresa/${idEmpresa}`} className="inline-block rounded-xl bg-primary px-6 py-2 font-bold text-white transition hover:bg-primary-hover">
+                  Iniciar sesión
+                </Link>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {reviewsList.length === 0 ? (
               <EmptyState
                 title="Sin reseñas"
                 description="Aún no hay reseñas para esta empresa"
@@ -525,6 +601,7 @@ export function PublicEmpresaPage() {
             ) : (
               reviewsList.map((review) => <ReviewCard key={review.id} review={review} />)
             )}
+            </div>
           </div>
         )}
       </div>

@@ -205,9 +205,9 @@ export function DataTable({ columns, rows, onRowClick, pageSizeOptions = [10, 20
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium transition ${
+                className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-bold transition ${
                   currentPage === page
-                    ? "border-primary-500 bg-primary-500 text-white"
+                    ? "border-slate-700 bg-slate-800 text-amber-400"
                     : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >

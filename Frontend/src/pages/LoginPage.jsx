@@ -22,7 +22,7 @@ export function LoginPage() {
   const { signin, signup } = useAuth();
   const { pushToast } = useToast();
 
-  const [isRegister, setIsRegister] = useState(false);
+  const [isRegister, setIsRegister] = useState(searchParams.get("mode") === "register");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({

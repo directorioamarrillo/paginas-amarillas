@@ -148,7 +148,7 @@ export function NotificacionesPage() {
             label: "Acción",
             render: (row) => (
               <div className="flex flex-wrap gap-2">
-                <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white" onClick={() => marcarLeida(row.id)}>
+                <button className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-1.5 text-xs font-bold text-amber-400 hover:bg-slate-900 transition" onClick={() => marcarLeida(row.id)}>
                   Marcar leída
                 </button>
                 <button className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white" onClick={() => eliminarNotificacion(row.id)}>
