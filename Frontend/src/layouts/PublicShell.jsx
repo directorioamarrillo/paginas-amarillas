@@ -6,11 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { favoritosApi, empresasApi } from "../services/api";
 
-const navItems = [
-  { to: "/", label: "Inicio" },
-  { to: "/empresas", label: "Directorio" },
-  { to: "/marketplace", label: "Marketplace" },
-];
+
 
 function UserMenu() {
   const { user, signout } = useAuth();
@@ -164,27 +160,11 @@ export function PublicShell() {
       <header className="border-b border-neutral-800 bg-[#212121] shadow-md">
         <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-6">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Páginas Amarillas</p>
-            <h1 className="text-lg font-bold text-white tracking-tight">Catálogo Público</h1>
+            <Link to="/" className="group block">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary group-hover:text-primary-hover transition">Páginas Amarillas</p>
+              <h1 className="text-lg font-bold text-white tracking-tight group-hover:text-neutral-200 transition">Catálogo Público</h1>
+            </Link>
           </div>
-          <nav className="flex items-center gap-2">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  clsx(
-                    "rounded-xl px-3 py-2 text-sm font-semibold transition md:px-4",
-                    isActive 
-                      ? "bg-primary text-[#1F1F1F] shadow-sm" 
-                      : "text-neutral-300 hover:bg-neutral-800 hover:text-white",
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <UserMenu />

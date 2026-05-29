@@ -255,6 +255,7 @@ export function HomePage() {
   const { isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoria, setSelectedCategoria] = useState("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
   const categorias = useAsyncData(async () => {
     const { data } = await categoriasApi.list({ limit: 100 });
@@ -294,7 +295,7 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-[#F5F5F5] pb-12">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#1F1F1F] py-16 md:py-24 text-white">
+      <section className="relative z-40 bg-[#1F1F1F] py-16 md:py-24 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,193,7,0.12)_0%,_transparent_55%)]"></div>
         <div className="relative mx-auto max-w-7xl px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -310,7 +311,7 @@ export function HomePage() {
             </p>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="mx-auto max-w-3xl pt-6">
+            <form onSubmit={handleSearch} className="relative z-50 mx-auto max-w-3xl pt-6">
               <div className="relative flex flex-col sm:flex-row items-center rounded-3xl sm:rounded-full bg-white/10 p-2 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 transition-all duration-500 group">
                 
                 {/* Search Input */}
@@ -331,20 +332,40 @@ export function HomePage() {
                 <div className="hidden sm:block w-px h-10 bg-white/20 mx-2"></div>
 
                 {/* Category Selector */}
-                <div className="relative w-full sm:w-[220px] flex items-center mt-2 sm:mt-0 border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
-                  <select
-                    value={selectedCategoria}
-                    onChange={(e) => setSelectedCategoria(e.target.value)}
-                    className="w-full appearance-none bg-transparent border-0 py-4 pl-4 pr-10 text-neutral-300 hover:text-white focus:text-white text-base focus:ring-0 cursor-pointer outline-none transition-colors"
+                <div 
+                  className="relative w-full sm:w-[220px] flex items-center mt-2 sm:mt-0 border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0"
+                  onMouseLeave={() => setIsCategoryOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                    className="w-full text-left appearance-none bg-transparent border-0 py-4 pl-4 pr-10 text-neutral-300 hover:text-white focus:text-white text-base focus:ring-0 cursor-pointer outline-none transition-colors truncate"
                   >
-                    <option value="" className="text-slate-800">Todas las categorías</option>
-                    {(categorias.data || []).map((cat) => (
-                      <option key={cat.id} value={cat.id} className="text-slate-800">
-                        {cat.nombre}
-                      </option>
-                    ))}
-                  </select>
-                  <FontAwesomeIcon icon={faChevronDown} className="absolute right-4 text-neutral-400 pointer-events-none text-sm" />
+                    {selectedCategoria && categorias.data ? categorias.data.find(c => c.id == selectedCategoria)?.nombre || "Todas las categorías" : "Todas las categorías"}
+                  </button>
+                  <FontAwesomeIcon icon={faChevronDown} className={`absolute right-4 text-neutral-400 pointer-events-none text-sm transition-transform duration-300 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                  
+                  {isCategoryOpen && (
+                    <div className="absolute top-full left-0 mt-3 w-full sm:w-[280px] max-h-[320px] overflow-y-auto rounded-2xl bg-[#2A2A2A] border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.6)] z-50 py-2 scrollbar-thin scrollbar-thumb-neutral-600 scrollbar-track-transparent">
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedCategoria(""); setIsCategoryOpen(false); }}
+                        className={`w-full text-left px-5 py-3 text-sm transition-colors ${!selectedCategoria ? 'bg-primary/10 text-primary font-bold border-l-2 border-primary' : 'text-neutral-300 hover:bg-white/5 hover:text-white border-l-2 border-transparent'}`}
+                      >
+                        Todas las categorías
+                      </button>
+                      {(categorias.data || []).map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => { setSelectedCategoria(cat.id); setIsCategoryOpen(false); }}
+                          className={`w-full text-left px-5 py-3 text-sm transition-colors ${selectedCategoria == cat.id ? 'bg-primary/10 text-primary font-bold border-l-2 border-primary' : 'text-neutral-300 hover:bg-white/5 hover:text-white border-l-2 border-transparent'}`}
+                        >
+                          {cat.nombre}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Submit Button */}
@@ -365,14 +386,14 @@ export function HomePage() {
                 className="group flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/20 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 shadow-sm"
               >
                 <FontAwesomeIcon icon={faStore} className="text-primary group-hover:scale-110 transition-transform" />
-                Ver Directorio
+                Directorio
               </Link>
               <Link
                 to="/marketplace"
                 className="group flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/20 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 shadow-sm"
               >
                 <FontAwesomeIcon icon={faTags} className="text-primary group-hover:scale-110 transition-transform" />
-                Ver Artículos
+                Marketplace
               </Link>
               <Link
                 to={isAuthenticated ? "/empresas-panel" : "/login?mode=register"}

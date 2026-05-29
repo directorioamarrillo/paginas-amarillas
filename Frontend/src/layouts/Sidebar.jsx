@@ -44,7 +44,7 @@ const navItems = [
   { to: "/admin/usuarios", label: "Usuarios", icon: faUser, adminOnly: true },
   { to: "/admin/registro-actividad", label: "Registro de Actividad", icon: faClipboardList, adminOnly: true },
   { to: "/admin/chat", label: "Chat Marketplace", icon: faMessage },
-  { to: "/admin/tickets", label: "Mesa de Ayuda", icon: faLifeRing },
+  { to: "/admin/tickets", label: "Soporte Técnico", icon: faLifeRing },
   { to: "/admin/backups", label: "Backups", icon: faDatabase, adminOnly: true },
   { to: "/admin/papelera", label: "Archivo de Registros Eliminados", icon: faBoxArchive, adminOnly: true },
   { to: "/admin/perfil", label: "Mi perfil", icon: faUser },

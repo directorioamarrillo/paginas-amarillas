@@ -5,6 +5,7 @@ import { EmptyState } from "../components/common/EmptyState";
 import { busquedaApi, categoriasApi } from "../services/api";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { useToast } from "../context/ToastContext";
+import Select from "react-select";
 
 export function BusquedaPage() {
   const navigate = useNavigate();
@@ -21,6 +22,47 @@ export function BusquedaPage() {
   const [sugerencias, setSugerencias] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      minWidth: '240px',
+      height: '46px',
+      borderRadius: '0.75rem',
+      borderColor: state.isFocused ? '#eab308' : '#cbd5e1',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(234, 179, 8, 0.2)' : 'none',
+      '&:hover': {
+        borderColor: state.isFocused ? '#eab308' : '#94a3b8'
+      },
+      cursor: 'pointer',
+      fontSize: '0.875rem' // text-sm
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected ? '#eab308' : state.isFocused ? '#fefce8' : 'white',
+      color: state.isSelected ? '#fff' : '#334155',
+      cursor: 'pointer',
+      padding: '10px 14px',
+      fontSize: '0.875rem',
+      transition: 'background-color 0.2s ease'
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: '0.75rem',
+      overflow: 'hidden',
+      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #e2e8f0',
+      zIndex: 50
+    }),
+    menuList: (base) => ({
+      ...base,
+      padding: 0
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: '#334155'
+    })
+  };
 
   const categorias = useAsyncData(async () => {
     const { data } = await categoriasApi.list({ limit: 100 });
@@ -82,18 +124,24 @@ export function BusquedaPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h3 className="text-lg font-bold text-[#1F1F1F]">Búsqueda global</h3>
         <div className="mt-3 flex gap-2">
-          <select
-            value={categoriaId}
-            onChange={(e) => setCategoriaId(e.target.value)}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-200 min-w-[160px] bg-white cursor-pointer"
-          >
-            <option value="">Todas las categorías</option>
-            {(categorias.data || []).map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.nombre}
-              </option>
-            ))}
-          </select>
+          <div className="flex-shrink-0 z-50 relative">
+            <Select
+              styles={customStyles}
+              options={[
+                { value: "", label: "Todas las categorías" },
+                ...(categorias.data || []).map((cat) => ({ value: cat.id, label: cat.nombre }))
+              ]}
+              value={
+                categoriaId 
+                  ? { value: categoriaId, label: categorias.data?.find(c => c.id === categoriaId)?.nombre || "Cargando..." }
+                  : { value: "", label: "Todas las categorías" }
+              }
+              onChange={(selected) => setCategoriaId(selected.value)}
+              placeholder="Categoría"
+              isSearchable={true}
+              noOptionsMessage={() => "No se encontraron categorías"}
+            />
+          </div>
           <input 
             className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-200" 
             placeholder="Buscar en empresas y productos" 

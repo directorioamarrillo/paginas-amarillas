@@ -752,7 +752,15 @@ async def aprobar_empresa(
     current_user = Depends(require_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(Empresa).where(Empresa.id == empresa_id))
+    result = await db.execute(
+        select(Empresa)
+        .options(
+            joinedload(Empresa.categoria), 
+            joinedload(Empresa.municipio), 
+            selectinload(Empresa.imagenes)
+        )
+        .where(Empresa.id == empresa_id)
+    )
     db_empresa = result.scalars().first()
     if not db_empresa:
         raise HTTPException(status_code=404, detail="Empresa no encontrada")

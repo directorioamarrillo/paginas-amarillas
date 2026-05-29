@@ -137,6 +137,10 @@ export function EmpresasPage({ readOnly = false }) {
         id_categoria: String(data.id_categoria || data.categoria?.id || ""),
         id_municipio: String(data.id_municipio || data.municipio?.id || ""),
       });
+      // Hacer scroll hacia abajo para que el usuario vea el detalle
+      setTimeout(() => {
+        document.getElementById('detalle-empresa')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } catch (error) {
       pushToast({ title: "Error", message: error?.response?.data?.detail || "No se pudo cargar detalle", type: "error" });
     }
@@ -447,7 +451,7 @@ export function EmpresasPage({ readOnly = false }) {
       ) : null}
 
       {empresaSeleccionada ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div id="detalle-empresa" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mt-8">
           <h3 className="text-lg font-semibold text-slate-900">Detalle empresa #{empresaSeleccionada.id}</h3>
           <p className="mt-1 text-sm text-slate-600">{empresaSeleccionada.nombre} | {empresaSeleccionada.correo}</p>
           {empresaSeleccionada.logo_url ? (

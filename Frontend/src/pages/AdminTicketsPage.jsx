@@ -151,7 +151,7 @@ export function AdminTicketsPage() {
           <div>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <LifeBuoy className="text-brand-yellow" size={28} />
-              Centro de Mesa de Ayuda
+              Soporte Técnico
             </h2>
             <p className="text-neutral-500 mt-1">Gestiona todos los tickets de soporte de los usuarios y comerciantes.</p>
           </div>
