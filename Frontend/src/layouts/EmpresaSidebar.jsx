@@ -35,7 +35,7 @@ export function EmpresaSidebar() {
               clsx(
                 "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
                 isActive
-                  ? "bg-blue-600 text-white shadow"
+                  ? "bg-primary text-brand-dark shadow"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
               )
             }
@@ -50,7 +50,7 @@ export function EmpresaSidebar() {
       <div className="mt-4 border-t border-slate-200 pt-4">
         <Link
           to="/"
-          className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
+          className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-primary/20 hover:text-primary-dark"
         >
           <FontAwesomeIcon icon={faHouse} className="h-4 w-4" />
           <span>Volver al Inicio</span>

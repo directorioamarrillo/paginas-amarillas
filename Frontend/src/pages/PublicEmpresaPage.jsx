@@ -125,10 +125,10 @@ function ProductCard({ producto }) {
 
   return (
     <div
-      className="group cursor-pointer rounded-2xl border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20"
+      className="group cursor-pointer rounded-2xl border border-brand-gray-light bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20"
       onClick={() => navigate(`/producto/${producto.id}`)}
     >
-      <div className="relative overflow-hidden rounded-t-2xl bg-slate-50 aspect-square">
+      <div className="relative overflow-hidden rounded-t-2xl bg-brand-gray-light/10 aspect-square">
         {primeraImagen ? (
           <img
             src={`${SERVER_BASE_URL}/${getImageUrl(primeraImagen)}`}
@@ -137,15 +137,15 @@ function ProductCard({ producto }) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-400">
+          <div className="flex h-full w-full items-center justify-center text-brand-gray-light">
             <FontAwesomeIcon icon={faStore} size="3x" />
           </div>
         )}
 
         {/* Image Count Badge */}
         {totalImagenes > 1 && (
-          <div className="absolute top-3 left-3 rounded-xl bg-[#212121]/80 px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur">
-            <FontAwesomeIcon icon={faImage} className="mr-1 text-primary" />
+          <div className="absolute top-3 left-3 rounded-xl bg-primary text-brand-dark px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur">
+            <FontAwesomeIcon icon={faImage} className="mr-1 text-brand-dark" />
             {totalImagenes}
           </div>
         )}
@@ -156,7 +156,7 @@ function ProductCard({ producto }) {
         >
           <FontAwesomeIcon
             icon={faHeart}
-            className={`transition-colors duration-200 ${isFavorite ? "text-red-500" : "text-slate-400 hover:text-red-400"}`}
+            className={`transition-colors duration-200 ${isFavorite ? "text-red-500" : "text-brand-gray-light hover:text-red-400"}`}
           />
         </button>
 
@@ -175,19 +175,19 @@ function ProductCard({ producto }) {
 
         {/* Category Badge */}
         {categoriaNombre && (
-          <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur">
+          <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-semibold text-brand-gray shadow-[0_2px_10px_rgba(0,0,0,0.02)] backdrop-blur">
             {categoriaNombre}
           </div>
         )}
       </div>
 
       <div className="p-4">
-        <h3 className="line-clamp-2 text-sm font-bold text-slate-800 group-hover:text-primary-hover transition-colors duration-200">
+        <h3 className="line-clamp-2 text-sm font-bold text-brand-dark group-hover:text-primary-hover transition-colors duration-200">
           {producto.nombre}
         </h3>
-        <p className="mt-2 text-xl font-extrabold text-slate-900">{precioFormateado}</p>
+        <p className="mt-2 text-xl font-extrabold text-brand-dark">{precioFormateado}</p>
         <div className="mt-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 border border-slate-100">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gray-light/10 px-2.5 py-1 text-xs font-medium text-brand-gray border border-brand-gray-light">
             <div className={`h-1.5 w-1.5 rounded-full ${esSinStock ? "bg-red-500" : producto.stock > 10 ? "bg-success" : "bg-orange-500"}`} />
             {producto.stock > 0 ? `${Math.floor(producto.stock)} disponibles` : "Agotado"}
           </span>
@@ -199,24 +199,24 @@ function ProductCard({ producto }) {
 
 function ReviewCard({ review }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:shadow-md">
+    <div className="rounded-2xl border border-brand-gray-light bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition hover:shadow-md">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg font-bold text-[#1F1F1F]">
             {review.usuario?.nombre?.[0]?.toUpperCase() || "U"}
           </div>
           <div>
-            <span className="block font-bold text-slate-900">
+            <span className="block font-bold text-brand-dark">
               {review.usuario?.nombre || "Usuario"} {review.usuario?.apellido || ""}
             </span>
             {review.fecha && (
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-brand-gray-light">
                 {new Date(review.fecha).toLocaleDateString("es-CO")}
               </span>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1 rounded-xl bg-slate-50 border border-slate-100 px-2.5 py-1">
+        <div className="flex items-center gap-1 rounded-xl bg-brand-gray-light/10 border border-brand-gray-light px-2.5 py-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <FontAwesomeIcon
               key={star}
@@ -224,12 +224,12 @@ function ReviewCard({ review }) {
               className={
                 star <= Math.round(pickNumber(review.calificacion))
                   ? "text-primary"
-                  : "text-slate-200"
+                  : "text-brand-gray-light"
               }
               size="xs"
             />
           ))}
-          <span className="ml-1 text-xs font-bold text-slate-800">
+          <span className="ml-1 text-xs font-bold text-brand-dark">
             {pickNumber(review.calificacion).toFixed(1)}
           </span>
         </div>
@@ -358,9 +358,9 @@ export function PublicEmpresaPage() {
   return (
     <div className="min-h-screen bg-[#F5F5F5] pb-12">
       {/* Breadcrumb */}
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-brand-gray-light bg-white">
         <div className="mx-auto max-w-7xl px-4 py-3 md:px-6">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          <div className="flex items-center gap-2 text-xs font-semibold text-brand-gray">
             <Link to="/" className="hover:text-primary-hover transition">
               Inicio
             </Link>
@@ -375,7 +375,7 @@ export function PublicEmpresaPage() {
       </div>
 
       {/* Header Section */}
-      <div className="border-b border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-brand-gray-light bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
         <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
           <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
             {/* Left Side: Info & Metrics */}
@@ -386,11 +386,11 @@ export function PublicEmpresaPage() {
                   <img
                     src={`${API_BASE_URL}/empresas/${data.id}/logo`}
                     alt={`Logo de ${data.nombre}`}
-                    className="h-28 w-28 rounded-3xl border border-slate-100 object-cover shadow-md sm:h-36 sm:w-36 md:h-44 md:w-44 transition-all duration-300 hover:scale-105"
+                    className="h-28 w-28 rounded-3xl border border-brand-gray-light object-cover shadow-md sm:h-36 sm:w-36 md:h-44 md:w-44 transition-all duration-300 hover:scale-105"
                   />
                 ) : (
-                  <div className="flex h-28 w-28 items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50 shrink-0 sm:h-36 sm:w-36 md:h-44 md:w-44 shadow-inner">
-                    <FontAwesomeIcon icon={faBuilding} className="text-slate-300" size="4x" />
+                  <div className="flex h-28 w-28 items-center justify-center rounded-3xl border border-dashed border-brand-gray-light bg-brand-gray-light/10 shrink-0 sm:h-36 sm:w-36 md:h-44 md:w-44 shadow-inner">
+                    <FontAwesomeIcon icon={faBuilding} className="text-brand-gray-light" size="4x" />
                   </div>
                 )}
 
@@ -404,19 +404,19 @@ export function PublicEmpresaPage() {
                   <div className="mt-4 space-y-1.5 text-sm text-[#666666] flex flex-col items-center sm:items-start">
                     {data.correo && (
                       <div className="flex items-center gap-2">
-                        <FontAwesomeIcon icon={faEnvelope} className="text-primary w-4" />
+                        <FontAwesomeIcon icon={faEnvelope} className="text-brand-dark w-4" />
                         <span>{data.correo}</span>
                       </div>
                     )}
                     {data.telefono && (
                       <div className="flex items-center gap-2">
-                        <FontAwesomeIcon icon={faPhone} className="text-primary w-4" />
+                        <FontAwesomeIcon icon={faPhone} className="text-brand-dark w-4" />
                         <span>{data.telefono}</span>
                       </div>
                     )}
                     {data.direccion && (
                       <div className="flex items-center gap-2">
-                        <FontAwesomeIcon icon={faLocationDot} className="text-primary w-4" />
+                        <FontAwesomeIcon icon={faLocationDot} className="text-brand-dark w-4" />
                         <span>{data.direccion}</span>
                       </div>
                     )}
@@ -426,24 +426,24 @@ export function PublicEmpresaPage() {
 
               {/* Metrics Grid */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-                  <div className="flex items-center justify-center text-2xl font-extrabold text-slate-800">
+                <div className="rounded-2xl border border-brand-gray-light bg-white p-5 text-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center justify-center text-2xl font-extrabold text-brand-dark">
                     <FontAwesomeIcon icon={faStar} className="mr-2 text-primary" />
                     {promedioRating.toFixed(1)}
                   </div>
                   <p className="mt-1 text-xs text-[#666666]">Rating promedio</p>
                 </div>
-                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-                  <div className="text-2xl font-extrabold text-slate-800">{reviewsList.length}</div>
+                <div className="rounded-2xl border border-brand-gray-light bg-white p-5 text-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="text-2xl font-extrabold text-brand-dark">{reviewsList.length}</div>
                   <p className="mt-1 text-xs text-[#666666]">Reseñas</p>
                 </div>
-                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-                  <div className="text-2xl font-extrabold text-slate-800">{productosList.length}</div>
+                <div className="rounded-2xl border border-brand-gray-light bg-white p-5 text-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="text-2xl font-extrabold text-brand-dark">{productosList.length}</div>
                   <p className="mt-1 text-xs text-[#666666]">Productos</p>
                 </div>
-                <div className="rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm">
-                  <div className="flex items-center justify-center text-2xl font-extrabold text-slate-800">
-                    <FontAwesomeIcon icon={faChartLine} className="mr-2 text-primary" />
+                <div className="rounded-2xl border border-brand-gray-light bg-white p-5 text-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center justify-center text-2xl font-extrabold text-brand-dark">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2 text-brand-dark" />
                     {totalClicks}
                   </div>
                   <p className="mt-1 text-xs text-[#666666]">Clics totales</p>
@@ -452,14 +452,14 @@ export function PublicEmpresaPage() {
 
               {/* Fotos de Interés */}
               <div className="space-y-3 pt-2">
-                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block text-left">
+                <span className="text-xs font-extrabold text-brand-gray-light uppercase tracking-wider block text-left">
                   Galería y Fotos de Interés
                 </span>
                 <div className="grid grid-cols-3 gap-3">
                   {galleryImages.map((imgUrl, idx) => (
                     <div 
                       key={idx} 
-                      className="relative rounded-2xl overflow-hidden aspect-video border border-slate-100 shadow-sm group cursor-zoom-in"
+                      className="relative rounded-2xl overflow-hidden aspect-video border border-brand-gray-light shadow-[0_2px_10px_rgba(0,0,0,0.02)] group cursor-zoom-in"
                       onClick={() => setSelectedImageIndex(idx)}
                     >
                       <img 
@@ -502,13 +502,13 @@ export function PublicEmpresaPage() {
 
       {/* Tabs & Content */}
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-        <div className="mb-6 flex gap-2 border-b border-slate-200">
+        <div className="mb-6 flex gap-2 border-b border-brand-gray-light">
           <button
             onClick={() => setActiveTab("productos")}
             className={`px-5 py-3 text-sm font-bold transition-all duration-200 border-b-2 ${
               activeTab === "productos"
-                ? "border-primary text-slate-900"
-                : "border-transparent text-[#666666] hover:text-slate-900"
+                ? "border-primary text-brand-dark"
+                : "border-transparent text-[#666666] hover:text-brand-dark"
             }`}
           >
             <FontAwesomeIcon icon={faStore} className="mr-2" />
@@ -518,8 +518,8 @@ export function PublicEmpresaPage() {
             onClick={() => setActiveTab("resenas")}
             className={`px-5 py-3 text-sm font-bold transition-all duration-200 border-b-2 ${
               activeTab === "resenas"
-                ? "border-primary text-slate-900"
-                : "border-transparent text-[#666666] hover:text-slate-900"
+                ? "border-primary text-brand-dark"
+                : "border-transparent text-[#666666] hover:text-brand-dark"
             }`}
           >
             <FontAwesomeIcon icon={faStar} className="mr-2" />
@@ -548,10 +548,10 @@ export function PublicEmpresaPage() {
         {activeTab === "resenas" && (
           <div className="space-y-6 max-w-3xl">
             {isAuthenticated ? (
-              <form onSubmit={handleSubmitReview} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-                <h3 className="mb-4 text-lg font-bold text-slate-900">Deja tu reseña</h3>
+              <form onSubmit={handleSubmitReview} className="rounded-2xl border border-brand-gray-light bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                <h3 className="mb-4 text-lg font-bold text-brand-dark">Deja tu reseña</h3>
                 <div className="mb-4 flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-700">Calificación:</span>
+                  <span className="text-sm font-medium text-brand-gray">Calificación:</span>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -561,13 +561,13 @@ export function PublicEmpresaPage() {
                     >
                       <FontAwesomeIcon
                         icon={faStar}
-                        className={star <= reviewForm.calificacion ? "text-primary text-xl" : "text-slate-200 text-xl"}
+                        className={star <= reviewForm.calificacion ? "text-primary text-xl" : "text-brand-gray-light text-xl"}
                       />
                     </button>
                   ))}
                 </div>
                 <textarea
-                  className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-3"
+                  className="w-full rounded-xl border border-brand-gray-light p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-3"
                   rows="3"
                   placeholder="Comparte tu experiencia con esta empresa..."
                   value={reviewForm.comentario}
@@ -577,16 +577,16 @@ export function PublicEmpresaPage() {
                   <button
                     type="submit"
                     disabled={isSubmittingReview}
-                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-hover disabled:opacity-50"
+                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
                   >
                     {isSubmittingReview ? "Publicando..." : "Publicar Reseña"}
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 text-center shadow-sm">
-                <p className="mb-3 text-slate-600">Debes iniciar sesión para dejar una reseña.</p>
-                <Link to={`/login?next=/empresa/${idEmpresa}`} className="inline-block rounded-xl bg-primary px-6 py-2 font-bold text-white transition hover:bg-primary-hover">
+              <div className="rounded-2xl border border-brand-gray-light bg-brand-gray-light/10 p-6 text-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                <p className="mb-3 text-brand-gray">Debes iniciar sesión para dejar una reseña.</p>
+                <Link to={`/login?next=/empresa/${idEmpresa}`} className="inline-block rounded-xl bg-primary px-6 py-2 font-bold text-white transition hover:bg-primary-dark">
                   Iniciar sesión
                 </Link>
               </div>

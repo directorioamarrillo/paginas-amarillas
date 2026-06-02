@@ -221,7 +221,8 @@ export function MiEmpresaPage() {
               onChange={(e) => setLogoArchivo(e.target.files?.[0] || null)}
             />
             <button
-              className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-amber-400 font-bold border border-slate-700 hover:bg-slate-900 hover:bg-teal-700"
+              type="button"
+              className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2 font-bold text-[#1F1F1F] transition hover:bg-primary-dark shadow-sm"
               onClick={subirLogo}
             >
               <FontAwesomeIcon icon={faUpload} />
@@ -289,7 +290,7 @@ export function MiEmpresaPage() {
 
           <button
             type="submit"
-            className="md:col-span-2 flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-2.5 font-bold text-amber-400 border border-slate-700 hover:bg-slate-900"
+            className="md:col-span-2 flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-bold text-[#1F1F1F] transition hover:bg-primary-dark shadow-md"
           >
             <FontAwesomeIcon icon={faSave} />
             Guardar cambios

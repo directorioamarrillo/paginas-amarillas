@@ -17,6 +17,7 @@ import { ReportesPage } from "./pages/ReportesPage";
 import { PublicidadesPage } from "./pages/PublicidadesPage";
 import { NotificacionesPage } from "./pages/NotificacionesPage";
 import { PerfilPage } from "./pages/PerfilPage";
+import { RecursosPage } from "./pages/RecursosPage";
 import { PermissionGate } from "./components/common/PermissionGate";
 import { AdminLivePage } from "./pages/AdminLivePage";
 import { AdminCategoriasPage } from "./pages/AdminCategoriasPage";
@@ -25,6 +26,8 @@ import { AdminPermisosPage } from "./pages/AdminPermisosPage";
 import { AdminUsuariosPage } from "./pages/AdminUsuariosPage";
 import { AdminAuditoriaPage } from "./pages/AdminAuditoriaPage";
 import { HomePage } from "./pages/HomePage";
+import { BlogPage } from "./pages/BlogPage";
+import { BlogPostPage } from "./pages/BlogPostPage";
 import { PublicMarketplacePage } from "./pages/PublicMarketplacePage";
 import { PublicEmpresaPage } from "./pages/PublicEmpresaPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
@@ -33,6 +36,7 @@ import { PublicPerfilPage } from "./pages/PublicPerfilPage";
 import { ChatRoomsPage } from "./pages/ChatRoomsPage";
 import { ChatRoomDetailPage } from "./pages/ChatRoomDetailPage";
 import { UserChatPage } from "./pages/UserChatPage";
+import { PublicCategoriasPage } from "./pages/PublicCategoriasPage";
 import { EmpresaShell } from "./layouts/EmpresaShell";
 import { EmpresaDashboardPage } from "./pages/EmpresaDashboardPage";
 import { MiEmpresaPage } from "./pages/MiEmpresaPage";
@@ -66,9 +70,12 @@ function VerificationBanner() {
   return null;
 }
 
+import { ScrollToTop } from "./components/common/ScrollToTop";
+
 function App() {
   return (
     <>
+      <ScrollToTop />
       <VerificationBanner />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -77,12 +84,17 @@ function App() {
         {/* Public Pages - Mercado Libre Style */}
         <Route element={<PublicShell />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/busqueda" element={<BusquedaPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:id" element={<BlogPostPage />} />
+          <Route path="/categorias" element={<PublicCategoriasPage />} />
           <Route path="/empresas" element={<EmpresasPage readOnly />} />
           <Route path="/empresa/:empresaId" element={<PublicEmpresaPage />} />
           <Route path="/marketplace" element={<PublicMarketplacePage />} />
           <Route path="/producto/:productId" element={<ProductDetailPage />} />
           <Route path="/favoritos" element={<PublicFavoritosPage />} />
           <Route path="/mi-perfil" element={<PublicPerfilPage />} />
+          <Route path="/recursos" element={<RecursosPage />} />
           <Route
             path="/mis-tickets"
             element={
@@ -114,7 +126,6 @@ function App() {
           <Route path="empresas" element={<EmpresasPage />} />
           <Route path="marketplace" element={<MarketplacePage />} />
           <Route path="favoritos" element={<FavoritosPage />} />
-          <Route path="busqueda" element={<BusquedaPage />} />
           <Route path="mensajes" element={<MensajesPage />} />
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="comprobantes" element={<ComprobantesPage />} />
@@ -143,6 +154,7 @@ function App() {
           <Route path="backups" element={<Backups />} />
           <Route path="papelera" element={<ArchiveRegistrosPage />} />
           <Route path="perfil" element={<PerfilPage />} />
+          <Route path="recursos" element={<RecursosPage />} />
         </Route>
         <Route path="mis-chats" element={<UserChatPage />} />
 

@@ -80,15 +80,15 @@ export function EmpresaDashboardPage() {
       title: "Mi Empresa",
       value: stats.empresasCount,
       icon: faBuilding,
-      color: "bg-blue-500",
+      color: "bg-slate-50 border border-slate-100 text-slate-600",
       link: "/empresas-panel/mi-empresa",
       linkText: "Gestionar empresa",
     },
     {
       title: "Mi Equipo",
       value: stats.empresasCount > 0 ? "Ver" : 0,
-      icon: faBuilding,
-      color: "bg-purple-500",
+      icon: faUsers,
+      color: "bg-slate-50 border border-slate-100 text-slate-600",
       link: "/empresas-panel/equipo",
       linkText: "Gestionar equipo",
     },
@@ -96,7 +96,7 @@ export function EmpresaDashboardPage() {
       title: "Mis Productos",
       value: stats.productosCount,
       icon: faStore,
-      color: "bg-indigo-500",
+      color: "bg-slate-50 border border-slate-100 text-slate-600",
       link: "/empresas-panel/marketplace",
       linkText: "Gestionar productos",
     },
@@ -104,7 +104,7 @@ export function EmpresaDashboardPage() {
       title: "Publicidades",
       value: stats.publicidadesCount,
       icon: faBullhorn,
-      color: "bg-amber-500",
+      color: "bg-slate-50 border border-slate-100 text-slate-600",
       link: "/empresas-panel/publicidades",
       linkText: "Gestionar publicidades",
     },
@@ -112,7 +112,7 @@ export function EmpresaDashboardPage() {
       title: "Chats con Clientes",
       value: "Ver",
       icon: faComments,
-      color: "bg-teal-500",
+      color: "bg-slate-50 border border-slate-100 text-slate-600",
       link: "/empresas-panel/chats",
       linkText: "Ver conversaciones",
     },
@@ -136,7 +136,7 @@ export function EmpresaDashboardPage() {
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color} text-white`}>
+              <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color}`}>
                 <FontAwesomeIcon icon={stat.icon} className="h-5 w-5" />
               </div>
               <div>
@@ -146,7 +146,7 @@ export function EmpresaDashboardPage() {
             </div>
             <Link
               to={stat.link}
-              className="mt-3 flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="mt-3 flex items-center text-sm font-bold text-primary-dark hover:text-brand-dark"
             >
               {stat.linkText}
               <FontAwesomeIcon icon={faArrowRight} className="ml-2 h-3 w-3" />
@@ -179,7 +179,7 @@ export function EmpresaDashboardPage() {
             <h4 className="text-lg font-semibold text-slate-900">Mi Empresa</h4>
             <Link
               to="/empresas-panel/mi-empresa"
-              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="text-sm font-bold text-primary-dark hover:text-brand-dark"
             >
               Editar
             </Link>
@@ -205,28 +205,28 @@ export function EmpresaDashboardPage() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             to="/empresas-panel/mi-empresa"
-            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
+            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-primary/20 hover:text-primary-dark hover:border-primary"
           >
             <FontAwesomeIcon icon={faBuilding} className="h-5 w-5" />
             Mi Empresa
           </Link>
           <Link
             to="/empresas-panel/equipo"
-            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200"
+            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-primary/20 hover:text-primary-dark hover:border-primary"
           >
             <FontAwesomeIcon icon={faUsers} className="h-5 w-5" />
             Mi Equipo
           </Link>
           <Link
             to="/empresas-panel/marketplace"
-            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200"
+            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-primary/20 hover:text-primary-dark hover:border-primary"
           >
             <FontAwesomeIcon icon={faStore} className="h-5 w-5" />
             Nuevo Producto
           </Link>
           <Link
             to="/empresas-panel/publicidades"
-            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200"
+            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-700 transition hover:bg-primary/20 hover:text-primary-dark hover:border-primary"
           >
             <FontAwesomeIcon icon={faBullhorn} className="h-5 w-5" />
             Nueva Publicidad

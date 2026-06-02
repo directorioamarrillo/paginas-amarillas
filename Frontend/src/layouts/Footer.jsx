@@ -40,7 +40,7 @@ export function Footer() {
               </div>
             </div>
             <p className="text-sm text-neutral-400 max-w-xs">
-              Plataforma moderna de marketplace inspirada en Páginas Amarillas
+              Plataforma moderna de marketplace inspirada en Directorio 2.0
             </p>
           </div>
 

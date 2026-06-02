@@ -54,7 +54,7 @@ function ImageGallery({ imagenes, productId, nombre }) {
   if (!hasImages) {
     return (
       <div className="flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50">
-        <FontAwesomeIcon icon={faImage} size="4x" className="text-slate-400" />
+        <FontAwesomeIcon icon={faImage} size="4x" className="text-brand-gray-light" />
       </div>
     );
   }
@@ -91,7 +91,7 @@ function ImageGallery({ imagenes, productId, nombre }) {
               }}
               className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 shadow-lg transition hover:bg-white hover:scale-110"
             >
-              <FontAwesomeIcon icon={faArrowLeft} className="text-slate-700" />
+              <FontAwesomeIcon icon={faArrowLeft} className="text-brand-gray" />
             </button>
             <button
               onClick={(e) => {
@@ -100,7 +100,7 @@ function ImageGallery({ imagenes, productId, nombre }) {
               }}
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 shadow-lg transition hover:bg-white hover:scale-110"
             >
-              <FontAwesomeIcon icon={faArrowLeft} className="rotate-180 text-slate-700" />
+              <FontAwesomeIcon icon={faArrowLeft} className="rotate-180 text-brand-gray" />
             </button>
           </>
         )}
@@ -116,7 +116,7 @@ function ImageGallery({ imagenes, productId, nombre }) {
               className={`relative overflow-hidden rounded-xl border-2 transition-all duration-200 ${
                 index === currentIndex
                   ? "border-primary-500 ring-2 ring-primary-500/30"
-                  : "border-transparent hover:border-slate-300 opacity-60 hover:opacity-100"
+                  : "border-transparent hover:border-brand-gray-light opacity-60 hover:opacity-100"
               }`}
             >
               <img
@@ -200,10 +200,10 @@ function ReviewsSection({ idEmpresa }) {
       : 0;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-brand-gray-light bg-white p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-slate-900">Reseñas y Calificaciones</h3>
+          <h3 className="text-xl font-bold text-brand-dark">Reseñas y Calificaciones</h3>
           {promedioRating > 0 && (
             <div className="mt-1 flex items-center gap-2">
               <div className="flex items-center">
@@ -214,12 +214,12 @@ function ReviewsSection({ idEmpresa }) {
                     className={
                       star <= Math.round(promedioRating)
                         ? "text-yellow-400"
-                        : "text-slate-300"
+                        : "text-brand-gray-light"
                     }
                   />
                 ))}
               </div>
-              <span className="text-sm font-semibold text-slate-700">
+              <span className="text-sm font-semibold text-brand-gray">
                 {promedioRating.toFixed(1)} ({reviews.data?.length || 0} reseñas)
               </span>
             </div>
@@ -229,7 +229,7 @@ function ReviewsSection({ idEmpresa }) {
         {isAuthenticated && (
           <button
             onClick={() => setShowForm(!showForm)}
-            className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-primary-400"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-brand-dark hover:bg-primary-400"
           >
             {showForm ? "Cancelar" : "Escribir reseña"}
           </button>
@@ -238,9 +238,9 @@ function ReviewsSection({ idEmpresa }) {
 
       {/* Review Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-brand-gray-light bg-brand-gray-light/10 p-4">
           <div className="mb-4">
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
+            <label className="mb-2 block text-sm font-semibold text-brand-gray">
               Calificación
             </label>
             <div className="flex gap-1">
@@ -255,7 +255,7 @@ function ReviewsSection({ idEmpresa }) {
                     className={
                       star <= calificacion
                         ? "text-yellow-400 text-2xl"
-                        : "text-slate-300 text-2xl"
+                        : "text-brand-gray-light text-2xl"
                     }
                   />
                 </button>
@@ -264,7 +264,7 @@ function ReviewsSection({ idEmpresa }) {
           </div>
 
           <div className="mb-4">
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
+            <label className="mb-2 block text-sm font-semibold text-brand-gray">
               Comentario
             </label>
             <textarea
@@ -272,14 +272,14 @@ function ReviewsSection({ idEmpresa }) {
               onChange={(e) => setComentario(e.target.value)}
               placeholder="Cuéntanos tu experiencia con esta empresa..."
               rows="4"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-brand-gray-light px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-primary-500 py-2.5 font-semibold text-slate-900 hover:bg-primary-400"
+            className="w-full rounded-lg bg-primary py-2.5 font-semibold text-brand-dark hover:bg-primary-400"
           >
             Publicar reseña
           </button>
@@ -290,7 +290,7 @@ function ReviewsSection({ idEmpresa }) {
       {reviews.loading ? (
         <Loading text="Cargando reseñas..." />
       ) : reviews.data?.length === 0 ? (
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-brand-gray">
           Aún no hay reseñas para esta empresa
         </p>
       ) : (
@@ -300,14 +300,14 @@ function ReviewsSection({ idEmpresa }) {
             .map((review) => (
               <div
                 key={review.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                className="rounded-lg border border-brand-gray-light bg-brand-gray-light/10 p-4"
               >
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-200 text-sm font-bold text-primary-700">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-200 text-sm font-bold text-primary-dark">
                       {review.usuario?.nombre?.[0] || "U"}
                     </div>
-                    <span className="font-semibold text-slate-900">
+                    <span className="font-semibold text-brand-dark">
                       {review.usuario?.nombre || "Usuario"} {review.usuario?.apellido || ""}
                     </span>
                   </div>
@@ -319,19 +319,19 @@ function ReviewsSection({ idEmpresa }) {
                         className={
                           star <= Math.round(pickNumber(review.calificacion))
                             ? "text-yellow-400"
-                            : "text-slate-300"
+                            : "text-brand-gray-light"
                         }
                         size="xs"
                       />
                     ))}
-                    <span className="ml-1 text-xs text-slate-500">
+                    <span className="ml-1 text-xs text-brand-gray">
                       {pickNumber(review.calificacion).toFixed(1)}
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-slate-700">{review.comentario || "Sin comentario"}</p>
+                <p className="text-sm text-brand-gray">{review.comentario || "Sin comentario"}</p>
                 {review.fecha && (
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className="mt-2 text-xs text-brand-gray">
                     {new Date(review.fecha).toLocaleDateString("es-CO")}
                   </p>
                 )}
@@ -503,20 +503,20 @@ export function ProductDetailPage() {
   const empresaId = data.id_empresa || data.empresa?.id;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-brand-gray-light/10">
       {/* Breadcrumb */}
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-brand-gray-light bg-white">
         <div className="mx-auto max-w-7xl px-4 py-3 md:px-6">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Link to="/" className="hover:text-primary-600">
+          <div className="flex items-center gap-2 text-sm text-brand-gray">
+            <Link to="/" className="hover:text-primary-dark">
               Inicio
             </Link>
             <span>/</span>
-            <Link to="/marketplace" className="hover:text-primary-600">
+            <Link to="/marketplace" className="hover:text-primary-dark">
               Marketplace
             </Link>
             <span>/</span>
-            <span className="text-slate-900">{data.nombre}</span>
+            <span className="text-brand-dark">{data.nombre}</span>
           </div>
         </div>
       </div>
@@ -533,18 +533,18 @@ export function ProductDetailPage() {
           <div className="space-y-4">
             {/* Category Badge */}
             {data.categoria && (
-              <span className="inline-block rounded-full bg-primary-100 px-3 py-1 text-sm font-semibold text-primary-700">
+              <span className="inline-block rounded-full bg-primary-100 px-3 py-1 text-sm font-semibold text-primary-dark">
                 {data.categoria.nombre}
               </span>
             )}
 
             {/* Title */}
-            <h1 className="text-3xl font-bold text-slate-900">{data.nombre}</h1>
+            <h1 className="text-3xl font-bold text-brand-dark">{data.nombre}</h1>
 
             {/* Price */}
-            <div className="rounded-xl bg-slate-100 p-4">
-              <p className="text-sm text-slate-600">Precio</p>
-              <p className="text-4xl font-bold text-slate-900">{precioFormateado}</p>
+            <div className="rounded-xl bg-brand-gray-light/20 p-4">
+              <p className="text-sm text-brand-gray">Precio</p>
+              <p className="text-4xl font-bold text-brand-dark">{precioFormateado}</p>
             </div>
 
             {/* Stock */}
@@ -553,7 +553,7 @@ export function ProductDetailPage() {
                 icon={data.stock > 0 ? faCheck : faXmark}
                 className={data.stock > 0 ? "text-green-500" : "text-red-500"}
               />
-              <span className="text-sm font-semibold text-slate-700">
+              <span className="text-sm font-semibold text-brand-gray">
                 {data.stock > 0 ? `${data.stock} disponibles` : "Sin stock"}
               </span>
             </div>
@@ -561,36 +561,36 @@ export function ProductDetailPage() {
             {/* Description */}
             {data.descripcion && (
               <div>
-                <h3 className="mb-2 text-lg font-semibold text-slate-900">Descripción</h3>
-                <p className="text-slate-700">{data.descripcion}</p>
+                <h3 className="mb-2 text-lg font-semibold text-brand-dark">Descripción</h3>
+                <p className="text-brand-gray">{data.descripcion}</p>
               </div>
             )}
 
             {/* Seller Info */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-lg font-semibold text-slate-900">Vendido por</h3>
+            <div className="rounded-xl border border-brand-gray-light bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+              <h3 className="mb-3 text-lg font-semibold text-brand-dark">Vendido por</h3>
               <div className="flex items-start gap-3">
                 {empresaNombre ? (
                   <>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 text-xl font-bold text-slate-900 shadow-md">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 text-xl font-bold text-brand-dark shadow-md">
                       {empresaNombre[0].toUpperCase()}
                     </div>
                     <div className="flex-1">
                       <Link
                         to={`/empresa/${empresaId}`}
-                        className="text-lg font-bold text-slate-900 transition hover:text-primary-600"
+                        className="text-lg font-bold text-brand-dark transition hover:text-primary-dark"
                       >
                         {empresaNombre}
                       </Link>
                       {data.empresa?.municipio && (
-                        <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-                          <FontAwesomeIcon icon={faLocationDot} className="text-primary-500" />
+                        <div className="mt-1 flex items-center gap-1.5 text-sm text-brand-gray">
+                          <FontAwesomeIcon icon={faLocationDot} className="text-brand-dark" />
                           <span>{data.empresa.municipio.nombre}</span>
                         </div>
                       )}
                       <Link
                         to={`/empresa/${empresaId}`}
-                        className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700"
+                        className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-dark hover:text-primary-dark"
                       >
                         <FontAwesomeIcon icon={faStore} />
                         Ver empresa
@@ -600,12 +600,12 @@ export function ProductDetailPage() {
                   </>
                 ) : (
                   <>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-500">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-gray-light/20 text-brand-gray">
                       <FontAwesomeIcon icon={faUser} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-700">Vendedor independiente</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="text-sm font-semibold text-brand-gray">Vendedor independiente</p>
+                      <p className="mt-1 text-xs text-brand-gray">
                         Información de empresa no disponible
                       </p>
                     </div>
@@ -617,9 +617,9 @@ export function ProductDetailPage() {
             {/* Actions */}
             <div className="space-y-3">
               {/* Chat Form */}
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-900">
-                  <FontAwesomeIcon icon={faMessage} className="text-primary-500" />
+              <div className="rounded-xl border border-brand-gray-light bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-brand-dark">
+                  <FontAwesomeIcon icon={faMessage} className="text-brand-dark" />
                   Contactar al vendedor
                 </h3>
                 <textarea
@@ -627,19 +627,19 @@ export function ProductDetailPage() {
                   onChange={(e) => setMensaje(e.target.value)}
                   placeholder="Hola, me interesa este producto. ¿Podrías darme más información?"
                   rows="3"
-                  className="mb-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="mb-3 w-full rounded-lg border border-brand-gray-light px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <button
                   onClick={handleChat}
-                  className="w-full rounded-lg bg-primary-500 py-3 font-semibold text-slate-900 transition hover:bg-primary-400"
+                  className="w-full rounded-lg bg-primary py-3 font-semibold text-brand-dark transition hover:bg-primary-400"
                 >
                   <FontAwesomeIcon icon={faComment} className="mr-2" />
                   Enviar mensaje
                 </button>
                 {!isAuthenticated && (
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className="mt-2 text-xs text-brand-gray">
                     ¿No tienes cuenta?{" "}
-                    <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-700">
+                    <Link to="/login" className="font-semibold text-primary-dark hover:text-primary-dark">
                       Inicia sesión
                     </Link>
                   </p>
@@ -653,7 +653,7 @@ export function ProductDetailPage() {
                   className={`flex-1 rounded-lg border-2 py-3 font-semibold transition ${
                     isFavorite
                       ? "border-red-500 bg-red-50 text-red-500"
-                      : "border-slate-300 text-slate-700 hover:border-red-300 hover:bg-red-50"
+                      : "border-brand-gray-light text-brand-gray hover:border-red-300 hover:bg-red-50"
                   }`}
                 >
                   <FontAwesomeIcon icon={faHeart} className="mr-2" />
@@ -661,7 +661,7 @@ export function ProductDetailPage() {
                 </button>
                 <button
                   onClick={handleShare}
-                  className="rounded-lg border-2 border-slate-300 px-4 py-3 text-slate-700 transition hover:border-primary-300 hover:bg-primary-50"
+                  className="rounded-lg border-2 border-brand-gray-light px-4 py-3 text-brand-gray transition hover:border-primary-300 hover:bg-primary-50"
                 >
                   <FontAwesomeIcon icon={faShare} />
                 </button>

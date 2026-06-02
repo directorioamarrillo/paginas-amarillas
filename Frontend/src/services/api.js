@@ -148,6 +148,7 @@ export const reportesApi = {
   topProductosChats: (params) => http.get("/reportes/marketplace/top-productos-chats", { params }),
   topEmpresasRating: (params) => http.get("/reportes/empresas/top-rating-reviews", { params }),
   funnel: (params) => http.get("/reportes/funnel", { params }),
+  publicStats: () => http.get("/reportes/public-stats"),
 };
 
 export const usuariosApi = {

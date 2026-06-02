@@ -5,7 +5,7 @@ from sqlalchemy import and_, case, cast, func, Numeric, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.auth import require_permission
 from app.db.conexion import get_db
-from app.models.models import ArchivoMensaje, Comprobante, Empresa, EventoMarketplace, EstadoFlujo, Marketplace, Mensaje, Resultado, Review, TipoEvento, Usuario
+from app.models.models import ArchivoMensaje, Comprobante, Empresa, EventoMarketplace, EstadoFlujo, Marketplace, Mensaje, Resultado, Review, TipoEvento, Usuario, Categoria
 from seeders.seed_permisos import Permisos
 
 router = APIRouter()
@@ -395,4 +395,35 @@ async def reporte_funnel_comercial(
             "comprobante_a_valido_porcentaje": _safe_rate(comprobantes_validos, comprobantes_registrados),
             "busqueda_a_valido_porcentaje": _safe_rate(comprobantes_validos, busquedas),
         },
+    }
+
+@router.get("/reportes/public-stats")
+async def public_stats(db: AsyncSession = Depends(get_db)):
+    """Estadísticas públicas para el HomePage."""
+    
+    # Total Empresas
+    empresas_q = select(func.count(Empresa.id)).where(Empresa.deleted_at.is_(None))
+    empresas_res = await db.execute(empresas_q)
+    total_empresas = int(empresas_res.scalar() or 0)
+    
+    # Total Productos (Marketplace)
+    productos_q = select(func.count(Marketplace.id)).where(Marketplace.deleted_at.is_(None))
+    productos_res = await db.execute(productos_q)
+    total_productos = int(productos_res.scalar() or 0)
+    
+    # Total Usuarios
+    usuarios_q = select(func.count(Usuario.id)).where(Usuario.deleted_at.is_(None))
+    usuarios_res = await db.execute(usuarios_q)
+    total_usuarios = int(usuarios_res.scalar() or 0)
+    
+    # Total Categorias
+    categorias_q = select(func.count(Categoria.id)).where(Categoria.deleted_at.is_(None))
+    categorias_res = await db.execute(categorias_q)
+    total_categorias = int(categorias_res.scalar() or 0)
+    
+    return {
+        "empresas": total_empresas,
+        "productos": total_productos,
+        "usuarios": total_usuarios,
+        "categorias": total_categorias
     }

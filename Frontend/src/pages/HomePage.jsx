@@ -15,7 +15,49 @@ import {
   faStore,
   faTags,
   faUserPlus,
+  faShoppingBag,
+  faUser,
+  faCar,
+  faUtensils,
+  faHouse,
+  faComputer,
+  faScrewdriverWrench,
+  faHeartPulse,
+  faGraduationCap,
+  faGrip,
+  faMugHot,
+  faLeaf,
+  faDrumstickBite,
+  faFish,
+  faCheese,
+  faWheatAwn,
+  faBreadSlice,
+  faPepperHot,
+  faPaw,
+  faPills,
+  faSpa,
+  faDumbbell,
+  faShirt,
+  faGamepad,
+  faPaperclip,
+  faBroom,
+  faWrench,
+  faTruck,
+  faPalette,
+  faIceCream,
+  faWineGlass,
+  faMotorcycle,
+  faBed,
+  faBriefcase,
+  faCalendarAlt,
+  faBullhorn,
+  faWifi,
+  faShieldAlt,
+  faCouch,
+  faGem
 } from "@fortawesome/free-solid-svg-icons";
+import { MoreHorizontal, Store, ShoppingBag, User, LayoutGrid, Flame, ChevronRight, Star, MapPin, MessageCircle, Globe } from "lucide-react";
+import { getCategoryIcon } from "../utils/categoryIcons";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { categoriasApi, empresasApi, marketplaceApi, reportesApi } from "../services/api";
 import { Loading } from "../components/common/Loading";
@@ -97,10 +139,10 @@ function ProductCard({ producto }) {
 
   return (
     <div
-      className="group cursor-pointer rounded-2xl border border-slate-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20"
+      className="group cursor-pointer rounded-2xl border border-brand-gray-light bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20"
       onClick={() => navigate(`/producto/${producto.id}`)}
     >
-      <div className="relative overflow-hidden rounded-t-2xl bg-slate-50 aspect-square">
+      <div className="relative overflow-hidden rounded-t-2xl bg-brand-gray-light/10 aspect-square">
         {primeraImagen ? (
           <img
             src={`${SERVER_BASE_URL}/${getImageUrl(primeraImagen)}`}
@@ -108,15 +150,15 @@ function ProductCard({ producto }) {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-400">
+          <div className="flex h-full w-full items-center justify-center text-brand-gray-light">
             <FontAwesomeIcon icon={faStore} size="3x" />
           </div>
         )}
 
         {/* Image Count Badge */}
         {totalImagenes > 1 && (
-          <div className="absolute top-3 left-3 rounded-xl bg-[#212121]/80 px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur">
-            <FontAwesomeIcon icon={faImage} className="mr-1 text-primary" />
+          <div className="absolute top-3 left-3 rounded-xl bg-primary text-brand-dark px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur">
+            <FontAwesomeIcon icon={faImage} className="mr-1 text-brand-dark" />
             {totalImagenes}
           </div>
         )}
@@ -127,7 +169,7 @@ function ProductCard({ producto }) {
         >
           <FontAwesomeIcon
             icon={faHeart}
-            className={`transition-colors duration-200 ${isFavorite ? "text-red-500" : "text-slate-400 hover:text-red-400"}`}
+            className={`transition-colors duration-200 ${isFavorite ? "text-red-500" : "text-brand-gray-light hover:text-red-400"}`}
           />
         </button>
 
@@ -146,7 +188,7 @@ function ProductCard({ producto }) {
 
         {/* Category Badge */}
         {categoriaNombre && (
-          <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur">
+          <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-semibold text-brand-gray shadow-sm backdrop-blur">
             {categoriaNombre}
           </div>
         )}
@@ -159,18 +201,18 @@ function ProductCard({ producto }) {
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-[#1F1F1F]">
               {empresaNombre[0].toUpperCase()}
             </div>
-            <p className="text-xs font-medium text-slate-600 truncate">{empresaNombre}</p>
+            <p className="text-xs font-medium text-brand-gray truncate">{empresaNombre}</p>
           </div>
         ) : (
-          <p className="mb-2 text-xs text-slate-500">Vendedor independiente</p>
+          <p className="mb-2 text-xs text-brand-gray">Vendedor independiente</p>
         )}
 
-        <h3 className="mt-1 line-clamp-2 text-sm font-bold text-slate-800 group-hover:text-primary-hover transition-colors duration-200">
+        <h3 className="mt-1 line-clamp-2 text-sm font-bold text-brand-dark group-hover:text-primary-hover transition-colors duration-200">
           {producto.nombre}
         </h3>
 
         <div className="mt-2.5 flex items-baseline gap-2">
-          <span className="text-xl font-extrabold text-slate-900">{precioFormateado}</span>
+          <span className="text-xl font-extrabold text-brand-dark">{precioFormateado}</span>
         </div>
 
         {producto.rating_promedio && (
@@ -183,20 +225,20 @@ function ProductCard({ producto }) {
                   className={
                     star <= Math.round(pickNumber(producto.rating_promedio))
                       ? "text-primary"
-                      : "text-slate-200"
+                      : "text-brand-gray-light"
                   }
                   size="xs"
                 />
               ))}
             </div>
-            <span className="text-[10px] text-slate-500 font-medium ml-1">
+            <span className="text-[10px] text-brand-gray font-medium ml-1">
               ({producto.total_reviews || 0})
             </span>
           </div>
         )}
 
         <div className="mt-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 border border-slate-100">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gray-light/10 px-2.5 py-1 text-xs font-medium text-brand-gray border border-brand-gray-light">
             <div className={`h-1.5 w-1.5 rounded-full ${esSinStock ? "bg-red-500" : producto.stock > 10 ? "bg-success" : "bg-orange-500"}`} />
             {producto.stock > 0 ? `${Math.floor(producto.stock)} disponibles` : "Agotado"}
           </span>
@@ -209,43 +251,71 @@ function ProductCard({ producto }) {
 function EmpresaCard({ empresa }) {
   const navigate = useNavigate();
 
+  // Variables mock para la demostración si no vienen del backend
+  const rating = empresa.rating_promedio || 4.9;
+  
+  // Renderizado de las 5 estrellas completas
+  const renderStars = () => (
+    <div className="flex text-primary">
+      {Array(5).fill(0).map((_, i) => (
+        <Star key={i} className="w-3.5 h-3.5 fill-current" />
+      ))}
+    </div>
+  );
+
   return (
     <div
-      className="group cursor-pointer rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20"
-      onClick={() => navigate(`/empresa/${empresa.id}`)}
+      className="group flex flex-col justify-between cursor-pointer rounded-2xl border border-brand-gray-light bg-white p-5 shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+      onClick={() => navigate(`/empresa/${empresa.id || empresa.id_empresa}`)}
     >
-      <div className="flex items-start gap-4">
-        {empresa.logo_url ? (
-          <img
-            src={`${API_BASE_URL}/empresas/${empresa.id}/logo`}
-            alt={`Logo de ${empresa.nombre}`}
-            className="h-16 w-16 rounded-xl border border-slate-100 object-cover shadow-sm"
-          />
-        ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 shrink-0">
-            <FontAwesomeIcon icon={faBuilding} className="text-slate-400" size="lg" />
+      <div>
+        {/* Título de la empresa */}
+        <h3 className="text-xl font-black text-brand-dark group-hover:text-primary-dark transition-colors truncate">
+          {empresa.nombre || empresa.empresa || "Moto Repuestos Lopera"}
+        </h3>
+        
+        {/* Rating */}
+        <div className="flex items-center gap-1.5 mt-2 text-sm">
+          <div className="text-[12px] leading-none">
+            {renderStars()}
           </div>
-        )}
+          <span className="font-bold text-brand-dark ml-1">{rating.toFixed(1)}</span>
+        </div>
 
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-bold text-slate-900 group-hover:text-primary-hover transition-colors duration-200">
-            {empresa.nombre}
-          </h3>
-          <p className="mt-0.5 truncate text-xs text-slate-500">{empresa.correo}</p>
-          {empresa.categoria && (
-            <span className="mt-2 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-yellow-800">
-              {empresa.categoria.nombre}
-            </span>
-          )}
+        {/* Info list (Ubicación, WhatsApp, Sitio Web) */}
+        <div className="mt-5 space-y-2.5 text-sm text-brand-gray font-medium">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-4 h-4 text-brand-gray" />
+            <span className="truncate">{empresa.municipio?.nombre || "Sogamoso"}</span>
+          </div>
+          <div 
+            className="flex items-center gap-3 text-green-600 hover:text-green-700 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>WhatsApp</span>
+          </div>
+          <div 
+            className="flex items-center gap-3 text-blue-600 hover:text-blue-700 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Globe className="w-4 h-4" />
+            <span>Sitio Web</span>
+          </div>
         </div>
       </div>
 
-      {empresa.municipio && (
-        <div className="mt-4 flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-100/50 px-3 py-2 text-xs text-slate-600">
-          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-primary" />
-          <span className="font-semibold">{empresa.municipio.nombre}</span>
-        </div>
-      )}
+      {/* Badges / Menú Rápido */}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {['Productos', 'Servicios', 'Galería', 'Ubicación', 'Reseñas', 'Horarios'].map((tag) => (
+          <span 
+            key={tag} 
+            className="rounded-lg bg-background px-2.5 py-1 text-[11px] font-bold text-brand-gray hover:text-brand-dark uppercase tracking-wide border border-brand-gray-light/50 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -281,6 +351,15 @@ export function HomePage() {
     }
   });
 
+  const publicStats = useAsyncData(async () => {
+    try {
+      const { data } = await reportesApi.publicStats();
+      return data;
+    } catch {
+      return { empresas: 0, productos: 0, usuarios: 0, categorias: 0 };
+    }
+  });
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -293,117 +372,148 @@ export function HomePage() {
   const loading = productosDestacados.loading || empresasDestacadas.loading;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] pb-12">
+    <div className="min-h-screen bg-white pb-12 text-brand-dark">
       {/* Hero Section */}
-      <section className="relative z-40 bg-[#1F1F1F] py-16 md:py-24 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,193,7,0.12)_0%,_transparent_55%)]"></div>
-        <div className="relative mx-auto max-w-7xl px-4 md:px-6">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary tracking-wide uppercase border border-primary/20">
-              Directorio Comercial & Marketplace
-            </span>
-            <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl text-white">
-              Páginas Amarillas
-              <span className="block text-primary mt-1">Directorio Local</span>
-            </h1>
-            <p className="mx-auto max-w-2xl text-base md:text-lg text-neutral-300">
-              Explora una nueva forma de descubrir lo mejor de tu ciudad.
-            </p>
+      <section className="relative z-40 bg-white py-20 md:py-32 flex flex-col items-center justify-center min-h-[70vh]">
+        <div className="absolute inset-0 bg-white"></div>
+        <div className="relative mx-auto max-w-5xl px-4 md:px-6 text-center">
+          
+          <span className="inline-block rounded-full bg-brand-dark text-primary px-4 py-1.5 text-[10px] font-black tracking-widest uppercase border border-brand-dark/80 mb-6 shadow-xl">
+            DIRECTORIO COMERCIAL & MARKETPLACE
+          </span>
+          
+          <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl text-brand-dark mb-6 leading-[1.1]">
+            Conecta con empresas,<br />
+            <span className="text-primary-dark">productos y oportunidades</span><br />
+            cerca de ti.
+          </h1>
+          
+          <p className="mx-auto max-w-2xl text-base md:text-lg text-brand-gray mb-10">
+            Descubre negocios locales, compara opciones y encuentra lo que necesitas desde un solo lugar.
+          </p>
 
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="relative z-50 mx-auto max-w-3xl pt-6">
-              <div className="relative flex flex-col sm:flex-row items-center rounded-3xl sm:rounded-full bg-white/10 p-2 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 transition-all duration-500 group">
-                
-                {/* Search Input */}
-                <div className="relative flex-1 flex items-center w-full">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-full bg-white/5 ml-2 text-primary shadow-inner group-focus-within:bg-primary group-focus-within:text-[#1F1F1F] transition-colors duration-300">
-                    <FontAwesomeIcon icon={faSearch} />
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="¿Qué estás buscando? (ej: restaurantes, ferreterías)"
-                    className="w-full bg-transparent border-0 py-4 pl-4 pr-4 text-white placeholder:text-neutral-400 focus:outline-none focus:ring-0 text-base md:text-lg"
-                  />
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="relative z-50 mx-auto max-w-4xl w-full">
+            <div className="flex flex-col sm:flex-row items-stretch gap-3">
+              
+              {/* Search Input Container */}
+              <div className="relative flex-1 flex items-center bg-white rounded-2xl border border-slate-200 shadow-sm focus-within:border-brand-dark focus-within:ring-2 focus-within:ring-brand-dark/5 transition-all duration-300 hover:shadow-md">
+                <div className="pl-5 text-slate-400 group-focus-within:text-brand-dark transition-colors">
+                  <FontAwesomeIcon icon={faSearch} className="text-lg" />
                 </div>
-
-                {/* Divider (Hidden on Mobile) */}
-                <div className="hidden sm:block w-px h-10 bg-white/20 mx-2"></div>
-
-                {/* Category Selector */}
-                <div 
-                  className="relative w-full sm:w-[220px] flex items-center mt-2 sm:mt-0 border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0"
-                  onMouseLeave={() => setIsCategoryOpen(false)}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                    className="w-full text-left appearance-none bg-transparent border-0 py-4 pl-4 pr-10 text-neutral-300 hover:text-white focus:text-white text-base focus:ring-0 cursor-pointer outline-none transition-colors truncate"
-                  >
-                    {selectedCategoria && categorias.data ? categorias.data.find(c => c.id == selectedCategoria)?.nombre || "Todas las categorías" : "Todas las categorías"}
-                  </button>
-                  <FontAwesomeIcon icon={faChevronDown} className={`absolute right-4 text-neutral-400 pointer-events-none text-sm transition-transform duration-300 ${isCategoryOpen ? 'rotate-180' : ''}`} />
-                  
-                  {isCategoryOpen && (
-                    <div className="absolute top-full left-0 mt-3 w-full sm:w-[280px] max-h-[320px] overflow-y-auto rounded-2xl bg-[#2A2A2A] border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.6)] z-50 py-2 scrollbar-thin scrollbar-thumb-neutral-600 scrollbar-track-transparent">
-                      <button
-                        type="button"
-                        onClick={() => { setSelectedCategoria(""); setIsCategoryOpen(false); }}
-                        className={`w-full text-left px-5 py-3 text-sm transition-colors ${!selectedCategoria ? 'bg-primary/10 text-primary font-bold border-l-2 border-primary' : 'text-neutral-300 hover:bg-white/5 hover:text-white border-l-2 border-transparent'}`}
-                      >
-                        Todas las categorías
-                      </button>
-                      {(categorias.data || []).map((cat) => (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => { setSelectedCategoria(cat.id); setIsCategoryOpen(false); }}
-                          className={`w-full text-left px-5 py-3 text-sm transition-colors ${selectedCategoria == cat.id ? 'bg-primary/10 text-primary font-bold border-l-2 border-primary' : 'text-neutral-300 hover:bg-white/5 hover:text-white border-l-2 border-transparent'}`}
-                        >
-                          {cat.nombre}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto mt-3 sm:mt-0 rounded-full bg-gradient-to-r from-primary to-[#ffb300] px-8 py-4 font-extrabold text-[#1F1F1F] transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,193,7,0.4)] flex items-center justify-center gap-2"
-                >
-                  <FontAwesomeIcon icon={faSearch} className="sm:hidden" />
-                  Buscar ahora
-                </button>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="¿Qué estás buscando? (ej: restaurante, abogado...)"
+                  className="w-full bg-transparent border-0 py-4 pl-3 pr-4 text-brand-dark placeholder:text-slate-400 focus:outline-none focus:ring-0 text-base font-medium"
+                />
               </div>
-            </form>
 
-            {/* Quick Links */}
-            <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
-              <Link
-                to="/empresas"
-                className="group flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/20 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 shadow-sm"
+
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full sm:w-auto rounded-2xl bg-primary px-8 py-4 font-extrabold text-brand-dark transition-all duration-300 hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 shadow-sm"
               >
-                <FontAwesomeIcon icon={faStore} className="text-primary group-hover:scale-110 transition-transform" />
-                Directorio
-              </Link>
-              <Link
-                to="/marketplace"
-                className="group flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 font-semibold text-white border border-white/20 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 shadow-sm"
-              >
-                <FontAwesomeIcon icon={faTags} className="text-primary group-hover:scale-110 transition-transform" />
-                Marketplace
-              </Link>
-              <Link
-                to={isAuthenticated ? "/empresas-panel" : "/login?mode=register"}
-                className="group flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 font-bold text-[#1F1F1F] transition-all hover:bg-primary-hover hover:-translate-y-0.5 shadow-[0_0_15px_rgba(255,193,7,0.3)]"
-              >
-                <FontAwesomeIcon icon={faUserPlus} className="group-hover:scale-110 transition-transform" />
-                Registrar Negocio
-              </Link>
+                Buscar ahora
+              </button>
+            </div>
+          </form>
+
+          {/* Tendencias */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <div className="flex items-center font-bold text-brand-dark mr-1">
+              <Flame className="w-5 h-5 text-brand-dark mr-1 fill-brand-dark" /> 
+              <span>Tendencias:</span>
+            </div>
+            {['Motos', 'Restaurantes', 'Abogados', 'Tecnología', 'Ferreterías', 'Salud'].map(trend => (
+              <span key={trend} onClick={() => { setSearchQuery(trend); handleSearch({preventDefault: () => {}}); }} className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-brand-gray border border-brand-gray-light shadow-sm cursor-pointer hover:bg-brand-gray-light/10 hover:text-brand-dark transition-colors">
+                {trend}
+              </span>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* Stats Bar */}
+      <section className="mx-auto max-w-[1200px] px-4 md:px-6 relative z-50 -mt-8 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-0 bg-white rounded-2xl border border-brand-gray-light shadow-[0_8px_30px_rgba(0,0,0,0.06)] py-6 px-4">
+          <div className="flex items-center justify-center gap-4 md:border-r border-brand-gray-light last:border-0 p-2">
+            <Store className="text-brand-dark w-8 h-8 drop-shadow-sm" />
+            <div className="text-left">
+              <p className="text-2xl font-bold text-brand-dark leading-none">
+                {publicStats.isLoading ? "..." : (publicStats.data?.empresas || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-brand-gray font-medium mt-1">Empresas Registradas</p>
             </div>
           </div>
+          <div className="flex items-center justify-center gap-4 md:border-r border-brand-gray-light last:border-0 p-2">
+            <ShoppingBag className="text-brand-dark w-8 h-8 drop-shadow-sm" />
+            <div className="text-left">
+              <p className="text-2xl font-bold text-brand-dark leading-none">
+                {publicStats.isLoading ? "..." : (publicStats.data?.productos || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-brand-gray font-medium mt-1">Productos Publicados</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-4 md:border-r border-brand-gray-light last:border-0 p-2 mt-4 md:mt-0">
+            <User className="text-brand-dark w-8 h-8 drop-shadow-sm" />
+            <div className="text-left">
+              <p className="text-2xl font-bold text-brand-dark leading-none">
+                {publicStats.isLoading ? "..." : (publicStats.data?.usuarios || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-brand-gray font-medium mt-1">Usuarios Activos</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-4 p-2 mt-4 md:mt-0">
+            <LayoutGrid className="text-brand-dark w-8 h-8 drop-shadow-sm" />
+            <div className="text-left">
+              <p className="text-2xl font-bold text-brand-dark leading-none">
+                {publicStats.isLoading ? "..." : (publicStats.data?.categorias || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-brand-gray font-medium mt-1">Categorías Comerciales</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Categorias Grid */}
+      <section className="mx-auto max-w-[1200px] px-4 md:px-6 mb-16">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-brand-dark">Explora por categorías</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          {(() => {
+            if (categorias.isLoading) {
+              return <div className="col-span-full py-8 text-center text-brand-gray font-medium">Cargando categorías...</div>;
+            }
+            
+            const realCats = (categorias.data || []).slice(0, 7);
+            const items = realCats.map(cat => {
+              const Icon = getCategoryIcon(cat.nombre);
+              
+              return { id: cat.id, name: cat.nombre, icon: Icon };
+            });
+            
+            items.push({ id: 'more', name: 'Más categorías', icon: MoreHorizontal, link: '/categorias' });
+            
+            return items.map(cat => {
+              const Icon = cat.icon;
+              return (
+              <Link 
+                key={cat.id} 
+                to={cat.link || `/busqueda?categoria_id=${cat.id}`} 
+                className="flex flex-col items-center justify-center gap-3 bg-white border border-brand-gray-light p-4 md:p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary-400 hover:shadow-[0_4px_20px_rgba(234,179,8,0.15)] hover:border-b-4 rounded-md group relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-brand-gray-light/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                <Icon className="text-brand-dark w-8 h-8 group-hover:scale-110 transition-transform duration-300 group-hover:drop-shadow-md z-10" />
+                <span className="text-[11px] font-semibold text-brand-gray group-hover:text-brand-dark transition-colors text-center line-clamp-2 leading-tight z-10">{cat.name}</span>
+              </Link>
+            )});
+          })()}
         </div>
       </section>
 
@@ -412,25 +522,25 @@ export function HomePage() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#1F1F1F] md:text-2xl">
-              <FontAwesomeIcon icon={faFire} className="text-orange-500" />
+              <Flame className="text-brand-dark w-6 h-6" />
               Artículos Destacados
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">Los productos más nuevos y buscados en el catálogo comercial</p>
+            <p className="text-xs text-brand-gray mt-0.5">Los productos más nuevos y buscados en el catálogo comercial</p>
           </div>
           <Link
             to="/marketplace"
-            className="flex items-center gap-1 text-xs font-bold text-primary-600 hover:text-primary-hover"
+            className="flex items-center gap-1 text-xs font-bold text-primary-dark hover:text-primary-hover"
           >
             Ver todos
-            <FontAwesomeIcon icon={faChevronRight} />
+            <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
         {loading ? (
           <Loading text="Cargando productos destacados..." />
         ) : productosDestacados.data?.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-            <p className="text-slate-500 font-medium">Aún no hay productos publicados en el marketplace</p>
+          <div className="rounded-2xl border border-brand-gray-light bg-white p-12 text-center shadow-sm">
+            <p className="text-brand-gray font-medium">Aún no hay productos publicados en el marketplace</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -446,25 +556,25 @@ export function HomePage() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#1F1F1F] md:text-2xl">
-              <FontAwesomeIcon icon={faStore} className="text-primary" />
+              <Store className="text-brand-dark w-6 h-6" />
               Empresas Destacadas
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">Comercios locales verificados y listos para atenderte</p>
+            <p className="text-xs text-brand-gray mt-0.5">Comercios locales verificados y listos para atenderte</p>
           </div>
           <Link
             to="/empresas"
-            className="flex items-center gap-1 text-xs font-bold text-primary-600 hover:text-primary-hover"
+            className="flex items-center gap-1 text-xs font-bold text-primary-dark hover:text-primary-hover"
           >
             Ver directorio completo
-            <FontAwesomeIcon icon={faChevronRight} />
+            <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
         {loading ? (
           <Loading text="Cargando empresas destacadas..." />
         ) : empresasDestacadas.data?.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-            <p className="text-slate-500 font-medium">Aún no hay empresas registradas en el directorio</p>
+          <div className="rounded-2xl border border-brand-gray-light bg-white p-12 text-center shadow-sm">
+            <p className="text-brand-gray font-medium">Aún no hay empresas registradas en el directorio</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -480,17 +590,17 @@ export function HomePage() {
         <section className="mx-auto max-w-7xl px-4 py-12 md:px-6">
           <div className="mb-8">
             <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#1F1F1F] md:text-2xl">
-              <FontAwesomeIcon icon={faStar} className="text-primary" />
+              <Star className="text-brand-dark w-6 h-6" />
               Empresas Mejor Valoradas
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">Los comercios con mejores recomendaciones de sus clientes</p>
+            <p className="text-xs text-brand-gray mt-0.5">Los comercios con mejores recomendaciones de sus clientes</p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(topEmpresas.data || []).map((empresa, index) => (
               <div
                 key={empresa.id_empresa}
-                className="product-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20 transition-all duration-300"
+                className="product-card cursor-pointer rounded-2xl border border-brand-gray-light bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:-translate-y-1.5 hover:shadow-md hover:border-primary/20 transition-all duration-300"
                 onClick={() => navigate(`/empresa/${empresa.id_empresa}`)}
               >
                 <div className="flex items-center justify-between">
@@ -499,17 +609,17 @@ export function HomePage() {
                       {index + 1}
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900">{empresa.empresa}</h3>
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
+                      <h3 className="font-bold text-brand-dark">{empresa.empresa}</h3>
+                      <div className="flex items-center gap-1 text-sm text-brand-gray">
                         <FontAwesomeIcon icon={faStar} className="text-primary" size="xs" />
-                        <span className="font-semibold text-slate-800">{empresa.rating_promedio?.toFixed(1) || "0.0"}</span>
-                        <span className="text-xs text-slate-500">
+                        <span className="font-semibold text-brand-dark">{empresa.rating_promedio?.toFixed(1) || "0.0"}</span>
+                        <span className="text-xs text-brand-gray">
                           ({empresa.total_reviews} reseñas)
                         </span>
                       </div>
                     </div>
                   </div>
-                  <FontAwesomeIcon icon={faChartLine} className="text-primary" size="lg" />
+                  <FontAwesomeIcon icon={faChartLine} className="text-brand-dark" size="lg" />
                 </div>
               </div>
             ))}
@@ -519,21 +629,21 @@ export function HomePage() {
 
       {/* Call to Action */}
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-        <div className="rounded-3xl border border-neutral-800 bg-gradient-to-r from-[#1F1F1F] via-[#2A2A2A] to-[#1F1F1F] p-8 text-center text-white shadow-xl md:p-12">
+        <div className="rounded-3xl border border-brand-gray-light bg-white p-8 text-center text-brand-dark shadow-[0_4px_20px_rgba(0,0,0,0.02)] md:p-12">
           <h2 className="text-2xl font-bold md:text-3xl">¿Eres propietario de un negocio?</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-neutral-300 text-sm md:text-base">
-            Crea tu perfil comercial en Páginas Amarillas, publica tus productos en el marketplace y recibe contactos directos de tus clientes vía WhatsApp y correo.
+          <p className="mx-auto mt-3 max-w-2xl text-brand-gray text-sm md:text-base">
+            Crea tu perfil comercial en Directorio 2.0, publica tus productos en el marketplace y recibe contactos directos de tus clientes vía WhatsApp y correo.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               to="/login"
-              className="rounded-xl bg-primary px-6 py-3 font-semibold text-[#1F1F1F] transition hover:bg-primary-hover shadow-md"
+              className="rounded-xl bg-primary px-6 py-3 font-semibold text-[#1F1F1F] transition hover:bg-primary-dark shadow-md"
             >
               Comenzar Gratis
             </Link>
             <Link
               to="/empresas"
-              className="rounded-xl border border-neutral-700 px-6 py-3 font-semibold text-white hover:bg-neutral-800 transition"
+              className="rounded-xl bg-primary px-6 py-3 font-semibold text-[#1F1F1F] transition hover:bg-primary-dark shadow-md"
             >
               Explorar Directorio
             </Link>

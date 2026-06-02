@@ -128,14 +128,14 @@ export function AdminAuditoriaPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-widest drop-shadow-sm">
-            REGISTRO <span className="text-amber-500">DE ACTIVIDAD</span>
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-widest drop-shadow-sm flex flex-wrap gap-x-2">
+            <span>REGISTRO</span> <span className="text-amber-500">DE ACTIVIDAD</span>
           </h2>
-          <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest font-bold">Historial de auditoría y eventos de seguridad</p>
+          <p className="text-xs md:text-sm text-slate-500 mt-1 uppercase tracking-widest font-bold">Historial de auditoría y eventos de seguridad</p>
         </div>
       </div>
 

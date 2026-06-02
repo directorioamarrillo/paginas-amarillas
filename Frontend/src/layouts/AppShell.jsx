@@ -9,7 +9,7 @@ export function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-white">
       <div className="mx-auto flex min-h-screen w-full max-w-[1700px]">
         {/* Mobile Menu Overlay */}
         {mobileMenuOpen && (
@@ -37,7 +37,7 @@ export function AppShell() {
           </div>
         </div>
 
-        <div className="flex min-h-screen flex-1 flex-col">
+        <div className="flex min-h-screen flex-1 flex-col min-w-0">
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -47,7 +47,7 @@ export function AppShell() {
           </button>
 
           <Topbar />
-          <main className="flex-1 p-4 md:p-6">
+          <main className="flex-1 p-4 md:p-6 min-w-0 overflow-x-hidden w-full max-w-full">
             <Outlet />
           </main>
         </div>

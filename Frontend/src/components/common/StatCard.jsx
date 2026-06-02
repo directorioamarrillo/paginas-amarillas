@@ -1,27 +1,26 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowDown, faArrowUp, faMinus } from "@fortawesome/free-solid-svg-icons";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-export function StatCard({ title, value, hint, icon, color = "primary", trend }) {
+export function StatCard({ title, value, hint, icon: Icon, color = "primary", trend }) {
   const colorClasses = {
-    primary: "from-primary-400 to-primary-500",
-    success: "from-emerald-400 to-emerald-500",
-    danger: "from-rose-400 to-rose-500",
-    warning: "from-amber-400 to-amber-500",
-    info: "from-sky-400 to-sky-500",
-    purple: "from-violet-400 to-violet-500",
+    primary: "from-primary-50 to-white",
+    success: "from-emerald-50 to-white",
+    danger: "from-rose-50 to-white",
+    warning: "from-amber-50 to-white",
+    info: "from-sky-50 to-white",
+    purple: "from-violet-50 to-white",
   };
 
-  const iconGlows = {
-    primary: "border-primary-500 text-primary-400 shadow-[0_0_12px_rgba(59,130,246,0.6)]",
-    success: "border-emerald-500 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.6)]",
-    danger: "border-rose-500 text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.6)]",
-    warning: "border-amber-500 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]",
-    info: "border-sky-500 text-sky-400 shadow-[0_0_12px_rgba(14,165,233,0.6)]",
-    purple: "border-violet-500 text-violet-400 shadow-[0_0_12px_rgba(139,92,246,0.6)]",
+  const iconStyles = {
+    primary: "bg-primary-50 text-primary-600 border border-primary-200",
+    success: "bg-emerald-50 text-emerald-600 border border-emerald-200",
+    danger: "bg-rose-50 text-rose-600 border border-rose-200",
+    warning: "bg-amber-50 text-amber-600 border border-amber-200",
+    info: "bg-sky-50 text-sky-600 border border-sky-200",
+    purple: "bg-violet-50 text-violet-600 border border-violet-200",
   };
 
   const bgGradient = colorClasses[color] || colorClasses.primary;
-  const glowClass = iconGlows[color] || iconGlows.primary;
+  const iconStyle = iconStyles[color] || iconStyles.primary;
 
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-lg md:p-6">
@@ -33,16 +32,16 @@ export function StatCard({ title, value, hint, icon, color = "primary", trend })
       <div className="relative">
         <div className="flex items-start justify-between">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p>
-          {icon && (
+          {Icon && (
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 ${glowClass} transition-all duration-300 group-hover:scale-110 group-hover:brightness-125`}
+              className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconStyle} transition-all duration-300 group-hover:scale-110 shadow-sm`}
             >
-              <FontAwesomeIcon icon={icon} size="sm" />
+              <Icon className="w-5 h-5" />
             </div>
           )}
         </div>
 
-        <p className="mt-3 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
+        <p className="mt-3 text-3xl font-bold text-slate-800 md:text-4xl">
           {value}
         </p>
 
@@ -58,10 +57,13 @@ export function StatCard({ title, value, hint, icon, color = "primary", trend })
                       : "bg-slate-100 text-slate-600"
                 }`}
               >
-                <FontAwesomeIcon
-                  icon={trend === "up" ? faArrowUp : trend === "down" ? faArrowDown : faMinus}
-                  size="xs"
-                />
+                {trend === "up" ? (
+                  <TrendingUp className="w-3 h-3" />
+                ) : trend === "down" ? (
+                  <TrendingDown className="w-3 h-3" />
+                ) : (
+                  <Minus className="w-3 h-3" />
+                )}
               </div>
             )}
             <p className="text-xs font-medium text-slate-600">{hint}</p>
