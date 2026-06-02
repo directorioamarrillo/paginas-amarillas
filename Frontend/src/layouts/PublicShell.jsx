@@ -489,16 +489,16 @@ export function PublicShell() {
                 Conectamos negocios con clientes. Encuentra, compara y alquila mejor, para ti.
               </p>
               <div className="flex items-center gap-4">
-                <a href="#" className="text-brand-gray hover:text-primary transition-colors">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-brand-gray hover:text-primary transition-colors">
                   <FontAwesomeIcon icon={faFacebook} size="lg" />
                 </a>
-                <a href="#" className="text-brand-gray hover:text-primary transition-colors">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-brand-gray hover:text-primary transition-colors">
                   <FontAwesomeIcon icon={faInstagram} size="lg" />
                 </a>
-                <a href="#" className="text-brand-gray hover:text-primary transition-colors">
+                <a href="https://whatsapp.com" target="_blank" rel="noopener noreferrer" className="text-brand-gray hover:text-primary transition-colors">
                   <FontAwesomeIcon icon={faWhatsapp} size="lg" />
                 </a>
-                <a href="#" className="text-brand-gray hover:text-primary transition-colors">
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-brand-gray hover:text-primary transition-colors">
                   <FontAwesomeIcon icon={faYoutube} size="lg" />
                 </a>
               </div>
