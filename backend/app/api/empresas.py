@@ -43,7 +43,7 @@ class AddUsuarioToEmpresaRequest(BaseModel):
 
 class MiEmpresaUpdate(BaseModel):
     nombre: constr(min_length=2, max_length=100)
-    nit: constr(min_length=3, max_length=50, pattern=r"^[A-Za-z0-9\-]+$")
+    nit: constr(min_length=3, max_length=50, pattern=r"^[A-Za-z0-9\-\.]+$")
     correo: EmailStr
     direccion: constr(min_length=3, max_length=255)
     telefono: constr(min_length=7, max_length=20)

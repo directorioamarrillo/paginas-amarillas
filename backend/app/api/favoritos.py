@@ -35,7 +35,9 @@ async def listar_mis_favoritos(
         joinedload(UsuarioFavorito.marketplace)
         .joinedload(Marketplace.categoria),
         joinedload(UsuarioFavorito.marketplace)
-        .joinedload(Marketplace.estado)
+        .joinedload(Marketplace.estado),
+        joinedload(UsuarioFavorito.marketplace)
+        .joinedload(Marketplace.imagenes)
     )
     
     result = await db.execute(query.offset(skip).limit(limit))

@@ -198,8 +198,11 @@ function ProductCard({ producto }) {
         {/* Company Name */}
         {empresaNombre ? (
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-[#1F1F1F]">
-              {empresaNombre[0].toUpperCase()}
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-brand-dark">
+              {(() => {
+                const CategoryIcon = getCategoryIcon(categoriaNombre || "");
+                return <CategoryIcon className="w-3.5 h-3.5 stroke-[2.5]" />;
+              })()}
             </div>
             <p className="text-xs font-medium text-brand-gray truncate">{empresaNombre}</p>
           </div>
@@ -269,17 +272,43 @@ function EmpresaCard({ empresa }) {
       onClick={() => navigate(`/empresa/${empresa.id || empresa.id_empresa}`)}
     >
       <div>
-        {/* Título de la empresa */}
-        <h3 className="text-xl font-black text-brand-dark group-hover:text-primary-dark transition-colors truncate">
-          {empresa.nombre || empresa.empresa || "Moto Repuestos Lopera"}
-        </h3>
-        
-        {/* Rating */}
-        <div className="flex items-center gap-1.5 mt-2 text-sm">
-          <div className="text-[12px] leading-none">
-            {renderStars()}
+        {/* Header with Logo and Title/Rating */}
+        <div className="flex items-start gap-4">
+          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-brand-gray-light bg-slate-50 shadow-sm flex items-center justify-center">
+            {empresa.logo_url ? (
+              <img
+                src={`${API_BASE_URL}/empresas/${empresa.id || empresa.id_empresa}/logo`}
+                alt={`Logo de ${empresa.nombre}`}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  const fb = e.target.nextSibling;
+                  if (fb) fb.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div 
+              className="absolute inset-0 flex items-center justify-center bg-brand-gray-light/10"
+              style={{ display: empresa.logo_url ? 'none' : 'flex' }}
+            >
+              <FontAwesomeIcon icon={faBuilding} className="text-brand-gray-light text-xl" />
+            </div>
           </div>
-          <span className="font-bold text-brand-dark ml-1">{rating.toFixed(1)}</span>
+
+          <div className="flex-1 min-w-0">
+            {/* Título de la empresa */}
+            <h3 className="text-lg font-black text-brand-dark group-hover:text-primary-dark transition-colors truncate">
+              {empresa.nombre || empresa.empresa || "Moto Repuestos Lopera"}
+            </h3>
+            
+            {/* Rating */}
+            <div className="flex items-center gap-1.5 mt-1 text-sm">
+              <div className="text-[12px] leading-none">
+                {renderStars()}
+              </div>
+              <span className="font-bold text-brand-dark ml-1">{rating.toFixed(1)}</span>
+            </div>
+          </div>
         </div>
 
         {/* Info list (Ubicación, WhatsApp, Sitio Web) */}

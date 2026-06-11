@@ -89,7 +89,12 @@ uploads_dir = Path(__file__).resolve().parents[1] / "uploads"
 uploads_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
-origins = ["*"]  # Permitir todas las fuentes; ajustar en producción para mayor seguridad
+# Cargar orígenes permitidos desde el entorno; por defecto permite todo en desarrollo
+origins_raw = os.environ.get("ALLOWED_ORIGINS", "*")
+if origins_raw == "*":
+    origins = ["*"]
+else:
+    origins = [origin.strip() for origin in origins_raw.split(",") if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,

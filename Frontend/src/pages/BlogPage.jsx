@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faArrowRight, faChevronLeft, faChevronRight, faBookOpen, faUsers, faBuilding, faFire, faChartLine, faLaptopCode, faStore, faPiggyBank, faRocket, faShareNodes, faFileAlt, faChartBar, faListCheck, faDownload } from "@fortawesome/free-solid-svg-icons";
@@ -8,10 +8,21 @@ import { useToast } from "../context/ToastContext";
 export function BlogPage() {
   const { pushToast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Todas");
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [emailSidebar, setEmailSidebar] = useState("");
   const [emailBottom, setEmailBottom] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms debounce delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
 
   const categories = [
     { name: "Todas", icon: faBookOpen },
@@ -51,8 +62,8 @@ export function BlogPage() {
     
     // Search query filter
     let matchesSearch = true;
-    if (searchQuery.trim() !== "") {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim() !== "") {
+      const q = debouncedSearchQuery.toLowerCase();
       matchesSearch = 
         post.title.toLowerCase().includes(q) ||
         post.excerpt.toLowerCase().includes(q) ||

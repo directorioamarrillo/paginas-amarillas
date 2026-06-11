@@ -19,6 +19,7 @@ import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { formatPrice, formatCompact, parseInput } from "../utils/numbers";
+import { getCategoryIcon } from "../utils/categoryIcons";
 
 const pickNumber = (...values) => {
   for (const value of values) {
@@ -156,8 +157,11 @@ function ProductCard({ producto }) {
         {/* Company Name */}
         {empresaNombre ? (
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-500 text-xs font-bold text-brand-dark">
-              {empresaNombre[0].toUpperCase()}
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-brand-dark">
+              {(() => {
+                const CategoryIcon = getCategoryIcon(categoriaNombre || "");
+                return <CategoryIcon className="w-3.5 h-3.5 stroke-[2.5]" />;
+              })()}
             </div>
             <p className="text-xs font-medium text-brand-gray truncate">{empresaNombre}</p>
           </div>

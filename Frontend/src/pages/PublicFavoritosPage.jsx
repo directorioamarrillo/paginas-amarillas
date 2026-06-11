@@ -16,6 +16,12 @@ function FavoriteCard({ favorito, onRemove }) {
 
   if (!producto) return null;
 
+  const getImageUrl = (img) => {
+    if (!img) return "";
+    const url = typeof img === "string" ? img : img.imagen_url || img.url || "";
+    return url.startsWith("/") ? url.slice(1) : url;
+  };
+
   const precio = producto.precio ?? 0;
   const precioFormateado = new Intl.NumberFormat("es-CO", {
     style: "currency",
@@ -54,7 +60,7 @@ function FavoriteCard({ favorito, onRemove }) {
       >
         {producto.imagenes && producto.imagenes.length > 0 ? (
           <img
-            src={`${SERVER_BASE_URL}${producto.imagenes[0]}`}
+            src={`${SERVER_BASE_URL}/${getImageUrl(producto.imagenes[0])}`}
             alt={producto.nombre}
             className="h-full w-full object-cover"
             loading="lazy"

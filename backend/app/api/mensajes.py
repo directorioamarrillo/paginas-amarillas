@@ -78,7 +78,7 @@ async def list_mensajes(
     can_view_deleted: bool = Depends(can_view_deleted_records),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Mensaje)
+    query = select(Mensaje).options(joinedload(Mensaje.usuario_enviador_mensaje))
     if not can_view_deleted:
         query = query.where(Mensaje.deleted_at.is_(None))
     if id_marketplace is not None:
@@ -110,7 +110,7 @@ async def get_mensaje(
     can_view_deleted: bool = Depends(can_view_deleted_records),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Mensaje).where(Mensaje.id == mensaje_id)
+    query = select(Mensaje).where(Mensaje.id == mensaje_id).options(joinedload(Mensaje.usuario_enviador_mensaje))
     if not can_view_deleted:
         query = query.where(Mensaje.deleted_at.is_(None))
     result = await db.execute(query)

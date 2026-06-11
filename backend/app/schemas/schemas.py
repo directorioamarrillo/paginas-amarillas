@@ -101,7 +101,7 @@ class MarketplaceResponse(MarketplaceBase):
 # Esquemas para Empresa
 class EmpresaBase(BaseModel):
     nombre: constr(min_length=2, max_length=100)
-    nit: constr(min_length=3, max_length=50, pattern=r"^[A-Za-z0-9\-]+$")
+    nit: constr(min_length=3, max_length=50, pattern=r"^[A-Za-z0-9\-\.]+$")
     correo: EmailStr
     direccion: constr(min_length=3, max_length=255)
     telefono: constr(min_length=7, max_length=20)
@@ -477,6 +477,24 @@ class MensajeCreate(MensajeBase):
 class MensajeResponse(MensajeBase):
     id: int
     fecha_hora: datetime
+    nombre_enviador: Optional[str] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def resolve_sender_name(cls, data):
+        if hasattr(data, '__dict__'):
+            data = data.__dict__
+        
+        result = dict(data) if isinstance(data, dict) else {}
+        
+        # Extract sender's name if loaded
+        sender = result.get('usuario_enviador_mensaje')
+        if sender:
+            nom = getattr(sender, 'nombre', '') or ''
+            ape = getattr(sender, 'apellido', '') or ''
+            fullName = f"{nom} {ape}".strip()
+            result['nombre_enviador'] = fullName if fullName else getattr(sender, 'correo', None)
+        return result
 
     model_config = {"from_attributes": True}
 

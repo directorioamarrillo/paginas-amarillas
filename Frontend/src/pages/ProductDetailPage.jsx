@@ -25,6 +25,7 @@ import { EmptyState } from "../components/common/EmptyState";
 import { API_BASE_URL, SERVER_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { getCategoryIcon } from "../utils/categoryIcons";
 
 const pickNumber = (...values) => {
   for (const value of values) {
@@ -572,8 +573,11 @@ export function ProductDetailPage() {
               <div className="flex items-start gap-3">
                 {empresaNombre ? (
                   <>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 text-xl font-bold text-brand-dark shadow-md">
-                      {empresaNombre[0].toUpperCase()}
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-brand-dark shadow-md">
+                      {(() => {
+                        const CategoryIcon = getCategoryIcon(data.empresa?.categoria?.nombre || data.categoria?.nombre || "");
+                        return <CategoryIcon className="w-6 h-6 stroke-[2.5]" />;
+                      })()}
                     </div>
                     <div className="flex-1">
                       <Link
